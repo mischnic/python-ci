@@ -6,20 +6,29 @@ Currently it compiles LaTeX files, but you can easily change the `compile` funct
 
 ## Setup
 
-Put your source folder next to the script (see below), change the names in [start.sh.in](start.sh.in) and make that file executable (rename it to start.sh if you wish).
+Put your source folder next to the script (see below) and make `start.sh` executable (rename it to start.sh if you wish).
 
-Without changing the default config, you would need the following file hierarchy:
+You need the following file hierarchy:
 
 	python-ci
 	 |- python-ci.py
 	 |- README.md
 	 |- Maths
+	 |  - .ci.yml
 	 |  - Document.tex
 	  - Maths_build
 	    |- Document.pdf
 	    |- Document.aux
 	     - ...
 		 
+
+`.ci.yml` is the project's configuration file:
+
+	language: latex
+	main: Document
+
+(Currently only `latex` is implemented.)
+
 ## Usage
 
 python-ci delivers the following pages:
