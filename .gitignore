@@ -1,0 +1,8 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!README.md
+!python-ci.py
+!start.sh.in

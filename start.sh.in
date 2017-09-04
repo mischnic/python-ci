@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+PROJECT="Maths" FILE="Document" OUTPUT_DIR="Maths_build" SECRET="<<Github Webhook secret>>" ./python-ci.py
