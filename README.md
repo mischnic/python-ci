@@ -61,5 +61,5 @@ By default, python-ci listens on `localhost:8000`, meaning that it will only acc
 		}
 	}
 
-(For local testing I would recommend adding `ci.example.com*` to the `server_name` directive as well. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server in your local network.)
+If your router doesn't support [Hairpinning](https://en.wikipedia.org/wiki/Hairpinning) alias [NAT loopback](https://en.wikipedia.org/wiki/NAT_loopback) (meaning that trying to access `ci.example.com` in the same network as the server causes a `ERR_CONNECTION_REFUSED`) you have to add `ci.example.com*` to the `server_name` directive. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server in your local network.
 
