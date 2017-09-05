@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from urlparse import urlparse, parse_qs
 from threading import Thread
-import os, time, subprocess, json, time, hmac, hashlib, re, yaml
+import os, time, subprocess
+from urlparse import urlparse
+import hmac, hashlib, re, json, yaml
+
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_DIR', "_build")
 SECRET = os.environ['SECRET']
 
 compileThread = 0
 
+
 def log(s):
 	print s
 	# with open('python-ci.log', 'a') as logFile:
 	# 	logFile.write(s+"\n")
-	pass
 
 def parseRef(ref):
 	if ref == "latest":
 		return "1f31488cca82ad562eb9ef7e3e85041ddd29a8ff"
-	else: 
+	else:
 		return ref
 
 def getConfig(proj):
@@ -26,20 +28,20 @@ def getConfig(proj):
 		return yaml.load(ymlfile)
 
 
-def updateStatus(ref, proj, file, msg):
-	with open( getBuildPath(proj, ref)+"/_"+file , "w") as f:
-		f.write(msg+":"+ref);
+def updateStatus(ref, proj, fileName, msg):
+	with open(getBuildPath(proj, ref)+"/_"+fileName, "w") as f:
+		f.write(msg+":"+ref)
 
 def getBuildPath(proj, ref):
-	return proj+OUTPUT_SUFFIX+"/"+parseRef(ref)
+	return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
 
 
-def getStatus(ref, proj, file):
+def getStatus(ref, proj, fileName):
 	lastRef = ""
 	status = False
 
 	try:
-		infoFile = open(getBuildPath(proj, ref)+"/_"+file, 'r')
+		infoFile = open(getBuildPath(proj, ref)+"/_"+fileName, 'r')
 		try:
 			d = infoFile.read().split(":")
 			status = d[0]
@@ -60,7 +62,7 @@ def updateGit(proj, ref):
 	try:
 		lastLog += subprocess.check_output(["git", "pull", "origin", "master"], cwd=proj, stderr=subprocess.STDOUT) + "\n"
 		lastLog += subprocess.check_output(["git", "reset", "--hard", ref], cwd=proj, stderr=subprocess.STDOUT) + "\n"
-		
+
 	except subprocess.CalledProcessError as exc:
 		lastLog += exc.output + "\n"
 		lastLog += "git operations failed: "+str(exc.returncode) + "\n"
@@ -68,16 +70,16 @@ def updateGit(proj, ref):
 
 	return (successful, lastLog)
 
-def compileLatex(proj, ref, file):
+def compileLatex(proj, ref, fileName):
 	lastLog = ""
 	successful = True
 
 	cmd = ["latexmk",
-		"-interaction=nonstopmode",
-		# "-gg",
-		"-file-line-error",
-		"-jobname="+getBuildPath(proj, ref)+"/"+file,
-		"-pdf", proj+"/"+file+".tex"]
+				"-interaction=nonstopmode",
+				# "-gg",
+				"-file-line-error",
+				"-jobname="+getBuildPath(proj, ref)+"/"+fileName,
+				"-pdf", proj+"/"+fileName+".tex" ]
 
 	try:
 		lastLog += subprocess.check_output(cmd, stderr=subprocess.STDOUT) + "\n"
@@ -97,20 +99,20 @@ compileLang = dict(
 
 
 
-def compile(lang, ref, proj, file):
+def doCompile(lang, ref, proj, fileName):
 	log(">>> Started: "+time.strftime("%c"))
 	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
 
 	if not os.path.exists(getBuildPath(proj, ref)):
 		os.makedirs(getBuildPath(proj, ref))
-	updateStatus(ref, proj, file, "RUN")
+	updateStatus(ref, proj, fileName, "RUN")
 	successful = True
 
 	successful, lastLogGit = updateGit(proj, ref)
 	lastLog += lastLogGit
 
 	if successful:
-		successful, lastLogCompile = compileLang["latex"](proj, ref, file)
+		successful, lastLogCompile = compileLang[lang](proj, ref, fileName)
 		lastLog += lastLogCompile
 	else:
 		lastLog += "not compiling" + "\n"
@@ -118,26 +120,25 @@ def compile(lang, ref, proj, file):
 	log(">>> Finished "+ref)
 	lastLog += ">>> Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
-	with open(getBuildPath(proj, ref)+"/_"+file+".log", 'w') as lastLogFile:
+	with open(getBuildPath(proj, ref)+"/_"+fileName+".log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)
 
-	updateStatus(ref, proj, file, "OK" if successful else "ERROR")
+	updateStatus(ref, proj, fileName, "OK" if successful else "ERROR")
 
 
-def start_compile(lang, ref, proj, file):
+def startCompile(lang, ref, proj, fileName):
 	global compileThread
-
-	if compileThread != 0 and compileThread.isAlive():
+	# pylint: disable=no-member
+	if compileThread and compileThread.isAlive():
 		return (503, "Currently compiling")
 	else:
-		compileThread =	Thread(target=compile, args=(lang, ref, proj, file))
+		compileThread =	Thread(target=doCompile, args=(lang, ref, proj, fileName))
 		compileThread.start()
 		return (200, "Compiling Started")
 
 
-
 class Handler(BaseHTTPRequestHandler):
-	def _send(self, status, data = "", headers = []):
+	def _send(self, status, data = "", headers = None):
 		if not data and status == 404:
 			data = "Not Found"
 
@@ -145,7 +146,7 @@ class Handler(BaseHTTPRequestHandler):
 		for x in headers:
 			name, value = x
 			self.send_header(name, value)
-			
+
 		self.end_headers()
 		self.wfile.write(data)
 
@@ -153,47 +154,47 @@ class Handler(BaseHTTPRequestHandler):
 	def do_GET(self):
 		global compileThread
 
-		parsed_path = urlparse(self.path)
-		query = parse_qs(parsed_path.query, keep_blank_values=True)
+		path = urlparse(self.path).path
 
 		message = ""
 		status = 404
 
-		match = re.search(r"\/([a-zA-z+-]+)\/(.*)", parsed_path.path)
+		match = re.search(r"^\/([a-zA-z+-]+)(?:\/?$|(?:\/([0-9a-f]*))?\/(.*))", path)
+		# matches: 1=Project | 2=hash or empty | 3=file or empty
 
 		if match is not None:
-			project, file = match.group(1,2)
+			project, ref, fileName = match.group(1,2)
 			if os.path.isdir(project):
 				cfg = getConfig(project)
 				lang = cfg["language"].lower()
 
 				main = cfg.get('main')
 
-				if file == "" and "ref" in query:
-					status, message = start_compile(lang, query["ref"][0], project, main)
-				elif file == "output.pdf":
+				if fileName == "build":
+					status, message = startCompile(lang, ref, project, main)
+				elif fileName == "output.pdf":
 					try:
 						f = open(getBuildPath(project, "latest")+"/"+main+".pdf" , "rb")
 						try:
-							self._send(200, f.read(), [("Content-type", "application/pdf")]);
+							self._send(200, f.read(), [("Content-type", "application/pdf")])
 						finally:
 							f.close()
 					except IOError:
 						self._send(404)
 					return
 
-				elif file == "output.log":
+				elif fileName == "output.log":
 					try:
 						f = open(getBuildPath(project, "latest")+"/_"+main+".log" , "r")
 						try:
-							self._send(200, f.read(), [("Content-type", "text/plain")]);
+							self._send(200, f.read(), [("Content-type", "text/plain")])
 						finally:
 							f.close()
 					except IOError:
 						self._send(404)
 					return
 
-				elif file == "output.svg":
+				elif fileName == "output.svg":
 					buildStatus, lastRef = getStatus("latest", project, main)
 
 					if buildStatus == "OK":
@@ -225,14 +226,14 @@ class Handler(BaseHTTPRequestHandler):
 											("etag", lastRef),
 											("cache-control", "no-cache")])
 					return
-		
+
 		self._send(status, message)
 
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length)
 
-		project = self.path[1:];
+		project = self.path[1:]
 
 		(signature_func, signature) = self.headers['X-Hub-Signature'].split("=")
 		output = "Error"
@@ -247,16 +248,16 @@ class Handler(BaseHTTPRequestHandler):
 			if signature_func == "sha1":
 				mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
 				if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
-					self._send(403, output);
+					self._send(403, output)
 					return
 
 		if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
 			data = json.loads(post_data)
 			print data['head_commit']['id']+":\n"+data['head_commit']['message']
-			status, output = start_compile(lang, data['head_commit']['id'], project, main)
+			status, output = startCompile(lang, data['head_commit']['id'], project, main)
 
 
-		self._send(status, output);
+		self._send(status, output)
 
 	def log_message(self, format, *args):
 		log("%s - - [%s] %s" % (self.client_address[0], self.log_date_time_string(), format%args))
