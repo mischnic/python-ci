@@ -6,7 +6,7 @@ from urlparse import urlparse
 import hmac, hashlib, re, json, yaml
 
 
-OUTPUT_SUFFIX = os.environ.get('OUTPUT_DIR', "_build")
+OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 SECRET = os.environ.get('SECRET', "")
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
