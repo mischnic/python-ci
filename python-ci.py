@@ -82,7 +82,7 @@ def compileLatex(proj, file):
 
 
 compileLang = dict(
-	latex = runLatex
+	latex = compileLatex
 )
 
 
