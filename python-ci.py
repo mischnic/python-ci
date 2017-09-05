@@ -15,11 +15,17 @@ def log(s):
 	# 	logFile.write(s+"\n")
 	pass
 
-def writeLastStatus(proj, file, msg,ref):
+
+def getConfig(proj):
+	with open(proj+"/.ci.yml", "r") as ymlfile:
+		return yaml.load(ymlfile)
+
+
+def updateStatus(proj, file, msg,ref):
 	with open( proj+OUTPUT_DIR+"/_"+file , "w") as f:
 		f.write(msg+":"+ref);
 
-def getLastStatus(proj, file):
+def getStatus(proj, file):
 	lastRef = ""
 	status = False
 
@@ -36,35 +42,66 @@ def getLastStatus(proj, file):
 
 	return (status, lastRef)
 
-def compile(ref, proj, file):
-	log(">>> Started: "+time.strftime("%c"))
-	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
-	writeLastStatus(proj, file, "RUN",ref)
+
+
+
+def updateGit(proj, ref):
+	lastLog = ""
 	successful = True
 	try:
 		lastLog += subprocess.check_output(["git", "pull", "origin", "master"], cwd=proj, stderr=subprocess.STDOUT) + "\n"
 		lastLog += subprocess.check_output(["git", "reset", "--hard", ref], cwd=proj, stderr=subprocess.STDOUT) + "\n"
-		# lastLog += subprocess.check_output(["git", "checkout", ref], cwd=proj, stderr=subprocess.STDOUT) + "\n"
 		
-		args = ["latexmk",
-					"-interaction=nonstopmode",
-					# "-gg",
-					"-file-line-error",
-					"-jobname="+proj+OUTPUT_DIR+"/"+file,
-					"-pdf", proj+"/"+file+".tex"]
-
-		try:
-			out = subprocess.check_output(args, stderr=subprocess.STDOUT)
-			lastLog += out + "\n"
-		except subprocess.CalledProcessError as exc:
-			lastLog += exc.output + "\n"
-			lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
-			successful = False
 	except subprocess.CalledProcessError as exc:
 		lastLog += exc.output + "\n"
 		lastLog += "git operations failed: "+str(exc.returncode) + "\n"
-		lastLog += "not compiling" + "\n"
 		successful = False
+
+	return (successful, lastLog)
+
+def compileLatex(proj, file):
+	lastLog = ""
+	successful = True
+
+	cmd = ["latexmk",
+		"-interaction=nonstopmode",
+		# "-gg",
+		"-file-line-error",
+		"-jobname="+proj+OUTPUT_DIR+"/"+file,
+		"-pdf", proj+"/"+file+".tex"]
+
+	try:
+		lastLog += subprocess.check_output(cmd, stderr=subprocess.STDOUT) + "\n"
+
+	except subprocess.CalledProcessError as exc:
+		lastLog += exc.output + "\n"
+		lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
+		successful = False
+
+	return (successful, lastLog)
+
+
+compileLang = dict(
+	latex = runLatex
+)
+
+
+
+
+def compile(lang, ref, proj, file):
+	log(">>> Started: "+time.strftime("%c"))
+	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
+	updateStatus(proj, file, "RUN",ref)
+	successful = True
+
+	successful, lastLogGit = updateGit(proj, ref)
+	lastLog += lastLogGit
+
+	if successful:
+		successful, lastLogCompile = compileLang["latex"](proj, file)
+		lastLog += lastLogCompile
+	else:
+		lastLog += "not compiling" + "\n"
 
 	log(">>> Finished "+ref)
 	lastLog += ">>> Finished: "+time.strftime("%X")+" "+ref  + "\n"
@@ -72,7 +109,8 @@ def compile(ref, proj, file):
 	with open(proj+OUTPUT_DIR+"/_"+file+".log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)
 
-	writeLastStatus(proj, file, "OK" if successful else "ERROR",ref)
+	updateStatus(proj, file, "OK" if successful else "ERROR",ref)
+
 
 def start_compile(ref, proj, file):
 	global compileThread
@@ -84,9 +122,6 @@ def start_compile(ref, proj, file):
 		compileThread.start()
 		return (200, "Compiling Started")
 
-def getConfig(proj):
-	with open(proj+"/.ci.yml", "r") as ymlfile:
-		return yaml.load(ymlfile)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -148,7 +183,7 @@ class Handler(BaseHTTPRequestHandler):
 						return
 
 					elif file == "output.svg":
-						buildStatus, lastRef = getLastStatus(project, main)
+						buildStatus, lastRef = getStatus(project, main)
 
 						if buildStatus == "OK":
 							buildStatus = "#4c1"
