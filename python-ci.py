@@ -6,8 +6,13 @@ from urlparse import urlparse
 import hmac, hashlib, re, json, yaml
 
 
+TOKEN = os.environ['TOKEN']
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_DIR', "_build")
 SECRET = os.environ['SECRET']
+DOMAIN = os.environ['URL']
+
+if TOKEN:
+	import gh
 
 compileThread = 0
 
@@ -19,14 +24,14 @@ def log(s):
 
 
 def symlink_force(target, link_name):
-    try:
-        os.symlink(target, link_name)
-    except OSError, e:
-        if e.errno == errno.EEXIST:
-            os.remove(link_name)
-            os.symlink(target, link_name)
-        else:
-            raise e
+	try:
+		os.symlink(target, link_name)
+	except OSError, e:
+		if e.errno == errno.EEXIST:
+			os.remove(link_name)
+			os.symlink(target, link_name)
+		else:
+			raise e
 
 def parseRef(ref):
 	if ref == "":
@@ -70,6 +75,12 @@ def updateStatus(ref, proj, fileName, msg):
 
 	with open(getBuildPath(proj, ref)+"/_"+fileName, "w") as f:
 		f.write(msg+":"+ref)
+
+	if TOKEN:
+		gh.setStatus(proj, ref,
+				"success" if msg == "OK" else "pending" if msg == "RUN" else "error",
+				"https://"+DOMAIN+"/"+proj+"/"+ref+"/output.log")
+
 
 def getBuildPath(proj, ref):
 	if parseRef(ref) is None:
