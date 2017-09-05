@@ -4,15 +4,15 @@ from urlparse import urlparse, parse_qs
 from threading import Thread
 import os, time, subprocess, json, time, hmac, hashlib, re, yaml
 
-OUTPUT_DIR = os.environ['OUTPUT_DIR']
+OUTPUT_DIR = os.environ.get('OUTPUT_DIR', "_build")
 SECRET = os.environ['SECRET']
 
 compileThread = 0
-logFile = open('python-ci.log', 'a')
 
 def log(s):
 	print s
-	# logFile.write(s+"\n")
+	# with open('python-ci.log', 'a') as logFile:
+	# 	logFile.write(s+"\n")
 	pass
 
 def writeLastStatus(proj, file, msg,ref):
@@ -87,6 +87,7 @@ def start_compile(ref, proj, file):
 def getConfig(proj):
 	with open(proj+"/.ci.yml", "r") as ymlfile:
 		return yaml.load(ymlfile)
+
 
 class Handler(BaseHTTPRequestHandler):
 	def _send(self, status, data, headers = []):
@@ -216,6 +217,7 @@ class Handler(BaseHTTPRequestHandler):
 		log("%s - - [%s] %s" % (self.client_address[0], self.log_date_time_string(), format%args))
 
 
+
 if __name__ == '__main__':
 	try:
 		server = HTTPServer(('localhost', 8000), Handler)
@@ -223,5 +225,3 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		print '\n^C received, shutting down the web server'
 		server.socket.close()
-	finally:
-		logFile.close()
