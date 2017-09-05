@@ -155,65 +155,64 @@ class Handler(BaseHTTPRequestHandler):
 				cfg = getConfig(project)
 				lang = cfg["language"].lower()
 
-				if lang == "latex":
-					main = cfg['main']
+				main = cfg.get('main')
 
-					if file == "" and "ref" in query:
-						status, message = start_compile(lang, query["ref"][0], project, main)
-					elif file == "output.pdf":
+				if file == "" and "ref" in query:
+					status, message = start_compile(lang, query["ref"][0], project, main)
+				elif file == "output.pdf":
+					try:
+						f = open(project+OUTPUT_DIR+"/"+main+".pdf" , "rb")
 						try:
-							f = open(project+OUTPUT_DIR+"/"+main+".pdf" , "rb")
-							try:
-								self._send(200, f.read(), [("Content-type", "application/pdf")]);
-							finally:
-								f.close()
-						except IOError:
-							self._send(404)
-						return
+							self._send(200, f.read(), [("Content-type", "application/pdf")]);
+						finally:
+							f.close()
+					except IOError:
+						self._send(404)
+					return
 
-					elif file == "output.log":
+				elif file == "output.log":
+					try:
+						f = open(project+OUTPUT_DIR+"/_"+main+".log" , "r")
 						try:
-							f = open(project+OUTPUT_DIR+"/_"+main+".log" , "r")
-							try:
-								self._send(200, f.read(), [("Content-type", "text/plain")]);
-							finally:
-								f.close()
-						except IOError:
-							self._send(404)
-						return
+							self._send(200, f.read(), [("Content-type", "text/plain")]);
+						finally:
+							f.close()
+					except IOError:
+						self._send(404)
+					return
 
-					elif file == "output.svg":
-						buildStatus, lastRef = getStatus(project, main)
+				elif file == "output.svg":
+					buildStatus, lastRef = getStatus(project, main)
 
-						if buildStatus == "OK":
-							buildStatus = "#4c1"
-						elif buildStatus == "RUN":
-							buildStatus = "darkgrey"
-						else:
-							buildStatus = "red"
+					if buildStatus == "OK":
+						buildStatus = "#4c1"
+					elif buildStatus == "RUN":
+						buildStatus = "darkgrey"
+					else:
+						buildStatus = "red"
 
-						svg = """
-						<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
-							<linearGradient id="a" x2="0" y2="100%">
-								<stop offset="0" stop-color="#bbb" stop-opacity=".1" />
-								<stop offset="1" stop-opacity=".1" />
-							</linearGradient>
-							<rect rx="3" width="90" height="20" fill="#555" />
-							<rect rx="3" x="37" width="53" height="20" fill="{}" />
-							<path fill="{}" d="M37 0h4v20h-4z" />
-							<rect rx="3" width="90" height="20" fill="url(#a)" />
-							<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-								<text x="19.5" y="15" fill="#010101" fill-opacity=".3">built</text>
-								<text x="19.5" y="14">built</text>
-								<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
-								<text x="62.5" y="14">{}</text>
-							</g>
-						</svg>""".format(buildStatus, buildStatus, lastRef, lastRef)
+					svg = """
+					<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
+						<linearGradient id="a" x2="0" y2="100%">
+							<stop offset="0" stop-color="#bbb" stop-opacity=".1" />
+							<stop offset="1" stop-opacity=".1" />
+						</linearGradient>
+						<rect rx="3" width="90" height="20" fill="#555" />
+						<rect rx="3" x="37" width="53" height="20" fill="{}" />
+						<path fill="{}" d="M37 0h4v20h-4z" />
+						<rect rx="3" width="90" height="20" fill="url(#a)" />
+						<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+							<text x="19.5" y="15" fill="#010101" fill-opacity=".3">built</text>
+							<text x="19.5" y="14">built</text>
+							<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
+							<text x="62.5" y="14">{}</text>
+						</g>
+					</svg>""".format(buildStatus, buildStatus, lastRef, lastRef)
 
-						self._send(200, svg, [("Content-type", "image/svg+xml"),
-												("etag", lastRef),
-												("cache-control", "no-cache")])
-						return
+					self._send(200, svg, [("Content-type", "image/svg+xml"),
+											("etag", lastRef),
+											("cache-control", "no-cache")])
+					return
 		
 		self._send(status, message)
 
@@ -230,20 +229,19 @@ class Handler(BaseHTTPRequestHandler):
 		cfg = getConfig(project)
 		lang = cfg["language"].lower()
 
-		if lang == "latex":
-			main = cfg['main']
+		main = cfg.get('main')
 
-			if SECRET and SECRET != "<<Github Webhook secret>>":
-				if signature_func == "sha1":
-					mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
-					if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
-						self._send(403, output);
-						return
+		if SECRET and SECRET != "<<Github Webhook secret>>":
+			if signature_func == "sha1":
+				mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
+				if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
+					self._send(403, output);
+					return
 
-			if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
-				data = json.loads(post_data)
-				print data['head_commit']['id']+":\n"+data['head_commit']['message']
-				status, output = start_compile(lang, data['head_commit']['id'], project, main)
+		if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
+			data = json.loads(post_data)
+			print data['head_commit']['id']+":\n"+data['head_commit']['message']
+			status, output = start_compile(lang, data['head_commit']['id'], project, main)
 
 
 		self._send(status, output);
