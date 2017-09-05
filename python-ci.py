@@ -6,10 +6,10 @@ from urlparse import urlparse
 import hmac, hashlib, re, json, yaml
 
 
-TOKEN = os.environ['TOKEN']
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_DIR', "_build")
-SECRET = os.environ['SECRET']
-DOMAIN = os.environ['URL']
+SECRET = os.environ.get('SECRET', "")
+TOKEN = os.environ.get('TOKEN', "")
+DOMAIN = os.environ.get('URL', "")
 
 if TOKEN:
 	import gh
@@ -79,7 +79,7 @@ def updateStatus(ref, proj, fileName, msg):
 	if TOKEN:
 		gh.setStatus(proj, ref,
 				"success" if msg == "OK" else "pending" if msg == "RUN" else "error",
-				"https://"+DOMAIN+"/"+proj+"/"+ref+"/output.log")
+				DOMAIN+"/"+proj+"/"+ref+"/output.log")
 
 
 def getBuildPath(proj, ref):

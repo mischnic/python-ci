@@ -1,3 +1,12 @@
 #!/usr/bin/env bash
 
-OUTPUT_DIR="_build" SECRET="<<Github Webhook secret>>" ./python-ci.py
+# optional:
+#	OUTPUT_DIR="_build"
+#	SECRET="<<Github Webhook secret>>"
+#	TOKEN="<<Github personal access token>>"
+#	DOMAIN="ci.example.com"
+#
+# example:
+#	OUTPUT_DIR="_ci" ./python-ci.py
+
+./python-ci.py
