@@ -4,7 +4,7 @@
 #	OUTPUT_DIR="_build"
 #	SECRET="<<Github Webhook secret>>"
 #	TOKEN="<<Github personal access token>>"
-#	DOMAIN="ci.example.com"
+#	DOMAIN="https://ci.example.com"
 #
 # example:
 #	OUTPUT_DIR="_ci" ./python-ci.py
