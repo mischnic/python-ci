@@ -102,81 +102,85 @@ class Handler(BaseHTTPRequestHandler):
 
 		if match is not None:
 			project, file = match.group(1,2)
-			cfg = getConfig(project)
-			lang = cfg["language"].lower()
+			if os.path.isdir(project):
+				cfg = getConfig(project)
+				lang = cfg["language"].lower()
 
-			if lang == "latex":
-				main = cfg['main']
+				if lang == "latex":
+					main = cfg['main']
 
-				if file == "" and "ref" in query:
-					message = start_compile(query["ref"][0], project, main)
-				elif file == "output.pdf":
-					try:
-						f = open(project+OUTPUT_DIR+"/"+main+".pdf" , "rb")
+					if file == "" and "ref" in query:
+						message = start_compile(query["ref"][0], project, main)
+					elif file == "output.pdf":
 						try:
-							self.send_response(200)
-							self.send_header("Content-type", "application/pdf")
+							f = open(project+OUTPUT_DIR+"/"+main+".pdf" , "rb")
+							try:
+								self.send_response(200)
+								self.send_header("Content-type", "application/pdf")
+								self.end_headers()
+								self.wfile.write(f.read())
+							finally:
+								f.close()
+						except IOError:
+							self.send_response(404)
 							self.end_headers()
-							self.wfile.write(f.read())
-						finally:
-							f.close()
-					except IOError:
-						self.send_response(404)
-						self.end_headers()
-					return
+						return
 
-				elif file == "output.log":
-					try:
-						f = open(project+OUTPUT_DIR+"/_"+main+".log" , "r")
+					elif file == "output.log":
 						try:
-							self.send_response(200)
-							self.send_header("Content-type", "text/plain")
+							f = open(project+OUTPUT_DIR+"/_"+main+".log" , "r")
+							try:
+								self.send_response(200)
+								self.send_header("Content-type", "text/plain")
+								self.end_headers()
+								self.wfile.write(f.read())
+							finally:
+								f.close()
+						except IOError:
+							self.send_response(404)
 							self.end_headers()
-							self.wfile.write(f.read())
-						finally:
-							f.close()
-					except IOError:
-						self.send_response(404)
+						return
+
+					elif file == "output.svg":
+						status, lastRef = getLastStatus(project, main)
+
+						if status == "OK":
+							status = "#4c1"
+						elif status == "RUN":
+							status = "darkgrey"
+						else:
+							status = "red"
+
+						svg = """
+						<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
+							<linearGradient id="a" x2="0" y2="100%">
+								<stop offset="0" stop-color="#bbb" stop-opacity=".1" />
+								<stop offset="1" stop-opacity=".1" />
+							</linearGradient>
+							<rect rx="3" width="90" height="20" fill="#555" />
+							<rect rx="3" x="37" width="53" height="20" fill="{}" />
+							<path fill="{}" d="M37 0h4v20h-4z" />
+							<rect rx="3" width="90" height="20" fill="url(#a)" />
+							<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+								<text x="19.5" y="15" fill="#010101" fill-opacity=".3">built</text>
+								<text x="19.5" y="14">built</text>
+								<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
+								<text x="62.5" y="14">{}</text>
+							</g>
+						</svg>""".format(status, status, lastRef, lastRef);
+						self.send_response(200)
+						self.send_header("Content-type", "image/svg+xml")
+						self.send_header("etag", lastRef)
+						self.send_header("cache-control", "no-cache")
 						self.end_headers()
-					return
-
-				elif file == "output.svg":
-					status, lastRef = getLastStatus(project, main)
-
-					if status == "OK":
-						status = "#4c1"
-					elif status == "RUN":
-						status = "darkgrey"
+						self.wfile.write(svg)
+						return
 					else:
-						status = "red"
-
-					svg = """
-					<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
-						<linearGradient id="a" x2="0" y2="100%">
-							<stop offset="0" stop-color="#bbb" stop-opacity=".1" />
-							<stop offset="1" stop-opacity=".1" />
-						</linearGradient>
-						<rect rx="3" width="90" height="20" fill="#555" />
-						<rect rx="3" x="37" width="53" height="20" fill="{}" />
-						<path fill="{}" d="M37 0h4v20h-4z" />
-						<rect rx="3" width="90" height="20" fill="url(#a)" />
-						<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-							<text x="19.5" y="15" fill="#010101" fill-opacity=".3">built</text>
-							<text x="19.5" y="14">built</text>
-							<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
-							<text x="62.5" y="14">{}</text>
-						</g>
-					</svg>""".format(status, status, lastRef, lastRef);
-					self.send_response(200)
-					self.send_header("Content-type", "image/svg+xml")
-					self.send_header("etag", lastRef)
-					self.send_header("cache-control", "no-cache")
-					self.end_headers()
-					self.wfile.write(svg)
-					return
+						status = 404
+						message = "Not Found"
 				else:
-					status = 404
-					message = "Not Found"
+						status = 404
+						message = "Not Found"
 			else:
 				status = 404
 				message = "Not Found"
