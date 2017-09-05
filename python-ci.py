@@ -78,17 +78,30 @@ def start_compile(ref, proj, file):
 	global compileThread
 
 	if compileThread != 0 and compileThread.isAlive():
-		return "Currently compiling"
+		return (503, "Currently compiling")
 	else:
 		compileThread =	Thread(target=compile, args=(ref, proj, file))
 		compileThread.start()
-		return "Compiling Started"
+		return (200, "Compiling Started")
 
 def getConfig(proj):
 	with open(proj+"/.ci.yml", "r") as ymlfile:
 		return yaml.load(ymlfile)
 
 class Handler(BaseHTTPRequestHandler):
+	def _send(self, status, data, headers = []):
+		if not data and status == 404:
+			data = "Not Found"
+
+		self.send_response(status)
+		for x in headers:
+			name, value = x
+			self.send_header(name, value)
+			
+		self.end_headers()
+		self.wfile.write(data)
+
+
 	def do_GET(self):
 		global compileThread
 
@@ -96,7 +109,7 @@ class Handler(BaseHTTPRequestHandler):
 		query = parse_qs(parsed_path.query, keep_blank_values=True)
 
 		message = ""
-		status = 200
+		status = 404
 
 		match = re.search(r"\/([a-zA-z+-]+)\/(.*)", parsed_path.path)
 
@@ -110,46 +123,38 @@ class Handler(BaseHTTPRequestHandler):
 					main = cfg['main']
 
 					if file == "" and "ref" in query:
-						message = start_compile(query["ref"][0], project, main)
+						status, message = start_compile(query["ref"][0], project, main)
 					elif file == "output.pdf":
 						try:
 							f = open(project+OUTPUT_DIR+"/"+main+".pdf" , "rb")
 							try:
-								self.send_response(200)
-								self.send_header("Content-type", "application/pdf")
-								self.end_headers()
-								self.wfile.write(f.read())
+								self._send(200, f.read(), [("Content-type", "application/pdf")]);
 							finally:
 								f.close()
 						except IOError:
-							self.send_response(404)
-							self.end_headers()
+							self._send(404)
 						return
 
 					elif file == "output.log":
 						try:
 							f = open(project+OUTPUT_DIR+"/_"+main+".log" , "r")
 							try:
-								self.send_response(200)
-								self.send_header("Content-type", "text/plain")
-								self.end_headers()
-								self.wfile.write(f.read())
+								self._send(200, f.read(), [("Content-type", "text/plain")]);
 							finally:
 								f.close()
 						except IOError:
-							self.send_response(404)
-							self.end_headers()
+							self._send(404)
 						return
 
 					elif file == "output.svg":
-						status, lastRef = getLastStatus(project, main)
+						buildStatus, lastRef = getLastStatus(project, main)
 
-						if status == "OK":
-							status = "#4c1"
-						elif status == "RUN":
-							status = "darkgrey"
+						if buildStatus == "OK":
+							buildStatus = "#4c1"
+						elif buildStatus == "RUN":
+							buildStatus = "darkgrey"
 						else:
-							status = "red"
+							buildStatus = "red"
 
 						svg = """
 						<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
@@ -167,27 +172,14 @@ class Handler(BaseHTTPRequestHandler):
 								<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
 								<text x="62.5" y="14">{}</text>
 							</g>
-						</svg>""".format(status, status, lastRef, lastRef);
-						self.send_response(200)
-						self.send_header("Content-type", "image/svg+xml")
-						self.send_header("etag", lastRef)
-						self.send_header("cache-control", "no-cache")
-						self.end_headers()
-						self.wfile.write(svg)
+						</svg>""".format(buildStatus, buildStatus, lastRef, lastRef)
+
+						self._send(200, svg, [("Content-type", "image/svg+xml"),
+												("etag", lastRef),
+												("cache-control", "no-cache")])
 						return
-					else:
-						status = 404
-						message = "Not Found"
-				else:
-						status = 404
-						message = "Not Found"
-			else:
-				status = 404
-				message = "Not Found"
 		
-		self.send_response(status)
-		self.end_headers()
-		self.wfile.write(message)
+		self._send(status, message)
 
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length'])
@@ -209,21 +201,16 @@ class Handler(BaseHTTPRequestHandler):
 				if signature_func == "sha1":
 					mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
 					if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
-						self.send_response(403)
-						self.end_headers()
-						self.wfile.write(output)
+						self._send(403, output);
 						return
 
 			if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
 				data = json.loads(post_data)
 				print data['head_commit']['id']+":\n"+data['head_commit']['message']
-				output = start_compile(data['head_commit']['id'], project, main)
+				status, output = start_compile(data['head_commit']['id'], project, main)
 
 
-
-		self.send_response(status)
-		self.end_headers()
-		self.wfile.write(output)
+		self._send(status, output);
 
 	def log_message(self, format, *args):
 		log("%s - - [%s] %s" % (self.client_address[0], self.log_date_time_string(), format%args))
