@@ -13,6 +13,7 @@ DOMAIN = os.environ.get('URL', "")
 
 if TOKEN:
 	import gh
+	
 
 compileThread = 0
 
@@ -217,8 +218,6 @@ class Handler(BaseHTTPRequestHandler):
 
 
 	def do_GET(self):
-		global compileThread
-
 		path = urlparse(self.path).path
 
 		message = ""
@@ -237,20 +236,22 @@ class Handler(BaseHTTPRequestHandler):
 
 				if fileName == "build":
 					status, message = startCompile(lang, ref, project, main)
-				elif fileName == "output.pdf":
-					self._sendFile(getBuildPath(project, ref)+"/"+main+".pdf", [("Content-type", "application/pdf")], True)
-					return
+				else:
+					if main:
+						if fileName == "output.pdf":
+							self._sendFile(getBuildPath(project, ref)+"/"+main+".pdf", [("Content-type", "application/pdf")], True)
+							return
 
-				elif fileName == "output.log":
-					self._sendFile(getBuildPath(project, ref)+"/"+main+".log", [("Content-type", "text/plain")])
-					return
+						elif fileName == "output.log":
+							self._sendFile(getBuildPath(project, ref)+"/"+main+".log", [("Content-type", "text/plain")])
+							return
 
-				elif fileName == "output.svg":
-					self._sendFile(getBuildPath(project, ref)+"/_"+main+".svg",
-										[("Content-type", "image/svg+xml"),
-											("etag", ref),
-											("cache-control", "no-cache")])
-					return
+						elif fileName == "output.svg":
+							self._sendFile(getBuildPath(project, ref)+"/_"+main+".svg",
+												[("Content-type", "image/svg+xml"),
+													("etag", ref),
+													("cache-control", "no-cache")])
+							return
 
 		self._send(status, message)
 
