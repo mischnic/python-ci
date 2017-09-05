@@ -146,10 +146,9 @@ def compileLatex(proj, ref, fileName):
 
 
 compileLang = dict(
-	latex = compileLatex
+	latex = compileLatex,
+	git = lambda a,b,c,d: (True, "")
 )
-
-
 
 
 def doCompile(lang, ref, proj, fileName):
