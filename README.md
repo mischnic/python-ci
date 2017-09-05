@@ -1,8 +1,8 @@
 # python-ci
 
-A lightweight CI-server written in python. 
+A lightweight CI-server written in python, originally developed for a Raspberry Pi homeserver because other existing solutions were to resource-intensive (Jenkins) or cumbersome to use.
 
-Currently it compiles LaTeX files, but you can easily change the `compile` function in [python-ci.py](python-ci.py) to do whatever you want!
+Currently it only support LaTeX files, but you can easily add another language in [python-ci.py](python-ci.py) (see `if lang == "latex":`) to do whatever you want!
 
 ## Setup
 
@@ -70,5 +70,5 @@ By default, python-ci listens on `localhost:8000`, meaning that it will only acc
 		}
 	}
 
-If your router doesn't support [Hairpinning](https://en.wikipedia.org/wiki/Hairpinning) alias [NAT loopback](https://en.wikipedia.org/wiki/NAT_loopback) (meaning that trying to access `ci.example.com` in the same network as the server causes a `ERR_CONNECTION_REFUSED`) you have to add `ci.example.com*` to the `server_name` directive. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server in your local network.
+If your router doesn't support [NAT loopback](https://en.wikipedia.org/wiki/NAT_loopback) alias [Hairpinning](https://en.wikipedia.org/wiki/Hairpinning) (meaning that trying to access `ci.example.com` in the same network as the server causes a `ERR_CONNECTION_REFUSED`) then you have to add `ci.example.com*` to the `server_name` directive. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server in your local network.
 
