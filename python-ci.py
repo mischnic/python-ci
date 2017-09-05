@@ -98,7 +98,7 @@ class Handler(BaseHTTPRequestHandler):
 		message = ""
 		status = 200
 
-		match = re.search(r"\/([a-zA-z+-]*)\/(.*)", parsed_path.path)
+		match = re.search(r"\/([a-zA-z+-]+)\/(.*)", parsed_path.path)
 
 		if match is not None:
 			project, file = match.group(1,2)
@@ -201,16 +201,20 @@ class Handler(BaseHTTPRequestHandler):
 		if lang == "latex":
 			main = cfg['main']
 
-			if signature_func == "sha1":
-				mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
+			if SECRET and SECRET != "<<Github Webhook secret>>":
+				if signature_func == "sha1":
+					mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
+					if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
+						self.send_response(403)
+						self.end_headers()
+						self.wfile.write(output)
+						return
 
-				if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
-					status = 403
-				else:
-					if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
-						data = json.loads(post_data)
-						print data['head_commit']['id']+":\n"+data['head_commit']['message']
-						output = start_compile(data['head_commit']['id'], project, main)
+			if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
+				data = json.loads(post_data)
+				print data['head_commit']['id']+":\n"+data['head_commit']['message']
+				output = start_compile(data['head_commit']['id'], project, main)
+
 
 
 		self.send_response(status)
