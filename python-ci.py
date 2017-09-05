@@ -112,13 +112,13 @@ def compile(lang, ref, proj, file):
 	updateStatus(proj, file, "OK" if successful else "ERROR",ref)
 
 
-def start_compile(ref, proj, file):
+def start_compile(lang, ref, proj, file):
 	global compileThread
 
 	if compileThread != 0 and compileThread.isAlive():
 		return (503, "Currently compiling")
 	else:
-		compileThread =	Thread(target=compile, args=(ref, proj, file))
+		compileThread =	Thread(target=compile, args=(lang, ref, proj, file))
 		compileThread.start()
 		return (200, "Compiling Started")
 
@@ -159,7 +159,7 @@ class Handler(BaseHTTPRequestHandler):
 					main = cfg['main']
 
 					if file == "" and "ref" in query:
-						status, message = start_compile(query["ref"][0], project, main)
+						status, message = start_compile(lang, query["ref"][0], project, main)
 					elif file == "output.pdf":
 						try:
 							f = open(project+OUTPUT_DIR+"/"+main+".pdf" , "rb")
@@ -243,7 +243,7 @@ class Handler(BaseHTTPRequestHandler):
 			if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
 				data = json.loads(post_data)
 				print data['head_commit']['id']+":\n"+data['head_commit']['message']
-				status, output = start_compile(data['head_commit']['id'], project, main)
+				status, output = start_compile(lang, data['head_commit']['id'], project, main)
 
 
 		self._send(status, output);
