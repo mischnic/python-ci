@@ -13,7 +13,7 @@ DOMAIN = os.environ.get('URL', "")
 
 if TOKEN:
 	import gh
-	
+
 
 compileThread = 0
 
@@ -45,7 +45,7 @@ def getConfig(proj):
 		return yaml.load(ymlfile)
 
 
-def updateStatus(ref, proj, fileName, msg):
+def updateStatus(ref, proj, fileName, msg, errorMsg = None):
 	if msg == "OK":
 		color = "#4c1"
 	elif msg == "RUN":
@@ -80,7 +80,7 @@ def updateStatus(ref, proj, fileName, msg):
 	if TOKEN:
 		gh.setStatus(proj, ref,
 				"success" if msg == "OK" else "pending" if msg == "RUN" else "error",
-				DOMAIN+"/"+proj+"/"+ref+"/output.log")
+				DOMAIN+"/"+proj+"/"+ref+"/output.log", errorMsg)
 
 
 def getBuildPath(proj, ref):
@@ -161,12 +161,14 @@ def doCompile(lang, ref, proj, fileName):
 	updateStatus(ref, proj, fileName, "RUN")
 	successful = True
 
-	successful, lastLogGit = updateGit(proj, ref)
+	successfulGit, lastLogGit = updateGit(proj, ref)
 	lastLog += lastLogGit
+	successful = successfulGit
 
 	if successful:
-		successful, lastLogCompile = compileLang[lang](proj, ref, fileName)
+		successfulCompile, lastLogCompile = compileLang[lang](proj, ref, fileName)
 		lastLog += lastLogCompile
+		successful = successfulCompile
 	else:
 		lastLog += "not compiling" + "\n"
 
@@ -176,7 +178,9 @@ def doCompile(lang, ref, proj, fileName):
 	with open(getBuildPath(proj, ref)+"/_"+fileName+".log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)
 
-	updateStatus(ref, proj, fileName, "OK" if successful else "ERROR")
+	updateStatus(ref, proj, fileName, "OK" if successful else "ERROR",
+		"Git stage failed" if not successfulGit else
+			"Compile stage failed" if not successfulCompile else None)
 
 	symlink_force(ref, getBuildPath(proj, None))
 
