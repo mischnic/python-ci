@@ -1,18 +1,26 @@
 # python-ci
 
-A lightweight CI-server written in python, originally developed for a Raspberry Pi homeserver because other existing solutions were to resource-intensive (Jenkins) or cumbersome to use.
+A lightweight CI-server written in python, originally developed for a Raspberry Pi because other existing solutions were to resource-intensive (Jenkins) or cumbersome to use.
 
-Currently it only support LaTeX files, but you can easily add another language in [python-ci.py](python-ci.py) (see `if lang == "latex":`) to do whatever you want!
+- Can be set up as a GitHub webhook
+- Can display the build status of a commit in the GitHub web interface!
 
 ## Setup
 
-Put your source folder next to the script (see below) and make `start.sh` executable (rename it to start.sh if you wish).
+Clone your source folder next to the script (see below) and make `start.sh` executable (rename it to start.sh if you wish). Enviroment variables for the python script serve as configuration:
+
+- `OUTPUT_SUFFIX`: the `_build` below; optional (default: `_build`)
+- `SECRET`: the secret from the GitHub webhook configuration; optional
+- Needed to set commit statuses, otherwise optional:
+	- `Token`: a GitHub personal access token
+	- `DOMAIN`: the URL under which the server is accessible (including `http[s]://`)
 
 You need the following file hierarchy:
 
 	python-ci
 	 |- python-ci.py
 	 |- README.md
+	 |- ...
 	 |- Maths
 	 |  - .ci.yml
 	 |  - Document.tex
@@ -27,26 +35,31 @@ You need the following file hierarchy:
 	language: latex
 	main: Document
 
-(Currently only `latex` is implemented.)
+Currently implemented languages:
+- `git`: Update repostory only
+- `latex`: Update repository and run `latexmk` on the `${main}.tex` file
+
 
 ## Usage
 
-python-ci delivers the following pages:
-- http://ci.example.com/?ref=1a2b3c5
-  
-  GET request alternative to a GitHub webhook, accepts long and short commit-hash
-- http://ci.example.com/output.pdf
+python-ci delivers the following pages: (they accept **only long** commit-hashes)
 
-  Corresponds to the file Maths_build/Document.pdf (again, with the default configuration)
-- http://ci.example.com/output.log
+GET request alternative to a GitHub webhook:
+`http://ci.example.com/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/build`
+<br><br>
+The commit-hashes in the following URLs are **optional**:
 
-  Returns the compile-log which was saved as Maths_build/_Document.log
-- http://ci.example.com/output.svg
-
-  ![badge example](example_badge.svg) Returns a svg-badge indicating the commit-hash of the last build and the build status (successful, error, currently running)
-  Example to have a badge which links to the log file:
-  
-  `[![build status](http://ci.example.com/output.svg)](http://ci.example.com/output.log)`
+Would correspond to the file `Maths_build/Document.pdf`:
+`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]output.pdf`
+<br><br>
+Returns the compile-log which was saved as `Maths_build/_Document.log`:
+`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]output.log`
+<br><br>
+Returns a svg-badge indicating the commit-hash of the last build and the build status (successful, error, currently running):
+`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]output.svg` ![badge example](example_badge.svg)
+<br><br>
+Example for a badge which links to the log file:<br>
+`[![build status](http://ci.example.com/output.svg)](http://ci.example.com/output.log)`
 
 ## As a GitHub webhook
 
