@@ -4,7 +4,7 @@ from urlparse import urlparse, parse_qs
 from threading import Thread
 import os, time, subprocess, json, time, hmac, hashlib, re, yaml
 
-OUTPUT_DIR = os.environ.get('OUTPUT_DIR', "_build")
+OUTPUT_SUFFIX = os.environ.get('OUTPUT_DIR', "_build")
 SECRET = os.environ['SECRET']
 
 compileThread = 0
@@ -15,22 +15,31 @@ def log(s):
 	# 	logFile.write(s+"\n")
 	pass
 
+def parseRef(ref):
+	if ref == "latest":
+		return "1f31488cca82ad562eb9ef7e3e85041ddd29a8ff"
+	else: 
+		return ref
 
 def getConfig(proj):
 	with open(proj+"/.ci.yml", "r") as ymlfile:
 		return yaml.load(ymlfile)
 
 
-def updateStatus(proj, file, msg,ref):
-	with open( proj+OUTPUT_DIR+"/_"+file , "w") as f:
+def updateStatus(ref, proj, file, msg):
+	with open( getBuildPath(proj, ref)+"/_"+file , "w") as f:
 		f.write(msg+":"+ref);
 
-def getStatus(proj, file):
+def getBuildPath(proj, ref):
+	return proj+OUTPUT_SUFFIX+"/"+parseRef(ref)
+
+
+def getStatus(ref, proj, file):
 	lastRef = ""
 	status = False
 
 	try:
-		infoFile = open(proj+OUTPUT_DIR+"/_"+file, 'r')
+		infoFile = open(getBuildPath(proj, ref)+"/_"+file, 'r')
 		try:
 			d = infoFile.read().split(":")
 			status = d[0]
@@ -59,7 +68,7 @@ def updateGit(proj, ref):
 
 	return (successful, lastLog)
 
-def compileLatex(proj, file):
+def compileLatex(proj, ref, file):
 	lastLog = ""
 	successful = True
 
@@ -67,7 +76,7 @@ def compileLatex(proj, file):
 		"-interaction=nonstopmode",
 		# "-gg",
 		"-file-line-error",
-		"-jobname="+proj+OUTPUT_DIR+"/"+file,
+		"-jobname="+getBuildPath(proj, ref)+"/"+file,
 		"-pdf", proj+"/"+file+".tex"]
 
 	try:
@@ -91,14 +100,17 @@ compileLang = dict(
 def compile(lang, ref, proj, file):
 	log(">>> Started: "+time.strftime("%c"))
 	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
-	updateStatus(proj, file, "RUN",ref)
+
+	if not os.path.exists(getBuildPath(proj, ref)):
+		os.makedirs(getBuildPath(proj, ref))
+	updateStatus(ref, proj, file, "RUN")
 	successful = True
 
 	successful, lastLogGit = updateGit(proj, ref)
 	lastLog += lastLogGit
 
 	if successful:
-		successful, lastLogCompile = compileLang["latex"](proj, file)
+		successful, lastLogCompile = compileLang["latex"](proj, ref, file)
 		lastLog += lastLogCompile
 	else:
 		lastLog += "not compiling" + "\n"
@@ -106,10 +118,10 @@ def compile(lang, ref, proj, file):
 	log(">>> Finished "+ref)
 	lastLog += ">>> Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
-	with open(proj+OUTPUT_DIR+"/_"+file+".log", 'w') as lastLogFile:
+	with open(getBuildPath(proj, ref)+"/_"+file+".log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)
 
-	updateStatus(proj, file, "OK" if successful else "ERROR",ref)
+	updateStatus(ref, proj, file, "OK" if successful else "ERROR")
 
 
 def start_compile(lang, ref, proj, file):
@@ -125,7 +137,7 @@ def start_compile(lang, ref, proj, file):
 
 
 class Handler(BaseHTTPRequestHandler):
-	def _send(self, status, data, headers = []):
+	def _send(self, status, data = "", headers = []):
 		if not data and status == 404:
 			data = "Not Found"
 
@@ -161,7 +173,7 @@ class Handler(BaseHTTPRequestHandler):
 					status, message = start_compile(lang, query["ref"][0], project, main)
 				elif file == "output.pdf":
 					try:
-						f = open(project+OUTPUT_DIR+"/"+main+".pdf" , "rb")
+						f = open(getBuildPath(project, "latest")+"/"+main+".pdf" , "rb")
 						try:
 							self._send(200, f.read(), [("Content-type", "application/pdf")]);
 						finally:
@@ -172,7 +184,7 @@ class Handler(BaseHTTPRequestHandler):
 
 				elif file == "output.log":
 					try:
-						f = open(project+OUTPUT_DIR+"/_"+main+".log" , "r")
+						f = open(getBuildPath(project, "latest")+"/_"+main+".log" , "r")
 						try:
 							self._send(200, f.read(), [("Content-type", "text/plain")]);
 						finally:
@@ -182,7 +194,7 @@ class Handler(BaseHTTPRequestHandler):
 					return
 
 				elif file == "output.svg":
-					buildStatus, lastRef = getStatus(project, main)
+					buildStatus, lastRef = getStatus("latest", project, main)
 
 					if buildStatus == "OK":
 						buildStatus = "#4c1"
