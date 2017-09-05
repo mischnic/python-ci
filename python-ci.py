@@ -206,6 +206,16 @@ class Handler(BaseHTTPRequestHandler):
 		self.end_headers()
 		self.wfile.write(data)
 
+	def _sendFile(self, path, headers, binary = False):
+		try:
+			f = open(path, "rb" if binary else "r")
+			try:
+				self._send(200, f.read(), headers)
+			finally:
+				f.close()
+		except IOError:
+			self._send(404)
+
 
 	def do_GET(self):
 		global compileThread
@@ -229,39 +239,18 @@ class Handler(BaseHTTPRequestHandler):
 				if fileName == "build":
 					status, message = startCompile(lang, ref, project, main)
 				elif fileName == "output.pdf":
-					try:
-						f = open(getBuildPath(project, ref)+"/"+main+".pdf" , "rb")
-						try:
-							self._send(200, f.read(), [("Content-type", "application/pdf")])
-						finally:
-							f.close()
-					except IOError:
-						self._send(404)
+					self._sendFile(getBuildPath(project, ref)+"/"+main+".pdf", [("Content-type", "application/pdf")], True)
 					return
 
 				elif fileName == "output.log":
-					try:
-						f = open(getBuildPath(project, ref)+"/_"+main+".log" , "r")
-						try:
-							self._send(200, f.read(), [("Content-type", "text/plain")])
-						finally:
-							f.close()
-					except IOError:
-						self._send(404)
+					self._sendFile(getBuildPath(project, ref)+"/"+main+".log", [("Content-type", "text/plain")])
 					return
 
 				elif fileName == "output.svg":
-					try:
-						f = open(getBuildPath(project, ref)+"/_"+main+".svg" , "r")
-						try:
-							self._send(200, f.read(), [("Content-type", "image/svg+xml"),
-													("etag", ref),
-													("cache-control", "no-cache")])
-						finally:
-							f.close()
-					except IOError:
-						self._send(404)
-
+					self._sendFile(getBuildPath(project, ref)+"/_"+main+".svg",
+										[("Content-type", "image/svg+xml"),
+											("etag", ref),
+											("cache-control", "no-cache")])
 					return
 
 		self._send(status, message)
