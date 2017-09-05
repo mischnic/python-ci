@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
-import os, time, subprocess
+import os, time, subprocess, errno
 from urlparse import urlparse
 import hmac, hashlib, re, json, yaml
 
@@ -16,6 +16,17 @@ def log(s):
 	print s
 	# with open('python-ci.log', 'a') as logFile:
 	# 	logFile.write(s+"\n")
+
+
+def symlink_force(target, link_name):
+    try:
+        os.symlink(target, link_name)
+    except OSError, e:
+        if e.errno == errno.EEXIST:
+            os.remove(link_name)
+            os.symlink(target, link_name)
+        else:
+            raise e
 
 def parseRef(ref):
 	if ref == "":
@@ -156,7 +167,7 @@ def doCompile(lang, ref, proj, fileName):
 
 	updateStatus(ref, proj, fileName, "OK" if successful else "ERROR")
 
-	os.symlink(ref, getBuildPath(proj, None))
+	symlink_force(ref, getBuildPath(proj, None))
 
 
 def startCompile(lang, ref, proj, fileName):
@@ -239,7 +250,7 @@ class Handler(BaseHTTPRequestHandler):
 							f.close()
 					except IOError:
 						self._send(404)
-					
+
 					return
 
 		self._send(status, message)
