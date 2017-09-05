@@ -18,8 +18,8 @@ def log(s):
 	# 	logFile.write(s+"\n")
 
 def parseRef(ref):
-	if not ref or ref == "latest":
-		return "1f31488cca82ad562eb9ef7e3e85041ddd29a8ff"
+	if ref == "":
+		return "last"
 	else:
 		return ref
 
@@ -29,11 +29,42 @@ def getConfig(proj):
 
 
 def updateStatus(ref, proj, fileName, msg):
+	if msg == "OK":
+		color = "#4c1"
+	elif msg == "RUN":
+		color = "darkgrey"
+	else:
+		color = "red"
+
+	svg = """
+	<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
+		<linearGradient id="a" x2="0" y2="100%">
+			<stop offset="0" stop-color="#bbb" stop-opacity=".1" />
+			<stop offset="1" stop-opacity=".1" />
+		</linearGradient>
+		<rect rx="3" width="90" height="20" fill="#555" />
+		<rect rx="3" x="37" width="53" height="20" fill="{}" />
+		<path fill="{}" d="M37 0h4v20h-4z" />
+		<rect rx="3" width="90" height="20" fill="url(#a)" />
+		<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+			<text x="19.5" y="15" fill="#010101" fill-opacity=".3">built</text>
+			<text x="19.5" y="14">built</text>
+			<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
+			<text x="62.5" y="14">{}</text>
+		</g>
+	</svg>""".format(color, color, ref, ref)
+
+	with open(getBuildPath(proj, ref)+"/_"+fileName+".svg", "w") as f:
+		f.write(svg)
+
 	with open(getBuildPath(proj, ref)+"/_"+fileName, "w") as f:
 		f.write(msg+":"+ref)
 
 def getBuildPath(proj, ref):
-	return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
+	if parseRef(ref) is None:
+		return proj+OUTPUT_SUFFIX +"/"+ "last"
+	else:
+		return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
 
 
 def getStatus(ref, proj, fileName):
@@ -125,6 +156,8 @@ def doCompile(lang, ref, proj, fileName):
 
 	updateStatus(ref, proj, fileName, "OK" if successful else "ERROR")
 
+	os.symlink(ref, getBuildPath(proj, None))
+
 
 def startCompile(lang, ref, proj, fileName):
 	global compileThread
@@ -196,36 +229,17 @@ class Handler(BaseHTTPRequestHandler):
 					return
 
 				elif fileName == "output.svg":
-					buildStatus, lastRef = getStatus(ref, project, main)
-
-					if buildStatus == "OK":
-						buildStatus = "#4c1"
-					elif buildStatus == "RUN":
-						buildStatus = "darkgrey"
-					else:
-						buildStatus = "red"
-
-					svg = """
-					<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20">
-						<linearGradient id="a" x2="0" y2="100%">
-							<stop offset="0" stop-color="#bbb" stop-opacity=".1" />
-							<stop offset="1" stop-opacity=".1" />
-						</linearGradient>
-						<rect rx="3" width="90" height="20" fill="#555" />
-						<rect rx="3" x="37" width="53" height="20" fill="{}" />
-						<path fill="{}" d="M37 0h4v20h-4z" />
-						<rect rx="3" width="90" height="20" fill="url(#a)" />
-						<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-							<text x="19.5" y="15" fill="#010101" fill-opacity=".3">built</text>
-							<text x="19.5" y="14">built</text>
-							<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
-							<text x="62.5" y="14">{}</text>
-						</g>
-					</svg>""".format(buildStatus, buildStatus, lastRef, lastRef)
-
-					self._send(200, svg, [("Content-type", "image/svg+xml"),
-											("etag", lastRef),
-											("cache-control", "no-cache")])
+					try:
+						f = open(getBuildPath(project, ref)+"/_"+main+".svg" , "r")
+						try:
+							self._send(200, f.read(), [("Content-type", "image/svg+xml"),
+													("etag", ref),
+													("cache-control", "no-cache")])
+						finally:
+							f.close()
+					except IOError:
+						self._send(404)
+					
 					return
 
 		self._send(status, message)
