@@ -18,7 +18,7 @@ def log(s):
 	# 	logFile.write(s+"\n")
 
 def parseRef(ref):
-	if ref == "latest":
+	if not ref or ref == "latest":
 		return "1f31488cca82ad562eb9ef7e3e85041ddd29a8ff"
 	else:
 		return ref
@@ -141,6 +141,7 @@ class Handler(BaseHTTPRequestHandler):
 	def _send(self, status, data = "", headers = None):
 		if not data and status == 404:
 			data = "Not Found"
+		headers = headers or []
 
 		self.send_response(status)
 		for x in headers:
@@ -163,7 +164,7 @@ class Handler(BaseHTTPRequestHandler):
 		# matches: 1=Project | 2=hash or empty | 3=file or empty
 
 		if match is not None:
-			project, ref, fileName = match.group(1,2)
+			project, ref, fileName = match.group(1,2,3)
 			if os.path.isdir(project):
 				cfg = getConfig(project)
 				lang = cfg["language"].lower()
@@ -174,7 +175,7 @@ class Handler(BaseHTTPRequestHandler):
 					status, message = startCompile(lang, ref, project, main)
 				elif fileName == "output.pdf":
 					try:
-						f = open(getBuildPath(project, "latest")+"/"+main+".pdf" , "rb")
+						f = open(getBuildPath(project, ref)+"/"+main+".pdf" , "rb")
 						try:
 							self._send(200, f.read(), [("Content-type", "application/pdf")])
 						finally:
@@ -185,7 +186,7 @@ class Handler(BaseHTTPRequestHandler):
 
 				elif fileName == "output.log":
 					try:
-						f = open(getBuildPath(project, "latest")+"/_"+main+".log" , "r")
+						f = open(getBuildPath(project, ref)+"/_"+main+".log" , "r")
 						try:
 							self._send(200, f.read(), [("Content-type", "text/plain")])
 						finally:
@@ -195,7 +196,7 @@ class Handler(BaseHTTPRequestHandler):
 					return
 
 				elif fileName == "output.svg":
-					buildStatus, lastRef = getStatus("latest", project, main)
+					buildStatus, lastRef = getStatus(ref, project, main)
 
 					if buildStatus == "OK":
 						buildStatus = "#4c1"
