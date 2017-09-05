@@ -293,7 +293,8 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
 	try:
 		server = HTTPServer(('localhost', 8000), Handler)
+		print "Started server"
 		server.serve_forever()
 	except KeyboardInterrupt:
-		print '\n^C received, shutting down the web server'
+		print '\n^C received, shutting down the server'
 		server.socket.close()
