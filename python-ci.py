@@ -63,7 +63,7 @@ def updateStatus(ref, proj, fileName, msg):
 			<text x="62.5" y="15" fill="#010101" fill-opacity=".3">{}</text>
 			<text x="62.5" y="14">{}</text>
 		</g>
-	</svg>""".format(color, color, ref, ref)
+	</svg>""".format(color, color, ref[:7], ref[:7])
 
 	with open(getBuildPath(proj, ref)+"/_"+fileName+".svg", "w") as f:
 		f.write(svg)
