@@ -227,7 +227,7 @@ class Handler(BaseHTTPRequestHandler):
 		message = ""
 		status = 404
 
-		match = re.search(r"^\/([a-zA-z+-]+)(?:\/?$|(?:\/([0-9a-f]*))?\/(.*))", path)
+		match = re.search(r"^\/([a-zA-z+-]+)(?:\/?$|\/(?:([0-9a-f]*)\/)?(.*)?)", path)
 		# matches: 1=Project | 2=hash or empty | 3=file or empty
 
 		if match is not None:
@@ -238,7 +238,16 @@ class Handler(BaseHTTPRequestHandler):
 
 				main = cfg.get('main')
 
-				if fileName == "build":
+				if not ref and not fileName:
+					dirs = [entry for entry in os.listdir(project+OUTPUT_SUFFIX) if entry != "last" and os.path.isdir(project+OUTPUT_SUFFIX+"/"+entry) ]
+
+					self._send(200, json.dumps(dirs), [("Content-type", "application/json")])
+					return
+				if ref and not fileName and main:
+					self._send(200, json.dumps(["output.log", "output.svg", "output.pdf"]), [("Content-type", "application/json")])
+					return
+
+				elif fileName == "build":
 					status, message = startCompile(lang, ref, project, main)
 				else:
 					if main:
