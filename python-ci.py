@@ -51,7 +51,7 @@ def getBuildPath(proj, ref):
 		return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
 
 
-def updateStatus(ref, proj, fileName, msg, duration, errorMsg = None):
+def updateStatus(ref, proj, msg, duration, errorMsg = None):
 	if msg == "success":
 		color = "#4c1"
 	elif msg == "pending":
@@ -77,36 +77,24 @@ def updateStatus(ref, proj, fileName, msg, duration, errorMsg = None):
 		</g>
 	</svg>""".format(color, color, ref[:7], ref[:7])
 
-	with open(getBuildPath(proj, ref)+"/_"+fileName+".svg", "w") as f:
+	with open(getBuildPath(proj, ref)+"/.status.svg", "w") as f:
 		f.write(svg)
 
-	with open(getBuildPath(proj, ref)+"/_"+fileName, "w") as f:
-		f.write(msg+":"+ref+":"+duration)
+	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
+		f.write(json.dumps({
+				"status": msg,
+				"ref": ref,
+				"errorMsg": errorMsg,
+				"duration": duration
+			}))
 
 	if TOKEN:
 		gh.setStatus(proj, ref, msg, DOMAIN+"/"+proj+"/"+ref+"/output.log", errorMsg)
 
 
-def getStatus(ref, proj, fileName):
-	lastRef = ""
-	status = False
-	duration = -1
-
-	try:
-		infoFile = open(getBuildPath(proj, ref)+"/_"+fileName, 'r')
-		try:
-			d = infoFile.read().split(":")
-			status = d[0]
-			lastRef = d[1][:7]
-			duration = d[2]
-		finally:
-			infoFile.close()
-	except IOError:
-		lastRef = "-"
-
-	return (status, lastRef, duration)
-
-
+def getStatus(ref, proj):
+	with open(getBuildPath(proj, ref)+"/.status.json", "r") as f:
+		return json.load(f)
 
 
 def updateGit(proj, ref):
@@ -158,7 +146,7 @@ def doCompile(lang, ref, proj, fileName):
 
 	if not os.path.exists(getBuildPath(proj, ref)):
 		os.makedirs(getBuildPath(proj, ref))
-	updateStatus(ref, proj, fileName, "pending")
+	updateStatus(ref, proj, "pending", time.time())
 	successful = True
 
 	successfulGit, lastLogGit = updateGit(proj, ref)
@@ -175,10 +163,10 @@ def doCompile(lang, ref, proj, fileName):
 	log(">>> Finished "+ref)
 	lastLog += ">>> Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
-	with open(getBuildPath(proj, ref)+"/_"+fileName+".log", 'w') as lastLogFile:
+	with open(getBuildPath(proj, ref)+"/.log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)
 
-	updateStatus(ref, proj, fileName, "success" if successful else "error", time.time() - startTime,
+	updateStatus(ref, proj, "success" if successful else "error", time.time() - timeStart,
 		"Git stage failed" if not successfulGit else
 			"Compile stage failed" if not successfulCompile else None)
 
@@ -243,12 +231,10 @@ class Handler(BaseHTTPRequestHandler):
 
 					data = []
 					for ref in dirs:
-						data.append(dict(
-							commit= gh.getCommitDetails(project, dirs)),
-							build= dict(
-								status = getStatus(project, ref, main)
-							)
-						)
+						data.append({
+							"commit": gh.getCommitDetails(project, ref),
+							"build": getStatus(ref, project)
+						})
 
 					self._send(200, json.dumps(data), [("Content-type", "application/json")])
 					return
@@ -266,11 +252,11 @@ class Handler(BaseHTTPRequestHandler):
 							return
 
 						elif fileName == "log":
-							self._sendFile(getBuildPath(project, ref)+"/"+main+".log", [("Content-type", "text/plain")])
+							self._sendFile(getBuildPath(project, ref)+"/.log", [("Content-type", "text/plain")])
 							return
 
 						elif fileName == "svg":
-							self._sendFile(getBuildPath(project, ref)+"/_"+main+".svg",
+							self._sendFile(getBuildPath(project, ref)+"/.status.svg",
 												[("Content-type", "image/svg+xml"),
 													("etag", ref),
 													("cache-control", "no-cache")])
@@ -315,7 +301,7 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
 	try:
-		server = HTTPServer(('localhost', 8000), Handler)
+		server = HTTPServer(('', 8000), Handler)
 		print "Started server"
 		server.serve_forever()
 	except KeyboardInterrupt:
