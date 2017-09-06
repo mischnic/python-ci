@@ -243,23 +243,24 @@ class Handler(BaseHTTPRequestHandler):
 
 					self._send(200, json.dumps(gh.getCommitDetails(project, dirs)), [("Content-type", "application/json")])
 					return
-				if ref and not fileName and main:
-					self._send(200, json.dumps(["output.log", "output.svg", "output.pdf"]), [("Content-type", "application/json")])
+
+				elif ref and not fileName and main:
+					self._send(200, json.dumps(["log", "svg", "pdf"]), [("Content-type", "application/json")])
 					return
 
-				elif fileName == "build":
+				elif ref and fileName == "build":
 					status, message = startCompile(lang, ref, project, main)
 				else:
 					if main:
-						if fileName == "output.pdf":
+						if fileName == "pdf":
 							self._sendFile(getBuildPath(project, ref)+"/"+main+".pdf", [("Content-type", "application/pdf")], True)
 							return
 
-						elif fileName == "output.log":
+						elif fileName == "log":
 							self._sendFile(getBuildPath(project, ref)+"/"+main+".log", [("Content-type", "text/plain")])
 							return
 
-						elif fileName == "output.svg":
+						elif fileName == "svg":
 							self._sendFile(getBuildPath(project, ref)+"/_"+main+".svg",
 												[("Content-type", "image/svg+xml"),
 													("etag", ref),

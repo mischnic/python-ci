@@ -50,16 +50,16 @@ GET request alternative to a GitHub webhook:
 The commit-hashes in the following URLs are **optional**:
 
 Would correspond to the file `Maths_build/Document.pdf`:
-`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]output.pdf`
+`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]pdf`
 <br><br>
 Returns the compile-log which was saved as `Maths_build/_Document.log`:
-`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]output.log`
+`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]log`
 <br><br>
 Returns a svg-badge indicating the commit-hash of the last build and the build status (successful, error, currently running):
-`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]output.svg` ![badge example](example_badge.svg)
+`http://ci.example.com/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]svg` ![badge example](example_badge.svg)
 <br><br>
 Example for a badge which links to the log file:<br>
-`[![build status](http://ci.example.com/output.svg)](http://ci.example.com/output.log)`
+`[![build status](http://ci.example.com/svg)](http://ci.example.com/log)`
 
 ## As a GitHub webhook
 
