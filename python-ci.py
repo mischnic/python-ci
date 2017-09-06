@@ -44,11 +44,17 @@ def getConfig(proj):
 	with open(proj+"/.ci.yml", "r") as ymlfile:
 		return yaml.load(ymlfile)
 
+def getBuildPath(proj, ref):
+	if parseRef(ref) is None:
+		return proj+OUTPUT_SUFFIX +"/"+ "last"
+	else:
+		return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
 
-def updateStatus(ref, proj, fileName, msg, errorMsg = None):
-	if msg == "OK":
+
+def updateStatus(ref, proj, fileName, msg, duration, errorMsg = None):
+	if msg == "success":
 		color = "#4c1"
-	elif msg == "RUN":
+	elif msg == "pending":
 		color = "darkgrey"
 	else:
 		color = "red"
@@ -75,24 +81,16 @@ def updateStatus(ref, proj, fileName, msg, errorMsg = None):
 		f.write(svg)
 
 	with open(getBuildPath(proj, ref)+"/_"+fileName, "w") as f:
-		f.write(msg+":"+ref)
+		f.write(msg+":"+ref+":"+duration)
 
 	if TOKEN:
-		gh.setStatus(proj, ref,
-				"success" if msg == "OK" else "pending" if msg == "RUN" else "error",
-				DOMAIN+"/"+proj+"/"+ref+"/output.log", errorMsg)
-
-
-def getBuildPath(proj, ref):
-	if parseRef(ref) is None:
-		return proj+OUTPUT_SUFFIX +"/"+ "last"
-	else:
-		return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
+		gh.setStatus(proj, ref, msg, DOMAIN+"/"+proj+"/"+ref+"/output.log", errorMsg)
 
 
 def getStatus(ref, proj, fileName):
 	lastRef = ""
 	status = False
+	duration = -1
 
 	try:
 		infoFile = open(getBuildPath(proj, ref)+"/_"+fileName, 'r')
@@ -100,12 +98,13 @@ def getStatus(ref, proj, fileName):
 			d = infoFile.read().split(":")
 			status = d[0]
 			lastRef = d[1][:7]
+			duration = d[2]
 		finally:
 			infoFile.close()
 	except IOError:
 		lastRef = "-"
 
-	return (status, lastRef)
+	return (status, lastRef, duration)
 
 
 
@@ -153,12 +152,13 @@ compileLang = dict(
 
 
 def doCompile(lang, ref, proj, fileName):
+	timeStart = time.time()
 	log(">>> Started: "+time.strftime("%c"))
 	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
 
 	if not os.path.exists(getBuildPath(proj, ref)):
 		os.makedirs(getBuildPath(proj, ref))
-	updateStatus(ref, proj, fileName, "RUN")
+	updateStatus(ref, proj, fileName, "pending")
 	successful = True
 
 	successfulGit, lastLogGit = updateGit(proj, ref)
@@ -178,7 +178,7 @@ def doCompile(lang, ref, proj, fileName):
 	with open(getBuildPath(proj, ref)+"/_"+fileName+".log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)
 
-	updateStatus(ref, proj, fileName, "OK" if successful else "ERROR",
+	updateStatus(ref, proj, fileName, "success" if successful else "error", time.time() - startTime,
 		"Git stage failed" if not successfulGit else
 			"Compile stage failed" if not successfulCompile else None)
 
@@ -241,7 +241,16 @@ class Handler(BaseHTTPRequestHandler):
 				if not ref and not fileName:
 					dirs = [entry for entry in os.listdir(project+OUTPUT_SUFFIX) if entry != "last" and os.path.isdir(project+OUTPUT_SUFFIX+"/"+entry) ]
 
-					self._send(200, json.dumps(gh.getCommitDetails(project, dirs)), [("Content-type", "application/json")])
+					data = []
+					for ref in dirs:
+						data.append(dict(
+							commit= gh.getCommitDetails(project, dirs)),
+							build= dict(
+								status = getStatus(project, ref, main)
+							)
+						)
+
+					self._send(200, json.dumps(data), [("Content-type", "application/json")])
 					return
 
 				elif ref and not fileName and main:

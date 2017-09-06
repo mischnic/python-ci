@@ -22,12 +22,15 @@ def getCommit(repo, ref):
 		cache[repo][ref] = getRepo(repo).get_commit(ref)
 	return cache[repo][ref]
 
-def getCommitDetails(repo, refs):
-	new = []
-	for ref in refs:
-		c = getCommit(repo, ref).commit
-		new.append(dict(ref= ref, date=unix_time_millis(c.committer.date), url=c.html_url))
-	return new
+def getCommitDetails(repo, ref):
+	c = getCommit(repo, ref).commit
+	committer = c.committer
+	return dict(
+		author= committer.name,
+		ref= ref,
+		date=unix_time_millis(committer.date),
+		url=c.html_url
+	)
 
 def setStatus(repo, ref, status, url, desc = github.GithubObject.NotSet):
 	desc = github.GithubObject.NotSet if desc is None else desc
