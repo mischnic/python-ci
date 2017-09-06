@@ -241,7 +241,7 @@ class Handler(BaseHTTPRequestHandler):
 				if not ref and not fileName:
 					dirs = [entry for entry in os.listdir(project+OUTPUT_SUFFIX) if entry != "last" and os.path.isdir(project+OUTPUT_SUFFIX+"/"+entry) ]
 
-					self._send(200, json.dumps(dirs), [("Content-type", "application/json")])
+					self._send(200, json.dumps(gh.getCommitDetails(project, dirs)), [("Content-type", "application/json")])
 					return
 				if ref and not fileName and main:
 					self._send(200, json.dumps(["output.log", "output.svg", "output.pdf"]), [("Content-type", "application/json")])
