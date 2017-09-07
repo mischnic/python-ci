@@ -325,7 +325,7 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
 	try:
-		server = HTTPServer(('', 8000), Handler)
+		server = HTTPServer(('localhost', 8000), Handler)
 		print "Started server"
 		server.serve_forever()
 	except KeyboardInterrupt:
