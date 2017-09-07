@@ -40,10 +40,10 @@ def parseRef(ref):
 	else:
 		return ref
 
-def getConfig(proj):
+def loadJSON(fileName):
 	data = None
 	try:
-		f = open(proj+"/.ci.json", "r")
+		f = open(fileName, "r")
 		try:
 			data = json.load(f)
 		finally:
@@ -54,6 +54,9 @@ def getConfig(proj):
 		pass
 
 	return data
+
+def getConfig(proj):
+	return loadJSON(proj+"/.ci.json")
 
 def getBuildPath(proj, ref):
 	if parseRef(ref) is None:
@@ -105,9 +108,7 @@ def updateStatus(ref, proj, msg, (start, duration), errorMsg = None):
 
 
 def getStatus(ref, proj):
-	with open(getBuildPath(proj, ref)+"/.status.json", "r") as f:
-		return json.load(f)
-
+	return loadJSON(getBuildPath(proj, ref)+"/.status.json")
 
 def updateGit(proj, ref):
 	lastLog = ""
