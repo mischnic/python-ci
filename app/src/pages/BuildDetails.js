@@ -87,7 +87,7 @@ class BuildDetails extends React.Component {
 			.then(res => res.text())
 			.then(() => {
 					this.setState({rebuilding: true});
-					this.rebuildInterval= setInterval(() => checkStatus(), 700);
+					this.rebuildInterval= setInterval(() => checkStatus(), 1000);
 				}
 				, console.error);
 			// .then(res => this.setState(), () => this.setState());
