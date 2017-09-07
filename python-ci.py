@@ -41,8 +41,19 @@ def parseRef(ref):
 		return ref
 
 def getConfig(proj):
-	with open(proj+"/.ci.json", "r") as ymlfile:
-		return json.load(ymlfile)
+	data = None
+	try:
+		f = open(proj+"/.ci.json", "r")
+		try:
+			data = json.load(f)
+		finally:
+			f.close()
+	except IOError:
+		pass
+	except ValueError:
+		pass
+
+	return data
 
 def getBuildPath(proj, ref):
 	if parseRef(ref) is None:
@@ -140,7 +151,7 @@ compileLang = dict(
 )
 
 
-def doCompile(lang, ref, proj, fileName):
+def doCompile(proj, ref):
 	timeStart = time.time()
 	log(">>> Started: "+time.strftime("%c"))
 	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
@@ -155,11 +166,20 @@ def doCompile(lang, ref, proj, fileName):
 	successful = successfulGit
 
 	if successful:
-		successfulCompile, lastLogCompile = compileLang[lang](proj, ref, fileName)
-		lastLog += lastLogCompile
-		successful = successfulCompile
-	else:
-		lastLog += "not compiling" + "\n"
+		successfulCfg = True
+		cfg = getConfig(proj)
+		lang = cfg.get("lang", None)
+		main = cfg.get("main", None)
+		if not lang or not main:
+			successfulCfg = False
+			successful = successfulCfg
+
+		if successful:
+			successfulCompile, lastLogCompile = compileLang[lang](proj, ref, main)
+			lastLog += lastLogCompile
+			successful = successfulCompile
+		else:
+			lastLog += "not compiling" + "\n"
 
 	log(">>> Finished "+ref)
 	lastLog += ">>> Finished: "+time.strftime("%X")+" "+ref  + "\n"
@@ -169,18 +189,19 @@ def doCompile(lang, ref, proj, fileName):
 
 	updateStatus(ref, proj, "success" if successful else "error", (timeStart, time.time() - timeStart),
 		"Git stage failed" if not successfulGit else
-			"Compile stage failed" if not successfulCompile else None)
+		"Config error" if not successfulCfg else
+		"Compile stage failed" if not successfulCompile else None)
 
 	symlink_force(ref, getBuildPath(proj, None))
 
 
-def startCompile(lang, ref, proj, fileName):
+def startCompile(proj, ref):
 	global compileThread
 	# pylint: disable=no-member
 	if compileThread and compileThread.isAlive():
 		return (503, "Currently compiling")
 	else:
-		compileThread =	Thread(target=doCompile, args=(lang, ref, proj, fileName))
+		compileThread =	Thread(target=doCompile, args=(proj, ref))
 		compileThread.start()
 		return (200, "Compiling Started")
 
@@ -223,9 +244,8 @@ class Handler(BaseHTTPRequestHandler):
 			project, ref, fileName = match.group(1,2,3)
 			if os.path.isdir(project):
 				cfg = getConfig(project)
-				lang = cfg["language"].lower()
 
-				main = cfg.get('main')
+				main = cfg.get('main') if cfg else None
 
 				if not ref and not fileName:
 					dirs = [entry for entry in os.listdir(project+OUTPUT_SUFFIX) if entry != "last" and os.path.isdir(project+OUTPUT_SUFFIX+"/"+entry) ]
@@ -245,7 +265,7 @@ class Handler(BaseHTTPRequestHandler):
 					return
 
 				elif ref and fileName == "build":
-					status, message = startCompile(lang, ref, project, main)
+					status, message = startCompile(project, ref)
 				else:
 					if main:
 						if fileName == "pdf":
@@ -275,11 +295,6 @@ class Handler(BaseHTTPRequestHandler):
 		output = "Error"
 		status = 200
 
-		cfg = getConfig(project)
-		lang = cfg["language"].lower()
-
-		main = cfg.get('main')
-
 		if SECRET and SECRET != "<<Github Webhook secret>>":
 			if signature_func == "sha1":
 				mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
@@ -290,7 +305,7 @@ class Handler(BaseHTTPRequestHandler):
 		if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
 			data = json.loads(post_data)
 			print data['head_commit']['id']+":\n"+data['head_commit']['message']
-			status, output = startCompile(lang, data['head_commit']['id'], project, main)
+			status, output = startCompile(project, data['head_commit']['id'])
 
 
 		self._send(status, output)
