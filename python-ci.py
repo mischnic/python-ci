@@ -89,7 +89,7 @@ def updateStatus(ref, proj, msg, duration, errorMsg = None):
 			}))
 
 	if TOKEN:
-		gh.setStatus(proj, ref, msg, DOMAIN+"/"+proj+"/"+ref+"/output.log", errorMsg)
+		gh.setStatus(proj, ref, msg, DOMAIN+"/"+proj+"/"+ref, errorMsg)
 
 
 def getStatus(ref, proj):
