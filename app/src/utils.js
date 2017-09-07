@@ -1,8 +1,14 @@
 import {getJWT, logout} from "./auth.js";
 
+function pad(n, width, z) {
+	z = z || "0";
+	n = n + "";
+	return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
 function formatDate(date){
-	return date.getDate()+"."+(date.getMonth()+1)+"."+date.getFullYear()+" - " +
-		date.getHours()+":"+date.getMinutes();
+	return pad(date.getDate(), 2)+"."+pad(date.getMonth()+1, 2)+"."+date.getFullYear()+" - " +
+		pad(date.getHours(), 2)+":"+pad(date.getMinutes(), 2);
 }
 
 function humanDate(date){

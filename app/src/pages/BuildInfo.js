@@ -54,12 +54,16 @@ class BuildInfo extends React.Component {
 	}
 
 	render(){
+		const pass = {
+			data: this.state,
+			reload: () => this.reload()
+		};
 		return (
 			this.state.loading ? <span>Loading...</span> :
 			this.state.error ? <span>Error loading commits, <a onClick={()=>this.reload()}>retry</a></span> :
 			<Switch>
-				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: this.state})}/>
-				<Route path={"/:proj/:hash"} component={addProps(BuildDetails, {key: "BuildDetails", info: this.state})}/>
+				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: pass})}/>
+				<Route path={"/:proj/:hash"} component={addProps(BuildDetails, {key: "BuildDetails", info: pass})}/>
 				<Route render={() => (<p>Specify a project in the URL!</p>)}/>
 			</Switch>
 		);

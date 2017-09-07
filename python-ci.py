@@ -168,8 +168,9 @@ def doCompile(proj, ref):
 	if successful:
 		successfulCfg = True
 		cfg = getConfig(proj)
-		lang = cfg.get("lang", None)
+		lang = cfg.get("language", None)
 		main = cfg.get("main", None)
+
 		if not lang or not main:
 			successfulCfg = False
 			successful = successfulCfg
@@ -247,6 +248,7 @@ class Handler(BaseHTTPRequestHandler):
 
 				main = cfg.get('main') if cfg else None
 
+				# list of all commits
 				if not ref and not fileName:
 					dirs = [entry for entry in os.listdir(project+OUTPUT_SUFFIX) if entry != "last" and os.path.isdir(project+OUTPUT_SUFFIX+"/"+entry) ]
 
@@ -260,9 +262,14 @@ class Handler(BaseHTTPRequestHandler):
 					self._send(200, json.dumps(data), [("Content-type", "application/json")])
 					return
 
-				elif ref and not fileName and main:
-					self._send(200, json.dumps(["log", "svg", "pdf"]), [("Content-type", "application/json")])
+				# status of ref
+				elif ref and fileName == "status":
+					self._send(200, json.dumps(getStatus(ref, project)), [("Content-type", "application/json")])
 					return
+
+				# elif ref and not fileName and main:
+				# 	self._send(200, json.dumps(["log", "svg", "pdf"]), [("Content-type", "application/json")])
+				# 	return
 
 				elif ref and fileName == "build":
 					status, message = startCompile(project, ref)
@@ -304,7 +311,7 @@ class Handler(BaseHTTPRequestHandler):
 
 		if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
 			data = json.loads(post_data)
-			print data['head_commit']['id']+":\n"+data['head_commit']['message']
+			print data['head_commit']['id']+": "+data['head_commit']['message']
 			status, output = startCompile(project, data['head_commit']['id'])
 
 

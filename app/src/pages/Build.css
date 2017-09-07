@@ -4,11 +4,8 @@
 	border-radius: 5px;
 }
 
-.build {
-	padding-left: 20px;	
-}
-
 .buildStatus {
+	padding-left: 20px;	
 	background: linear-gradient(to right, lightgrey 10px, transparent 0)
 }
 
