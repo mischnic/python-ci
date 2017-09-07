@@ -32,7 +32,7 @@ class Builds extends React.Component {
 									<div> <Link to={commit.ref}>build</Link></div>
 									<div style={{display: "flex"}}>
 										<div style={{flex: "0 0 50%"}}>took {build.duration.toFixed(1)} sec</div>
-										<div style={{flex: "0 0 50%"}}>started {humanDate(build.start)}</div>
+										<div style={{flex: "0 0 50%"}}>{build.status === "pending" ? "started" : "ran"} {humanDate(build.start)}</div>
 									</div>
 								</div>
 							</li>

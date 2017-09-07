@@ -21,11 +21,12 @@ class BuildInfo extends React.Component {
 	}
 
 	componentDidMount(){
-		this.reload();
+		this.load(true);
 	}
 
-	reload(){
-		this.setState({loading: true});
+	load(inital){
+		if(inital)
+			this.setState({loading: true});
 		fetch(`/api/${this.props.match.params.proj}`)
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.json())
@@ -56,11 +57,11 @@ class BuildInfo extends React.Component {
 	render(){
 		const pass = {
 			data: this.state,
-			reload: () => this.reload()
+			reload: () => this.load()
 		};
 		return (
 			this.state.loading ? <span>Loading...</span> :
-			this.state.error ? <span>Error loading commits, <a onClick={()=>this.reload()}>retry</a></span> :
+			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load()}>retry</a></span> :
 			<Switch>
 				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: pass})}/>
 				<Route path={"/:proj/:hash"} component={addProps(BuildDetails, {key: "BuildDetails", info: pass})}/>

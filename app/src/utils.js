@@ -1,5 +1,23 @@
 import {getJWT, logout} from "./auth.js";
 
+const makeCancelable = (promise, errorFree = true) => {
+	let hasCanceled_ = false;
+
+	const wrappedPromise = new Promise((resolve, reject) => {
+		promise.then(
+			val => hasCanceled_ ? (errorFree ? resolve() : reject({isCanceled: true})) : resolve(val),
+			error => hasCanceled_ ? (errorFree ? reject() : reject({isCanceled: true})) : reject(error)
+		);
+	});
+
+	return {
+		promise: wrappedPromise,
+		cancel() {
+			hasCanceled_ = true;
+		},
+	};
+};
+
 function pad(n, width, z) {
 	z = z || "0";
 	n = n + "";
@@ -23,7 +41,7 @@ function humanDate(date){
 			return `${diffHours} hours ago`;
 		}
 	} else {
-		return `${diffHours} mins ago`;
+		return `${diffMinutes} mins ago`;
 	}
 }
 
@@ -95,4 +113,4 @@ const csv = (text, delimiter = "\t", header = true) => {
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, csv, formatDate, humanDate};
+export {api, csv, formatDate, humanDate, pad, makeCancelable};

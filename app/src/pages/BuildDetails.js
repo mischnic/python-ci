@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {formatDate, humanDate} from "../utils.js";
+import {formatDate, humanDate, makeCancelable} from "../utils.js";
 
 class BuildDetails extends React.Component {
 	constructor(props){
@@ -17,6 +17,14 @@ class BuildDetails extends React.Component {
 		};
 
 		this.rebuildInterval = null;
+		this.loadPromises = [];
+		this.loadPromises.remove = function(v){
+			v.cancel();
+			const i = this.indexOf(v);
+			if(i > -1){
+				this.splice(i, 1);
+			}
+		};
 	}
 
 	componentDidMount(){
@@ -30,6 +38,9 @@ class BuildDetails extends React.Component {
 			clearInterval(this.rebuildInterval);
 			this.rebuildInterval = null;
 		}
+		for(const p of this.loadPromises){
+			this.loadPromises.remove(p);
+		}
 	}
 
 	getURL(file){
@@ -39,7 +50,7 @@ class BuildDetails extends React.Component {
 
 	load(file){
 		this.setState({files: {[file]: {loading: true}, ...this.state.files}});
-		fetch(this.getURL(file))
+		const req = makeCancelable(fetch(this.getURL(file))
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.text())
 			.then(res => this.setState({
@@ -58,7 +69,10 @@ class BuildDetails extends React.Component {
 							},
 						...this.state.files
 						}
-					}));
+					}))
+			.then(() => this.loadPromises.remove(req)));
+
+		this.loadPromises.push(req);
 	}
 
 	rebuild(){
@@ -117,6 +131,7 @@ class BuildDetails extends React.Component {
 									<button onClick={() => this.rebuild()}>
 										<i className={`fa fa-refresh ${this.state.rebuilding ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
 									</button>
+									<button onClick={() => this.props.info.reload()}> Test</button>
 								</div>
 							</div>
 						</div>
