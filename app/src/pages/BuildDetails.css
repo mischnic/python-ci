@@ -2,10 +2,13 @@
 	margin: 0;
 }
 
-
 .buildDetails {
 	display: flex;
 	flex-direction: column;
+
+	height: calc(100% - 37px);
+	padding-top: 0.7em;
+	overflow: scroll;
 }
 
 .buildDetails > .info {
@@ -14,6 +17,7 @@
 
 .buildDetails > .files {
 	display: flex;
+	flex: 1;
 }
 
 .buildDetails > .files > *{
@@ -25,6 +29,6 @@
 }
 
 .window.log {
-	height: 300px;
 	overflow: scroll;
+	min-height: 100px;
 }

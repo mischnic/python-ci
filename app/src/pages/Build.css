@@ -23,3 +23,8 @@
 .buildStatus.pending{
 	background: linear-gradient(to right, #ffd254 10px, transparent 0)
 }
+
+.avatar {
+	height: 1em;
+	margin-right: 4px;
+}

@@ -23,13 +23,17 @@ def getCommit(repo, ref):
 	return cache[repo][ref]
 
 def getCommitDetails(repo, ref):
-	c = getCommit(repo, ref).commit
+	git_commit = getCommit(repo, ref)
+	commit = git_commit.commit
 	return {
-		"author": c.committer.name,
+		"author": {
+			"name": git_commit.committer.name,
+			"avatar_url": git_commit.committer.avatar_url
+		},
 		"ref": ref,
-		"msg": c.message,
-		"date": unix_time_millis(c.committer.date),
-		"url": c.html_url
+		"msg": commit.message,
+		"date": unix_time_millis(commit.committer.date),
+		"url": commit.html_url
 	}
 
 def setStatus(repo, ref, status, url, desc = github.GithubObject.NotSet):

@@ -62,8 +62,7 @@ class BuildDetails extends React.Component {
 					<div className="buildDetails">
 						<div className="details">
 							<div className={`window build buildStatus ${build.status}`}>
-
-								{commit.author}<br/>
+								<img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}<br/>
 								{commit.msg}<br/>
 								<a href={commit.url}>{commit.ref}</a> ({humanDate(commit.date)})<br/>
 								took {build.duration.toFixed(1)} seconds <br/>

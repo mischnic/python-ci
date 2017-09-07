@@ -15,7 +15,7 @@ class Builds extends React.Component {
 						this.props.info.commits.map( ({commit, build}) => 
 							<li key={commit.ref} className={`window build buildStatus ${build.status}`}>
 								<div style={{flex: "0 0 50%", display: "flex"}}>
-									<div style={{flex: "0 0 50%"}}>{commit.author}</div>
+									<div style={{flex: "0 0 50%"}}><img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}</div>
 									<div style={{flex: "0 0 50%"}}>{commit.msg}</div>
 								</div>
 								<div style={{flex: "0 0 17%", display: "flex", flexDirection: "column"}}>
