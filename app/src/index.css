@@ -1,0 +1,42 @@
+/*html, body, #root, #app, .main > div, .main > div > div:last-child {
+	height: 100%;
+}
+
+.main {
+	height: calc(100% - 56px );
+}*/
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+h1 {
+	margin-top: 0;
+}
+
+.main {
+	padding: 10px;
+}
+
+#app > .header {
+	margin: 0;
+	padding: 15px;
+	padding-top: 11px;
+
+	background-color: #0066CC;
+	color: white;
+
+}
+
+#app > .header > .title {
+	font-size: xx-large;
+	font-family: monospace;
+}
+
+#app > .header > .account {
+	float: right;
+	line-height: 33px;
+	cursor: pointer;
+}

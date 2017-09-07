@@ -8,3 +8,6 @@
 !python-ci.py
 !gh.py
 !start.sh.in
+!app/
+!app/**
+!.eslintrc

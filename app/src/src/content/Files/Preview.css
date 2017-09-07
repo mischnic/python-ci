@@ -1,0 +1,58 @@
+#preview {
+	width: 100%;
+	height: 100%;
+}
+
+#preview > .header{
+	color: white;
+	background-color: black;
+	margin: 0;
+	padding: 0.1em;
+	padding-left: 0.3em;
+	height: 2.3rem;
+	position: relative;
+}
+
+#preview > .header > span:first-child {
+	font-size: 2em;
+	font-weight: bold;
+}
+
+#preview > .header > span:last-child {
+	position: absolute;
+	top: 54%;
+	right: 1.1em;
+	transform: translateY(-50%);
+
+	background: white;
+	color: black;
+	padding: 0.15em 0.4em;
+	cursor: pointer;
+}
+
+#preview > .header > span:last-child{
+	background-color: #e8e8e8;
+}
+#preview > .header > span:last-child:hover{
+	background-color: #cecece;
+}
+#preview > .header > span:last-child:active{
+	background-color: #a5a5a5;
+}
+
+#preview > .contentWrapper {
+	background: inherit;
+	height: calc(100% - 2.3rem);
+}
+
+#preview > .contentWrapper > .content {
+	padding: 0 0 0.5rem 0.5rem;
+	background: inherit;
+	overflow: scroll;
+	padding-top: 0.4rem;
+	height: 100%;
+}
+
+#preview > .contentWrapper > .content > table tr:nth-child(even){
+	background-color: rgba(0,0,0,.14);
+}

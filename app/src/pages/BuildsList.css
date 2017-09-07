@@ -1,0 +1,19 @@
+.buildsList {
+	padding-left: 30px;
+}
+
+.buildsList > li{
+	display: flex;
+}
+
+.buildsList > li > div {
+	padding: 4px 0px;
+}
+
+.buildsList > li > div:nth-child(2) {
+	border-right: 1px inset #dfdfdf;
+}
+
+.buildsList > li > div:nth-child(3) {
+	margin-left: 13px;
+}

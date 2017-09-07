@@ -1,0 +1,26 @@
+{
+	"name": "app",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"react": "^15.6.1",
+		"react-dom": "^15.6.1",
+		"react-router-dom": "^4.2.2",
+		"react-scripts": "1.0.13"
+	},
+	"scripts": {
+		"start": "react-scripts start",
+		"build": "react-scripts build",
+		"test": "react-scripts test --env=jsdom",
+		"eject": "react-scripts eject"
+	},
+	"proxy": {
+		"/api": {
+			"pathRewrite": {
+				"^/api": "/"
+			},
+			"target": "http://192.168.0.15:8000/",
+			"secure": false
+		}
+	}
+}

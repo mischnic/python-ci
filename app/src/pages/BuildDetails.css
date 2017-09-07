@@ -1,0 +1,30 @@
+.buildDetails pre {
+	margin: 0;
+}
+
+
+.buildDetails {
+	display: flex;
+	flex-direction: column;
+}
+
+.buildDetails > .info {
+	display: flex;
+}
+
+.buildDetails > .files {
+	display: flex;
+}
+
+.buildDetails > .files > *{
+	margin-top: 0.7rem;
+}
+
+.buildDetails > .files > :first-child {
+	margin-right: 0.7rem;
+}
+
+.window.log {
+	height: 300px;
+	overflow: scroll;
+}

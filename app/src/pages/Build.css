@@ -1,0 +1,25 @@
+.window {
+	padding: 15px;
+	border: 1px solid #dfdfdf;
+	border-radius: 5px;
+}
+
+.build {
+	padding-left: 20px;	
+}
+
+.buildStatus {
+	background: linear-gradient(to right, lightgrey 10px, transparent 0)
+}
+
+.buildStatus.success{
+	background: linear-gradient(to right, #0ea70e 10px, transparent 0)
+}
+
+.buildStatus.error{
+	background: linear-gradient(to right, #f44336 10px, transparent 0)
+}
+
+.buildStatus.pending{
+	background: linear-gradient(to right, #ffd254 10px, transparent 0)
+}

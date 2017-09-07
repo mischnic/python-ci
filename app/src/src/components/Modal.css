@@ -1,0 +1,44 @@
+.modal > .header{
+	color: white;
+	background-color: black;
+	margin: 0;
+	padding: 0.1em;
+	padding-left: 0.3em;
+	height: 2.3rem;
+	position: relative;
+}
+
+.modal > .header > span:first-child {
+	font-size: 2em;
+	font-weight: bold;
+}
+
+.modal > .content {
+	padding: 0.5rem;
+	padding-top: 0.8rem;
+	background: inherit;
+	overflow: scroll;
+	height: 100%;
+}
+
+.modal > .actions {
+	padding: 1rem;
+	text-align: right;
+}
+
+.modal > .actions > span{
+    padding: 0.4em 0.6em;
+	margin: 0 0.4em;
+	border-radius: 0.4em;
+	cursor: pointer;
+}
+
+.modal > .actions > span{
+	background-color: #e8e8e8;
+}
+.modal > .actions > span:hover{
+	background-color: #cecece;
+}
+.modal > .actions > span:active{
+	background-color: #a5a5a5;
+}
