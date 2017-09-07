@@ -1,3 +1,4 @@
+import React from "react";
 import {getJWT, logout} from "./auth.js";
 
 const makeCancelable = (promise, errorFree = true) => {
@@ -89,21 +90,10 @@ const api = (comp, url, settings={}, type = "json") => {
 	});
 };
 
-const csv = (text, delimiter = "\t", header = true) => {
-	let lines = text.split("\n");
-	let data = {};
-	let lineParser = l => l.split(delimiter);
-
-	if(header){
-		data.header = lineParser(lines[0]);
-		lines.shift();
-	} else {
-		data.header = null;
-	}
-
-	data.body = lines.map(lineParser);
-	return data;
-};
+const Loading = () =>
+	<div style={{display:"flex",justifyContent:"center",alignItems:"center", opacity: "0.07", fontSmoothing: "none"}}>
+		<i className="fa fa-cog fa-4x fa-spin"/>
+	</div>;
 
 
 // fetch("/api/files/rename", {
@@ -113,4 +103,4 @@ const csv = (text, delimiter = "\t", header = true) => {
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, csv, formatDate, humanDate, pad, makeCancelable};
+export {api, formatDate, humanDate, pad, makeCancelable, Loading};

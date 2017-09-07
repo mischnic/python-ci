@@ -4,6 +4,7 @@ import "./BuildDetails.css";
 import "./Build.css";
 
 import {formatDate, humanDate, makeCancelable} from "../utils.js";
+import {Loading} from "../utils.js";
 
 class BuildDetails extends React.Component {
 	constructor(props){
@@ -143,7 +144,7 @@ class BuildDetails extends React.Component {
 								{
 									(this.state.files.log && this.state.files.log.content) ?
 									<pre><code>{this.state.files.log.content}</code></pre>
-									: "Loading logfile ..."
+									: <Loading/>
 								}
 							</div>
 						</div>

@@ -5,6 +5,8 @@ import BuildDetails from "./BuildDetails.js";
 
 import {Route, Switch} from "react-router-dom";
 
+import {Loading} from "../utils.js";
+
 const addProps = (Component, props) => (p) => (
 	<Component {...props} {...p}>{p.children}</Component>
 );
@@ -60,7 +62,7 @@ class BuildInfo extends React.Component {
 			reload: () => this.load()
 		};
 		return (
-			this.state.loading ? <span>Loading...</span> :
+			this.state.loading ? <Loading/> :
 			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load()}>retry</a></span> :
 			<Switch>
 				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: pass})}/>
