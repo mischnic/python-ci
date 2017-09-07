@@ -23,19 +23,20 @@ function getUsername(){
 }
 
 function isLoggedIn(check, comp){
-	if(check){
-		api(comp, "/api/", {}, "text")
-			.then((res)=>{
-				if(res === "ok"){
-					return Promise.resolve();
-				}
-			}, (res)=>{
-				if(res.status === 401){
-					logout();
-				}
-			});
-	}
-	return localStorage.getItem("jwt");
+	return true;
+	// if(check){
+	// 	api(comp, "/api/", {}, "text")
+	// 		.then((res)=>{
+	// 			if(res === "ok"){
+	// 				return Promise.resolve();
+	// 			}
+	// 		}, (res)=>{
+	// 			if(res.status === 401){
+	// 				logout();
+	// 			}
+	// 		});
+	// }
+	// return localStorage.getItem("jwt");
 }
 
 function getJWT(){
