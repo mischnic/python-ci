@@ -3,7 +3,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 import os, time, subprocess, errno
 from urlparse import urlparse
-import hmac, hashlib, re, json, yaml
+import hmac, hashlib, re, json
 
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
@@ -41,8 +41,8 @@ def parseRef(ref):
 		return ref
 
 def getConfig(proj):
-	with open(proj+"/.ci.yml", "r") as ymlfile:
-		return yaml.load(ymlfile)
+	with open(proj+"/.ci.json", "r") as ymlfile:
+		return json.load(ymlfile)
 
 def getBuildPath(proj, ref):
 	if parseRef(ref) is None:

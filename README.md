@@ -22,7 +22,7 @@ You need the following file hierarchy:
 	 |- README.md
 	 |- ...
 	 |- Maths
-	 |  - .ci.yml
+	 |  - .ci.json
 	 |  - Document.tex
 	  - Maths_build
 	    |- Document.pdf
@@ -30,10 +30,12 @@ You need the following file hierarchy:
 	     - ...
 		 
 
-`.ci.yml` is the project's configuration file:
+`.ci.json` is the project's configuration file:
 
-	language: latex
-	main: Document
+	{
+		"language": "latex",
+		"main": "Document"
+	}
 
 Currently implemented languages:
 - `git`: Update repostory only
