@@ -1,7 +1,7 @@
 import {getJWT, logout} from "./auth.js";
 
 function formatDate(date){
-	return date.getFullYear()+"."+(date.getMonth()+1)+"."+date.getDate()+" - " +
+	return date.getDate()+"."+(date.getMonth()+1)+"."+date.getFullYear()+" - " +
 		date.getHours()+":"+date.getMinutes();
 }
 

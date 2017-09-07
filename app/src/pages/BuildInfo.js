@@ -42,7 +42,7 @@ class BuildInfo extends React.Component {
 									build
 								}
 							)).sort(
-							(a,b) => a.commit.date > b.commit.date)
+							(a,b) => a.commit.date < b.commit.date)
 				}),() => this.setState(
 				{
 					loading: false,

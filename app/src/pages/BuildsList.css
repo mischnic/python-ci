@@ -4,6 +4,7 @@
 
 .buildsList > li{
 	display: flex;
+	margin-bottom: 8px;
 }
 
 .buildsList > li > div {
