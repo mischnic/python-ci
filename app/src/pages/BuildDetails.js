@@ -127,11 +127,10 @@ class BuildDetails extends React.Component {
 									<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
 									took {build.duration.toFixed(1)} seconds <br/>
 								</div>
-								<div style={{flex: "1 1 10%"}}>
-									<button onClick={() => this.rebuild()}>
+								<div style={{flex: "1 1 10%", textAlign: "right"}}>
+									<a className="button" onClick={() => this.rebuild()}>
 										<i className={`fa fa-refresh ${this.state.rebuilding ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
-									</button>
-									<button onClick={() => this.props.info.reload()}> Test</button>
+									</a>
 								</div>
 							</div>
 						</div>

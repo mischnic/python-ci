@@ -11,15 +11,34 @@ html, body, #root, #app, .main > div {
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
 }
 
 h1 {
 	margin-top: 0;
 	margin-bottom: 0;
 }
+
+
+.button {
+	background-color: #eee;
+	padding: 0.3em 0.5em;
+	border-radius: 5px;
+	border: 1px solid #dfdfdf;
+	cursor: pointer;
+}
+
+.button:hover {
+	background-color: #ddd;
+}
+
+.button:active {
+	background-color: #ccc;
+	border-color: #ccc;
+}
+
 
 .main {
 	padding: 10px;
