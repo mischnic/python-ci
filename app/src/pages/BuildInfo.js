@@ -33,13 +33,16 @@ class BuildInfo extends React.Component {
 				{
 					loading: false,
 					commits: res.map(
-							({commit: {date, ...rCommit}, build}) => (
+							({commit: {date, ...rCommit}, build: {start, ...rBuild} }) => (
 								{	
 									commit: {
 										date: new Date(date),
 										...rCommit
 									},
-									build
+									build: {
+										start: new Date(start),
+										...rBuild
+									}
 								}
 							)).sort(
 							(a,b) => a.commit.date < b.commit.date)

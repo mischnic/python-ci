@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {humanDate} from "../utils.js";
+import {formatDate, humanDate} from "../utils.js";
 
 class BuildDetails extends React.Component {
 	constructor(props){
@@ -65,6 +65,7 @@ class BuildDetails extends React.Component {
 								<img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}<br/>
 								{commit.msg}<br/>
 								<a href={commit.url}>{commit.ref}</a> ({humanDate(commit.date)})<br/>
+								<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
 								took {build.duration.toFixed(1)} seconds <br/>
 							</div>
 						</div>

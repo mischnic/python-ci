@@ -51,7 +51,7 @@ def getBuildPath(proj, ref):
 		return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
 
 
-def updateStatus(ref, proj, msg, duration, errorMsg = None):
+def updateStatus(ref, proj, msg, (start, duration), errorMsg = None):
 	if msg == "success":
 		color = "#4c1"
 	elif msg == "pending":
@@ -82,9 +82,10 @@ def updateStatus(ref, proj, msg, duration, errorMsg = None):
 
 	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
 		f.write(json.dumps({
-				"status": msg,
 				"ref": ref,
+				"status": msg,
 				"errorMsg": errorMsg,
+				"start": round(start*1000),
 				"duration": duration
 			}))
 
@@ -146,7 +147,7 @@ def doCompile(lang, ref, proj, fileName):
 
 	if not os.path.exists(getBuildPath(proj, ref)):
 		os.makedirs(getBuildPath(proj, ref))
-	updateStatus(ref, proj, "pending", time.time())
+	updateStatus(ref, proj, "pending", (timeStart, None))
 	successful = True
 
 	successfulGit, lastLogGit = updateGit(proj, ref)
@@ -166,7 +167,7 @@ def doCompile(lang, ref, proj, fileName):
 	with open(getBuildPath(proj, ref)+"/.log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)
 
-	updateStatus(ref, proj, "success" if successful else "error", time.time() - timeStart,
+	updateStatus(ref, proj, "success" if successful else "error", (timeStart, time.time() - timeStart),
 		"Git stage failed" if not successfulGit else
 			"Compile stage failed" if not successfulCompile else None)
 
