@@ -30,7 +30,6 @@ You need the following file hierarchy:
 	    |- Document.aux
 	     - ...
 (`Maths` and `Document` will serve as example names for the rest of this document)
-<br><br>
 
 `.ci.json` is the project's configuration file:
 
@@ -60,19 +59,20 @@ The main interface is served unter http://ci.example.com/Maths/
 
 GET request alternative to a GitHub webhook:
 `http://ci.example.com/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/build`
-<br><br>
+
 The commit-hashes in the following URLs are **optional** (in that case, the files from the last build are used):
 
 Would correspond to the file `Maths_build/Document.pdf`:
 `http://ci.example.com/api/Maths/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]pdf`
-<br><br>
+
 Returns the compile-log which was saved as `Maths_build/.log`:
 `http://ci.example.com/api/Maths/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]log`
-<br><br>
+
 Returns a svg-badge indicating the commit-hash of the last build and the build status (successful, error, currently running):
 `http://ci.example.com/api/Maths/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]svg` ![badge example](example_badge.svg)
-<br><br>
-Example for a badge which links to the log file:<br>
+
+Example for a badge which links to the log file:
+
 `[![build status](http://ci.example.com/api/Maths/svg)](http://ci.example.com/api/Maths/log)`
 
 ## As a GitHub webhook
