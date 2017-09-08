@@ -5,7 +5,7 @@ import "./Build.css";
 
 import {humanDate} from "../utils.js";
 
-class Builds extends React.Component {
+class BuildsList extends React.Component {
 	render(){
 		return (
 			<div>
@@ -24,14 +24,14 @@ class Builds extends React.Component {
 									<div>
 										<a target="_blank" href={commit.url}>
 											{commit.ref.substring(0,7)}
-										</a>
+										</a> <i className="fa fa-external-link"/>
 									</div>
 									<div>{humanDate(commit.date)}</div>
 								</div>
 								<div style={{flex: "0 0 33%", display: "flex", flexDirection: "column"}}>
 									<div> <Link to={commit.ref}>build</Link></div>
 									<div style={{display: "flex"}}>
-										<div style={{flex: "0 0 50%"}}>took {build.duration.toFixed(1)} sec</div>
+										{build.duration ? <div style={{flex: "0 0 50%"}}>took {build.duration.toFixed(1)} seconds</div> : null}
 										<div style={{flex: "0 0 50%"}}>{build.status === "pending" ? "started" : "ran"} {humanDate(build.start)}</div>
 									</div>
 								</div>
@@ -45,4 +45,4 @@ class Builds extends React.Component {
 		
 }
 
-export default Builds;
+export default BuildsList;

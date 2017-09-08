@@ -122,11 +122,11 @@ class BuildDetails extends React.Component {
 								<div style={{flex: "1 1 50%"}}>
 									<img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}<br/>
 									{commit.msg}<br/>
-									<a href={commit.url}>{commit.ref}</a> ({humanDate(commit.date)})<br/>
+									<a href={commit.url}>{commit.ref}</a> <i className="fa fa-external-link"/> ({humanDate(commit.date)})<br/>
 								</div>
 								<div style={{flex: "1 1 30%"}}>
 									<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
-									took {build.duration.toFixed(1)} seconds <br/>
+									{build.duration ? <span>took {build.duration.toFixed(1)} seconds</span> : null} <br/>
 								</div>
 								<div style={{flex: "1 1 10%", textAlign: "right"}}>
 									<a className="button" onClick={() => this.rebuild()}>
