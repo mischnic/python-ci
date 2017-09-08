@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildsList.css";
 import "./Build.css";
 
-import {humanDate} from "../utils.js";
+import {humanDate, formatTime} from "../utils.js";
 
 class BuildsList extends React.Component {
 	render(){
@@ -31,7 +31,7 @@ class BuildsList extends React.Component {
 								<div style={{flex: "0 0 33%", display: "flex", flexDirection: "column"}}>
 									<div> <Link to={commit.ref}>build</Link></div>
 									<div style={{display: "flex"}}>
-										{build.duration ? <div style={{flex: "0 0 50%"}}>took {build.duration.toFixed(1)} seconds</div> : null}
+										{build.duration ? <div style={{flex: "0 0 50%"}}>took {formatTime(build.duration)}</div> : null}
 										<div style={{flex: "0 0 50%"}}>{build.status === "pending" ? "started" : "ran"} {humanDate(build.start)}</div>
 									</div>
 								</div>

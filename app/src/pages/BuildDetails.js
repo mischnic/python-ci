@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {formatDate, humanDate, makeCancelable} from "../utils.js";
+import {formatDate, formatTime, humanDate, makeCancelable} from "../utils.js";
 import {Loading} from "../utils.js";
 
 class BuildDetails extends React.Component {
@@ -126,7 +126,7 @@ class BuildDetails extends React.Component {
 								</div>
 								<div style={{flex: "1 1 30%"}}>
 									<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
-									{build.duration ? <span>took {build.duration.toFixed(1)} seconds</span> : null} <br/>
+									{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
 								</div>
 								<div style={{flex: "1 1 10%", textAlign: "right"}}>
 									<a className="button" onClick={() => this.rebuild()}>

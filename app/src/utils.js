@@ -30,6 +30,16 @@ function formatDate(date){
 		pad(date.getHours(), 2)+":"+pad(date.getMinutes(), 2);
 }
 
+function formatTime(sec){
+	if(!sec){
+		return null;
+	} if(sec < 60){
+		return sec.toFixed(1)+" seconds";
+	} else {
+		return Math.floor(sec/60)+":"+Math.floor(sec%60)+(Math.floor(sec/60) === 1 ? " minute" : " minutes");
+	}
+}
+
 function humanDate(date){
 	let diff = (new Date() - date);
 	let diffMinutes = Math.floor(diff / 1000 / 60);
@@ -42,7 +52,7 @@ function humanDate(date){
 			return `${diffHours} hours ago`;
 		}
 	} else {
-		return `${diffMinutes} mins ago`;
+		return `${diffMinutes} ${diffMinutes === 1 ? "minute" : "minutes"} ago`;
 	}
 }
 
@@ -103,4 +113,4 @@ const Loading = () =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, humanDate, pad, makeCancelable, Loading};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, Loading};
