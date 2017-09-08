@@ -132,10 +132,11 @@ def compileLatex(proj, ref, fileName):
 				"-interaction=nonstopmode",
 				# "-gg",
 				"-file-line-error",
-				"-jobname=../"+getBuildPath(proj, ref)+"/"+fileName,
+				"-jobname='.build/"+ref+"/"+fileName+"'",
 				"-pdf", fileName+".tex" ]
 
 	try:
+		lastLog *= ">>> "+(" ".join(cmd))+"\n"
 		lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT) + "\n"
 
 	except subprocess.CalledProcessError as exc:
