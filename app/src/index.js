@@ -5,7 +5,7 @@ import {BrowserRouter as Router, Route, Redirect, Switch} from "react-router-dom
 import {isLoggedIn} from "./auth.js";
 
 import "./index.css";
-import registerServiceWorker from "./registerServiceWorker";
+// import registerServiceWorker from "./registerServiceWorker";
 
 import BuildInfo from "./pages/BuildInfo.js";
 
@@ -44,4 +44,4 @@ ReactDOM.render(
 		</div>
 	</Router>, document.getElementById("root"));
 
-registerServiceWorker();
+// registerServiceWorker();
