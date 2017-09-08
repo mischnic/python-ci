@@ -34,6 +34,15 @@ def symlink_force(target, link_name):
 		else:
 			raise e
 
+def copyFolderStructure(src, target):
+	for root, subFolders, _ in os.walk(src):
+		subFolders[:] = [d for d in subFolders if not d[0] == '.']
+		f = "."+root[len(src):]
+		try:
+			os.mkdir(os.path.join(target, f), 0755)
+		except OSError:
+			pass
+
 def parseRef(ref):
 	if ref == "":
 		return "last"
@@ -127,6 +136,8 @@ def updateGit(proj, ref):
 def compileLatex(proj, ref, fileName):
 	lastLog = ""
 	successful = True
+
+	copyFolderStructure(proj, getBuildPath(proj, ref))
 
 	cmd = ["latexmk",
 				"-interaction=nonstopmode",
