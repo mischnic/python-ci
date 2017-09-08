@@ -63,7 +63,7 @@ class BuildInfo extends React.Component {
 		};
 		return (
 			this.state.loading ? <Loading/> :
-			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load()}>retry</a></span> :
+			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>retry</a></span> :
 			<Switch>
 				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: pass})}/>
 				<Route path={"/:proj/:hash"} component={addProps(BuildDetails, {key: "BuildDetails", info: pass})}/>

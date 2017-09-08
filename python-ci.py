@@ -132,7 +132,7 @@ def compileLatex(proj, ref, fileName):
 				"-interaction=nonstopmode",
 				# "-gg",
 				"-file-line-error",
-				"-jobname=.build/"+ref+"/"+fileName,
+				"-outdir=../"+getBuildPath(proj, ref),
 				"-pdf", fileName+".tex" ]
 
 	try:

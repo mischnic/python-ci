@@ -31,4 +31,6 @@
 .window.log {
 	overflow: scroll;
 	min-height: 100px;
+    background-color: black;
+    color: white;
 }
