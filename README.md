@@ -101,7 +101,7 @@ By default, python-ci listens on `localhost:8000`, meaning that it will only acc
 		}
 
 		location /api {
-			rewrite api(.*) $1 break;
+			rewrite ^/api(.*) $1 break;
 			proxy_pass http://localhost:8000;
 		}
 	}
