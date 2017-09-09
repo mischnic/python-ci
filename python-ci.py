@@ -150,9 +150,13 @@ def compileLatex(proj, ref, fileName):
 		lastLog += ">>> "+(" ".join(cmd))+"\n"
 		lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT) + "\n"
 
-	except subprocess.CalledProcessError as exc:
-		lastLog += exc.output + "\n"
-		lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
+	except (subprocess.CalledProcessError, OSError) as exc:
+		print exc
+		if type(exc).__name__ == "OSError":
+			lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
+		else:
+			lastLog += exc.output + "\n"
+			lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
 		successful = False
 
 	return (successful, lastLog)
