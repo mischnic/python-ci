@@ -33,4 +33,23 @@
 	min-height: 100px;
     background-color: black;
     color: white;
+    padding: 10px;
+    padding-top: 7px;
+    padding-bottom: 0;
+}
+
+.log code > div:empty {
+    height: 9px;
+}
+
+.log .command {
+	color: lime;
+}
+
+.log .error {
+	color: red;
+}
+
+.log .warning {
+	color: yellow;
 }

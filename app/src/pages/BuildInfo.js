@@ -16,7 +16,7 @@ class BuildInfo extends React.Component {
 		super(props);
 
 		this.state = {
-			commits: [],
+			data: null,
 			loading: false,
 			error: false
 		};
@@ -32,23 +32,26 @@ class BuildInfo extends React.Component {
 		fetch(`/api/${this.props.match.params.proj}`)
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.json())
-			.then(res => this.setState(
+			.then(({list, ...r}) => this.setState(
 				{
 					loading: false,
-					commits: res.map(
-							({commit: {date, ...rCommit}, build: {start, ...rBuild} }) => (
-								{	
-									commit: {
-										date: new Date(date),
-										...rCommit
-									},
-									build: {
-										start: new Date(start),
-										...rBuild
+					data: {
+						list: list.map(
+								({commit: {date, ...rCommit}, build: {start, ...rBuild} }) => (
+									{	
+										commit: {
+											date: new Date(date),
+											...rCommit
+										},
+										build: {
+											start: new Date(start),
+											...rBuild
+										}
 									}
-								}
-							)).sort(
-							(a,b) => a.commit.date < b.commit.date)
+								)).sort(
+								(a,b) => a.commit.date < b.commit.date),
+						...r
+					}
 				}),() => this.setState(
 				{
 					loading: false,
@@ -58,11 +61,11 @@ class BuildInfo extends React.Component {
 
 	render(){
 		const pass = {
-			data: this.state,
+			data: this.state.data,
 			reload: () => this.load()
 		};
 		return (
-			this.state.loading ? <Loading/> :
+			this.state.loading || !this.state.data ? <Loading/> :
 			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>retry</a></span> :
 			<Switch>
 				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: pass})}/>

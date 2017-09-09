@@ -6,14 +6,23 @@ import "./Build.css";
 import {formatDate, formatTime, humanDate, makeCancelable} from "../utils.js";
 import {Loading} from "../utils.js";
 
+const logFormatting = {
+	latex:[
+		[">>> ", "command"],
+		[/Package [a-zA-z]+ Warning:/, "warning"],
+		[/^\(([a-zA-z]+)\)/, "warning"],
+		[/LaTeX (?:[a-zA-z]+ )?Warning:/, "warning"],
+		["Overfull \\hbox", "warning"],
+		["Underfull \\hbox", "warning"]
+	]
+};
+
 class BuildDetails extends React.Component {
 	constructor(props){
 		super(props);
 
 		this.state = {
-			files: {
-
-			},
+			files: {},
 			rebuilding: false
 		};
 
@@ -29,7 +38,7 @@ class BuildDetails extends React.Component {
 	}
 
 	componentDidMount(){
-		if(this.props.info.data.commits.length > 0){
+		if(this.props.info.data){
 			this.load("log");
 		}
 	}
@@ -103,59 +112,75 @@ class BuildDetails extends React.Component {
 			.then(() => {
 					this.setState({rebuilding: true});
 					this.rebuildInterval= setInterval(() => checkStatus(), 1000);
+					this.props.info.reload();
 				}
 				, console.error);
-			// .then(res => this.setState(), () => this.setState());
 	}
 
-	render(){
+	render(){		
 		const {proj, hash} = this.props.match.params;
-		const c = this.props.info.data.commits.find((v)=> v.commit.ref === hash);
-		if(c){
-			const {build, commit} = c;
-			return (
-				<div>
-					<h1><Link to="." title="Go Back to List">Builds: {proj}</Link> &gt; {hash.substring(0,7)}</h1>
-					<div className="buildDetails">
-						<div className="details">
-							<div className={`window build buildStatus ${build.status}`} style={{display: "flex"}}>
-								<div style={{flex: "1 1 50%"}}>
-									<img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}<br/>
-									{commit.msg}<br/>
-									<a href={commit.url}>{commit.ref}</a> <i className="fa fa-external-link"/> ({humanDate(commit.date)})<br/>
-								</div>
-								<div style={{flex: "1 1 30%"}}>
-									<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
-									{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
-								</div>
-								<div style={{flex: "1 1 10%", textAlign: "right"}}>
-									<a className="button" onClick={() => this.rebuild()}>
-										<i className={`fa fa-refresh ${this.state.rebuilding ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
-									</a>
+		if(this.props.info.data.list){
+			const c = this.props.info.data.list.find((v)=> v.commit.ref === hash);
+			if(c){
+				const logF = logFormatting[this.props.info.data.language];
+				const {build, commit} = c;
+				return (
+					<div>
+						<h1><Link to="." title="Go Back to List">Builds: {proj}</Link> &gt; {hash.substring(0,7)}</h1>
+						<div className="buildDetails">
+							<div className="details">
+								<div className={`window build buildStatus ${build.status}`} style={{display: "flex"}}>
+									<div style={{flex: "1 1 50%"}}>
+										<img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}<br/>
+										{commit.msg}<br/>
+										<a href={commit.url}>{commit.ref}</a> <i className="fa fa-external-link"/> ({humanDate(commit.date)})<br/>
+									</div>
+									<div style={{flex: "1 1 30%"}}>
+										<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
+										{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
+									</div>
+									<div style={{flex: "1 1 10%", textAlign: "right"}}>
+										<a className="button" onClick={() => this.rebuild()}>
+											<i className={`fa fa-refresh ${this.state.rebuilding ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
+										</a>
+									</div>
 								</div>
 							</div>
-						</div>
-						<div className="files">
-							<div className="window" style={{flex: "1 1 30%"}}>
-								Artifacts: <br/>
-								<a target="_blank" href={this.getURL("pdf")}>PDF</a>
-							</div>
-							<div className="window log" style={{flex: "1 1 70%"}}>
-								{
-									(this.state.files.log && this.state.files.log.content) ?
-									<pre><code>{this.state.files.log.content}</code></pre>
-									: <Loading/>
-								}
+							<div className="files">
+								<div className="window" style={{flex: "1 1 30%"}}>
+									Artifacts: <br/>
+									<a target="_blank" href={this.getURL("pdf")}>PDF</a>
+								</div>
+								<div className="window log" style={{flex: "1 1 70%"}}>
+									{
+										(this.state.files.log && this.state.files.log.content) ?
+										<pre>
+										<code>
+											{
+											this.state.files.log.content
+												.split("\n").map((v, i) => {
+													const key = logF.findIndex(e => (
+														typeof e[0] === "object" ?
+															(e[0].test(v)) :
+															(v.indexOf(e[0]) === 0) 
+													));
+													return <div className={key>-1? logF[key][1] :""} key={i}>{v}</div>;
+												})
+											}
+										</code>
+										</pre>
+										: <Loading/>
+									}
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			);
-		} else {
-			return null;
+				);
+			}
 		}
+		return null;
 	}
-		
+
 }
 
 export default BuildDetails;

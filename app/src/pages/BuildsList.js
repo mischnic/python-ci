@@ -12,7 +12,7 @@ class BuildsList extends React.Component {
 				<h1>Builds: {this.props.match.params.proj}</h1>
 				<ul className="buildsList">
 					{
-						this.props.info.data.commits.map( ({commit, build}) => 
+						this.props.info.data.list.map( ({commit, build}) => 
 							<li key={commit.ref} className={`window buildStatus ${build.status}`}>
 								<div style={{flex: "0 0 50%", display: "flex"}}>
 									<div style={{flex: "0 0 50%"}}>

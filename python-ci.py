@@ -151,7 +151,6 @@ def compileLatex(proj, ref, fileName):
 		lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT) + "\n"
 
 	except (subprocess.CalledProcessError, OSError) as exc:
-		print exc
 		if type(exc).__name__ == "OSError":
 			lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
 		else:
@@ -276,7 +275,10 @@ class Handler(BaseHTTPRequestHandler):
 							"build": getStatus(ref, project)
 						})
 
-					self._send(200, json.dumps(data), [("Content-type", "application/json")])
+					self._send(200, json.dumps({
+							"list" : data,
+							"language" : cfg.get("language", None)
+						}), [("Content-type", "application/json")])
 					return
 
 				# status of ref
