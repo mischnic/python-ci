@@ -11,7 +11,7 @@ def parseOutput(data, regex):
 		s = data
 
 	res = {
-		"chapters": { }
+		"chapters": []
 	}
 	for l in re.findall(regex, s, re.U):
 		# (sumc, text, headers, outside, headersN, floatsN, mathsI, mathsD) = l
@@ -22,21 +22,20 @@ def parseOutput(data, regex):
 	if s2:
 		for l in re.findall(r"^  ([0-9]+)\+([0-9]+)\+([0-9]+) \(([0-9]+)\/([0-9]+)\/([0-9]+)\/([0-9]+)\) ([\w: äöü]+)", s2, re.U|re.M):
 			# (text, headers, captions, headersH, floatsH, inlinesH, displayedH, name) = l
-			res["chapters"][l[7]] = l[:7]
+			res["chapters"].append([l[7]] + l[:7])
 
 	return res
 
 def correctLetters(letters, words):
 	for k, v in letters.items():
 		if k in words:
-			if isinstance(v, dict):
-				correctLetters(letters[k], words[k])
-			elif isinstance(v, list):
-				letters[k] = list(int(x) + int(y) for x, y in zip(letters[k], words[k]))
-			elif isinstance(v, tuple):
-				letters[k] = tuple(int(x) + int(y) for x, y in zip(letters[k], words[k]))
+			if k == "chapters":
+				for ci, cv in enumerate(v):
+					for cci, ccv in enumerate(cv):
+						letters[k][ci][cci] = int(ccv) + int(words[k][ci][cci])
 			else:
-				letters[k] = int(letters[k]) + int(words[k])
+				for ci, cv in enumerate(v):
+					letters[k][ci] = int(cv) + int(words[k][ci])
 	# return {k: (v if k not in words else
 	# 				(correctLettersB(letters[k], words[k]) if isinstance(v, dict) else
 	# 				v+words[k])

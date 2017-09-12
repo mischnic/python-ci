@@ -167,9 +167,9 @@ class BuildDetails extends React.Component {
 												<span>Total letters: {sumc}</span>
 												<ol>
 												{
-													Object.keys(letters.chapters).map((v)=>{
-														let [text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = letters.chapters[v];
-														return <li key={v}>{v}: {text}</li>;
+													letters.chapters.map((v)=>{
+														let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
+														return <li key={name}>{name}: {text}</li>;
 													})
 												}
 												</ol>
