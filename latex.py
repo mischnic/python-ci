@@ -22,7 +22,7 @@ def parseOutput(data, regex):
 	if s2:
 		for l in re.findall(r"^  ([0-9]+)\+([0-9]+)\+([0-9]+) \(([0-9]+)\/([0-9]+)\/([0-9]+)\/([0-9]+)\) ([\w: äöü]+)", s2, re.U|re.M):
 			# (text, headers, captions, headersH, floatsH, inlinesH, displayedH, name) = l
-			res["chapters"].append([l[7]] + l[:7])
+			res["chapters"].append((l[7],) + l[:7])
 
 	return res
 
