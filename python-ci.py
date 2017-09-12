@@ -5,6 +5,8 @@ import os, time, subprocess, errno
 from urlparse import urlparse
 import hmac, hashlib, re, json
 
+import latex
+
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 SECRET = os.environ.get('SECRET', "")
@@ -33,15 +35,6 @@ def symlink_force(target, link_name):
 			os.symlink(target, link_name)
 		else:
 			raise e
-
-def copyFolderStructure(src, target):
-	for root, subFolders, _ in os.walk(src):
-		subFolders[:] = [d for d in subFolders if not d[0] == '.']
-		f = "."+root[len(src):]
-		try:
-			os.mkdir(os.path.join(target, f), 0755)
-		except OSError:
-			pass
 
 def parseRef(ref):
 	if ref == "":
@@ -103,14 +96,22 @@ def updateStatus(ref, proj, msg, (start, duration), errorMsg = None):
 	with open(getBuildPath(proj, ref)+"/.status.svg", "w") as f:
 		f.write(svg)
 
+	data = {
+		"ref": ref,
+		"status": msg,
+		"errorMsg": errorMsg,
+		"start": round(start*1000),
+		"duration": duration,
+		"stats": {}
+	}
+
+	cfg = getConfig(proj)
+	if "stats" in cfg:
+		if cfg.language == "latex" and "counts" in cfg.stats:
+			data["stats"]["counts"] = latex.count(proj, getBuildPath(proj, ref), cfg["main"])
+
 	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
-		f.write(json.dumps({
-				"ref": ref,
-				"status": msg,
-				"errorMsg": errorMsg,
-				"start": round(start*1000),
-				"duration": duration
-			}))
+		f.write(json.dumps(data))
 
 	if TOKEN:
 		gh.setStatus(proj, ref, msg, DOMAIN+"/"+proj+"/"+ref, errorMsg)
@@ -133,36 +134,8 @@ def updateGit(proj, ref):
 
 	return (successful, lastLog)
 
-def compileLatex(proj, ref, fileName):
-	lastLog = ""
-	successful = True
-
-	copyFolderStructure(proj, getBuildPath(proj, ref))
-
-	cmd = ["latexmk",
-				"-interaction=nonstopmode",
-				# "-gg",
-				"-file-line-error",
-				"-outdir=../"+getBuildPath(proj, ref),
-				"-pdf", fileName+".tex" ]
-
-	try:
-		lastLog += ">>> "+(" ".join(cmd))+"\n"
-		lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT) + "\n"
-
-	except (subprocess.CalledProcessError, OSError) as exc:
-		if type(exc).__name__ == "OSError":
-			lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
-		else:
-			lastLog += exc.output + "\n"
-			lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
-		successful = False
-
-	return (successful, lastLog)
-
-
 compileLang = dict(
-	latex = compileLatex,
+	latex = latex.doCompile,
 	git = lambda a,b,c,d: (True, "")
 )
 
@@ -192,7 +165,7 @@ def doCompile(proj, ref):
 			successful = successfulCfg
 
 		if successful:
-			successfulCompile, lastLogCompile = compileLang[lang](proj, ref, main)
+			successfulCompile, lastLogCompile = compileLang[lang](proj, getBuildPath(proj, ref), main)
 			lastLog += lastLogCompile
 			successful = successfulCompile
 		else:

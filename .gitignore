@@ -3,11 +3,12 @@
 
 # But not these files...
 !.gitignore
+!.eslintrc
 !README.md
 !example_badge.svg
+!start.sh.in
 !python-ci.py
 !gh.py
-!start.sh.in
+!latex.py
 !app/
 !app/**
-!.eslintrc
