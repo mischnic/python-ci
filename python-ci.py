@@ -107,8 +107,12 @@ def updateStatus(ref, proj, msg, (start, duration), errorMsg = None):
 
 	cfg = getConfig(proj)
 	if "stats" in cfg:
-		if cfg.language == "latex" and "counts" in cfg.stats:
-			data["stats"]["counts"] = latex.count(proj, getBuildPath(proj, ref), cfg["main"])
+		if cfg["language"] == "latex" and "counts" in cfg["stats"]:
+			(success, counts) = latex.count(proj, getBuildPath(proj, ref), cfg["main"]+".tex")
+			if success:
+				data["stats"]["counts"] = counts
+			else:
+				data["stats"]["counts"] = False		
 
 	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
 		f.write(json.dumps(data))

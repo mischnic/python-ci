@@ -117,13 +117,14 @@ class BuildDetails extends React.Component {
 				, console.error);
 	}
 
-	render(){		
+	render(){
 		const {proj, hash} = this.props.match.params;
 		if(this.props.info.data.list){
 			const c = this.props.info.data.list.find((v)=> v.commit.ref === hash);
 			if(c){
 				const logF = logFormatting[this.props.info.data.language];
 				const {build, commit} = c;
+				console.log(build.stats.counts)
 				return (
 					<div>
 						<h1><Link to="." title="Go Back to List">Builds: {proj}</Link> &gt; {hash.substring(0,7)}</h1>
@@ -147,9 +148,35 @@ class BuildDetails extends React.Component {
 								</div>
 							</div>
 							<div className="files">
-								<div className="window" style={{flex: "1 1 30%"}}>
-									Artifacts: <br/>
-									<a target="_blank" href={this.getURL("pdf")}>PDF</a>
+								<div className="window artifacts" style={{flex: "1 1 30%"}}>
+									<div>
+										Artifacts: <br/>
+										<ol>
+											<li><a target="_blank" href={this.getURL("pdf")}>PDF</a></li>
+										</ol>
+									</div>
+									{
+										build.stats.counts ? 
+										( 
+										(()=>{
+											const letters = build.stats.counts.letters;
+											const [sumc/*, text, headers, outside, headersN, floatsN, mathsI, mathsD*/] = letters.total;
+
+											return (
+											<div>
+												<span>Total letters: {sumc}</span>
+												<ol>
+												{
+													Object.keys(letters.chapters).map((v)=>{
+														let [text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = letters.chapters[v];
+														return <li key={v}>{v}: {text}</li>;
+													})
+												}
+												</ol>
+											</div>);
+										})()
+										) : null
+									}
 								</div>
 								<div className="window log" style={{flex: "1 1 70%"}}>
 									{
