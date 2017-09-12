@@ -21,6 +21,7 @@ You need the following file hierarchy:
 	python-ci
 	 |- python-ci.py
 	 |- README.md
+	 |- [TeXcount_3_0_1]
 	 |- ...
 	 |- Maths
 	 |  - .ci.json
@@ -35,13 +36,21 @@ You need the following file hierarchy:
 
 	{
 		"language": "latex",
-		"main": "Document"
+		"main": "Document",
+		"stats": ["counts"] <- optional
 	}
 
 Currently implemented languages:
-- `git`: Update repostory only
+- `git`: Update repository only
 - `latex`: Update repository and run `latexmk` on the `${main}.tex` file
 
+Currently implemented "stats":
+- for `latex`:
+	- `counts`: Show `main`'s letter count
+	
+	
+Note:
+For the `counts` stats, [TeXcount](http://app.uio.no/ifi/texcount/download.html) options needs to be downloaded to a folder `TeXcount_3_0_1` inside `python-ci`. To count bibliography, `%TC:subst \printbibliography \bibliography` needs to be the first line of your document and you'll have to patch TeXcount (from [here](https://gist.github.com/mischnic/f8b0433934e046c4e6d0202d99276b82)).
 
 ## Usage
 
@@ -56,9 +65,10 @@ The main interface is served unter http://ci.example.com/Maths/
 
 ### API
 
+(The following links are only correct, if you use a dedicated webserver as a proxy to python-ci with a configuration as seen below. The python-ci server itself responds to requests like `/Maths/1f2a23..`, without `/api`.)
 
 GET request alternative to a GitHub webhook:
-`http://ci.example.com/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/build`
+`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/build`
 
 The commit-hashes in the following URLs are **optional** (in that case, the files from the last build are used):
 
@@ -107,4 +117,7 @@ By default, python-ci listens on `localhost:8000`, meaning that it will only acc
 	}
 
 If your router doesn't support [NAT loopback](https://en.wikipedia.org/wiki/NAT_loopback) alias [Hairpinning](https://en.wikipedia.org/wiki/Hairpinning) (meaning that trying to access `ci.example.com` in the same network as the server causes a `ERR_CONNECTION_REFUSED`) then you have to add `ci.example.com*` to the `server_name` directive. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server in your local network.
+
+
+If you only want the api and webhook without the web interface, then you don't need a seperate webserver. In that case, change `'localhost'` in [this](https://github.com/mischnic/python-ci/blob/b5d7e55e94ac528c41a8e30fe6297d768cb244d9/python-ci.py#L323) line to `''`, so the server will be reachable not only from localhost. (i.e. via `192.168.0.4:8000/Maths/svg`)
 
