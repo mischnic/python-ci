@@ -31,11 +31,9 @@ def correctLetters(letters, words):
 		if k in words:
 			if k == "chapters":
 				for ci, cv in enumerate(v):
-					for cci, ccv in enumerate(cv):
-						letters[k][ci][cci] = int(ccv) + int(words[k][ci][cci])
+					letters[k][ci] = tuple((int(ccv) + int(words[k][ci][cci]) if not isinstance(ccv, basestring) else ccv) for cci, ccv in enumerate(cv))
 			else:
-				for ci, cv in enumerate(v):
-					letters[k][ci] = int(cv) + int(words[k][ci])
+				letters[k] = tuple(int(cv) + int(words[k][ci]) for ci, cv in enumerate(v))
 	# return {k: (v if k not in words else
 	# 				(correctLettersB(letters[k], words[k]) if isinstance(v, dict) else
 	# 				v+words[k])
