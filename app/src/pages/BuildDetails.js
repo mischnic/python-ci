@@ -169,7 +169,8 @@ class BuildDetails extends React.Component {
 												{
 													letters.chapters.map((v)=>{
 														let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
-														return <li key={name}>{name}: {text}</li>;
+														const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
+														return <li key={name} style={style}>{name}: {text}</li>;
 													})
 												}
 												</ol>
