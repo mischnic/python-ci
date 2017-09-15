@@ -12,6 +12,8 @@ Clone your source folder next to the script (see below) and make `start.sh` exec
 
 - `OUTPUT_SUFFIX`: the `_build` below; optional (default: `_build`)
 - `SECRET`: the secret from the GitHub webhook configuration; optional
+- `JWT_SECRET`: the secret for creating a JWT token
+- `PASSWORD`: the password (username is hardcoded: `user`)
 - Needed to set commit statuses, otherwise optional:
 	- `TOKEN`: a GitHub personal access token
 	- `DOMAIN`: the URL under which the server is accessible (including `http[s]://`)

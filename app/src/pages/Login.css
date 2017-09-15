@@ -1,0 +1,55 @@
+.login > div {
+	height: calc(100% - 2.4em);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.login input {
+	padding: 6px;
+	border-radius: 5px;
+	outline: none;
+	border: 1px solid #dddddd;
+	font-size: inherit;
+
+	width: 15rem
+}
+
+.login input:not([type="submit"]) {
+	margin-bottom: 10px;
+	padding-left: 2.3em;
+}
+
+.login input[type="submit"]{
+	cursor: pointer;
+}
+
+.login input[value="Login"] {
+	background-color: #e2e2e2;
+	cursor: pointer;
+}
+
+.login input[value="Login"]:hover {
+	background-color: #cecece;
+}
+
+.login input[value="Login"]:active {
+	background-color: #bdbdbd;
+}
+
+
+.login form > div{
+	position: relative;
+}
+
+.login form > div > .fa, .login form > div > .fa-stack {
+	width: 1.3em;
+	height: 1.3em;
+	text-align: center;
+}
+
+.login form > div > *:last-child {
+	position: absolute;
+	left: 0.5em;
+	top: 0.4em;
+}

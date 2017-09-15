@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
-import os, time, subprocess, errno
+import os, time, subprocess, errno, datetime
 from urlparse import urlparse
-import hmac, hashlib, re, json
+import hmac, hashlib, re, json, jwt
 
 import latex
 
@@ -12,6 +12,8 @@ OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 SECRET = os.environ.get('SECRET', "")
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
+PASSWORD = os.environ.get('PASSWORD', "")
+JWT_SECRET = os.environ.get('JWT_SECRET', "secret")
 
 if TOKEN:
 	import gh
@@ -202,8 +204,11 @@ def startCompile(proj, ref):
 
 class Handler(BaseHTTPRequestHandler):
 	def _send(self, status, data = "", headers = None):
-		if not data and status == 404:
-			data = "Not Found"
+		if not data:
+			if status == 404:
+				data = "Not Found"
+			elif status == 401:
+				data = "Unauthorized"
 		headers = headers or []
 
 		self.send_response(status)
@@ -231,6 +236,7 @@ class Handler(BaseHTTPRequestHandler):
 		message = ""
 		status = 404
 
+
 		match = re.search(r"^\/([a-zA-z+-]+)(?:\/?$|\/(?:([0-9a-f]*)\/)?(.*)?)", path)
 		# matches: 1=Project | 2=hash or empty | 3=file or empty
 
@@ -238,8 +244,27 @@ class Handler(BaseHTTPRequestHandler):
 			project, ref, fileName = match.group(1,2,3)
 			if os.path.isdir(project):
 				cfg = getConfig(project)
-
 				main = cfg.get('main') if cfg else None
+
+				if main and fileName == "svg":
+					self._sendFile(getBuildPath(project, ref)+"/.status.svg",
+										[("Content-type", "image/svg+xml"),
+											("etag", ref),
+											("cache-control", "no-cache")])
+					return
+
+				if "Authorization" in self.headers:
+					try:
+						data = jwt.decode(self.headers['Authorization'][7:], JWT_SECRET)
+						if not data["user"] == "user":
+							self._send(401)
+							return
+					except jwt.ExpiredSignatureError:
+						self._send(401, "Expired")
+						return
+				else:
+					self._send(401)
+					return
 
 				# list of all commits
 				if not ref and not fileName:
@@ -279,39 +304,45 @@ class Handler(BaseHTTPRequestHandler):
 							self._sendFile(getBuildPath(project, ref)+"/.log", [("Content-type", "text/plain")])
 							return
 
-						elif fileName == "svg":
-							self._sendFile(getBuildPath(project, ref)+"/.status.svg",
-												[("Content-type", "image/svg+xml"),
-													("etag", ref),
-													("cache-control", "no-cache")])
-							return
-
 		self._send(status, message)
 
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length)
 
-		project = self.path[1:]
-
-		(signature_func, signature) = self.headers['X-Hub-Signature'].split("=")
-		output = "Error"
-		status = 200
-
-		if SECRET and SECRET != "<<Github Webhook secret>>":
-			if signature_func == "sha1":
-				mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
-				if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
-					self._send(403, output)
-					return
-
-		if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
+		if urlparse(self.path).path == "/login":
 			data = json.loads(post_data)
-			print data['head_commit']['id']+": "+data['head_commit']['message']
-			status, output = startCompile(project, data['head_commit']['id'])
+			username, password = data["username"], data["password"]
+			if username == "user" and password == PASSWORD:
+				jwt_payload = jwt.encode({
+					"user": username,
+				    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+				}, JWT_SECRET)
+
+				self._send(200, jwt_payload)
+			else:
+				self._send(401)
+		else:
+			project = self.path[1:]
+
+			(signature_func, signature) = self.headers['X-Hub-Signature'].split("=")
+			output = "Error"
+			status = 200
+
+			if SECRET and SECRET != "<<Github Webhook secret>>":
+				if signature_func == "sha1":
+					mac = hmac.new(str(SECRET), msg=post_data, digestmod=hashlib.sha1)
+					if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
+						self._send(403, output)
+						return
+
+			if self.headers["X-GitHub-Event"] == "push" and self.headers["content-type"] == "application/json":
+				data = json.loads(post_data)
+				print data['head_commit']['id']+": "+data['head_commit']['message']
+				status, output = startCompile(project, data['head_commit']['id'])
 
 
-		self._send(status, output)
+			self._send(status, output)
 
 	def log_message(self, format, *args):
 		log("%s - - [%s] %s" % (self.client_address[0], self.log_date_time_string(), format%args))

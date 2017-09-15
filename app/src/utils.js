@@ -57,48 +57,66 @@ function humanDate(date){
 }
 
 const api = (comp, url, settings={}, type = "json") => {
-	let i = {
-		...settings,
-		headers: {"Authorization": "Bearer "+getJWT(), Accept: "application/json", ...settings.headers, },
-	};
-
-	if(i.body && !i.method){
-		i.method = "POST";
-	}
-
-	if(typeof settings.body === "object") {
-		i.headers = {...i.headers, "Content-Type": "application/json"};
-		i.body = JSON.stringify(i.body);
-	}
-
-	switch(type){
-		case "text":
-			i.headers.Accept = "text/plain";
-			type = (res) => res.text();
-			break;
-		default:
-		case "json":
-			i.headers.Accept = "application/json";
-			type = (res) => res.json();
-			break;
-	}
-
-	return fetch(url, i)
-	.then(function(res) {
-		if(res.ok) {
-			return type(res);
-		} else return Promise.reject(res);
-	}).catch((res)=>{
-		if(res.status === 401){
-			if(comp){
-				logout();
-				comp.props.history.push("/");
-			} else {
-				return Promise.reject(res);
+	return fetch(url, { headers: {"Authorization": "Bearer "+getJWT(), method: (settings.body ? "POST" : "GET"),  ...settings.headers, } })
+		.then(function(res) {
+			if(res.ok) {
+				return res;
+			} else return Promise.reject(res);
+		}).catch((res)=>{
+			if(res.status === 401){
+				if(comp){
+					logout();
+					comp.props.history.push("/");
+				} else {
+					return Promise.reject(res);
+				}
 			}
-		}
-	});
+		});
 };
+
+// const api = (comp, url, settings={}, type = "json") => {
+// 	let i = {
+// 		...settings,
+// 		headers: {"Authorization": "Bearer "+getJWT(), Accept: "application/json", ...settings.headers, },
+// 	};
+
+// 	if(i.body && !i.method){
+// 		i.method = "POST";
+// 	}
+
+// 	if(typeof settings.body === "object") {
+// 		i.headers = {...i.headers, "Content-Type": "application/json"};
+// 		i.body = JSON.stringify(i.body);
+// 	}
+
+// 	switch(type){
+// 		case "text":
+// 			i.headers.Accept = "text/plain";
+// 			type = (res) => res.text();
+// 			break;
+// 		default:
+// 		case "json":
+// 			i.headers.Accept = "application/json";
+// 			type = (res) => res.json();
+// 			break;
+// 	}
+
+// 	return fetch(url, i)
+// 	.then(function(res) {
+// 		if(res.ok) {
+// 			return type(res);
+// 		} else return Promise.reject(res);
+// 	}).catch((res)=>{
+// 		if(res.status === 401){
+// 			if(comp){
+// 				logout();
+// 				comp.props.history.push("/");
+// 			} else {
+// 				return Promise.reject(res);
+// 			}
+// 		}
+// 	});
+// };
 
 const Loading = () =>
 	<div style={{display:"flex",justifyContent:"center",alignItems:"center", opacity: "0.07", fontSmoothing: "none"}}>

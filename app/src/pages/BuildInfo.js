@@ -5,7 +5,7 @@ import BuildDetails from "./BuildDetails.js";
 
 import {Route, Switch} from "react-router-dom";
 
-import {Loading} from "../utils.js";
+import {api, Loading} from "../utils.js";
 
 const addProps = (Component, props) => (p) => (
 	<Component {...props} {...p}>{p.children}</Component>
@@ -29,7 +29,8 @@ class BuildInfo extends React.Component {
 	load(inital){
 		if(inital)
 			this.setState({loading: true});
-		fetch(`/api/${this.props.match.params.proj}`)
+		
+		api(this, `/api/${this.props.match.params.proj}`)
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.json())
 			.then(({list, ...r}) => this.setState(

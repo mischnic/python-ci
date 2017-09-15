@@ -1,15 +1,20 @@
-import {api} from "./utils.js";
+// import {api} from "./utils.js";
 
 function login(username, password){
-	return fetch("api/login", {
+	return fetch("/api/login", {
 			method: "POST",
 			headers: {"Accept": "application/json","Content-Type": "application/json"},
 			body: JSON.stringify({username, password}) })
-		.then((res)=>res.json())
+		.then(function(res) {
+			if(res.ok) {
+				return res;
+			} else return Promise.reject(res);
+		})
+		.then((res)=>res.text())
 		.then((res)=> {
-				localStorage.setItem("jwt", res.jwt);
+				localStorage.setItem("jwt", res);
 				localStorage.setItem("user", username);
-				return res.jwt ? Promise.resolve() : Promise.reject(res);
+				return res ? Promise.resolve() : Promise.reject(res);
 			}, (res) => Promise.reject(res));
 }
 
@@ -23,7 +28,6 @@ function getUsername(){
 }
 
 function isLoggedIn(check, comp){
-	return true;
 	// if(check){
 	// 	api(comp, "/api/", {}, "text")
 	// 		.then((res)=>{
@@ -36,7 +40,7 @@ function isLoggedIn(check, comp){
 	// 			}
 	// 		});
 	// }
-	// return localStorage.getItem("jwt");
+	return localStorage.getItem("jwt") !== null;
 }
 
 function getJWT(){

@@ -5,6 +5,8 @@
 #	SECRET="<<Github Webhook secret>>"
 #	TOKEN="<<Github personal access token>>"
 #	DOMAIN="https://ci.example.com"
+#	PASSWORD="something"
+#	JWT_SECRET="secret"
 #
 # example:
 #	OUTPUT_SUFFIX="_ci" ./python-ci.py

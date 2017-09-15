@@ -7,8 +7,8 @@ class Login extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
-			user: 'admin',
-			password: 'niklas',
+			user: 'user',
+			password: '',
 			message: false
 		};
 	}
@@ -27,6 +27,7 @@ class Login extends React.Component {
 
 	redirect(){
 		if(isLoggedIn()){
+			console.log(this.props.history.location)
 			var path = this.props.history.location.state ? this.props.history.location.state.from.pathname : '/';
 			this.props.history.replace(path);
 		}
@@ -35,8 +36,8 @@ class Login extends React.Component {
 	tryLogin(event){
 		event.preventDefault();
 		login(this.state.user, this.state.password)
-			.then(()=> this.redirect(), (res)=>{
-				if(res.error === 'wrong'){
+			.then(() => this.redirect(), (res) => {
+				if(res.status === 401){
 					this.setState({message: 'Wrong username or password'});
 				}
 			});
@@ -44,22 +45,26 @@ class Login extends React.Component {
 
 	render(){
 		return (
-			<form id='login' onSubmit={(e)=>{this.tryLogin(e);}}>
-				<div>Login</div>
-				{this.state.message && <div style={{color: 'red', fontSize: '0.8em', textAlign: 'center', marginBottom: '0.5em'}}>{this.state.message}</div>}
+			<div className='login'>
+				<h1>Login</h1>
 				<div>
-					<input value={this.state.user} onChange={(e)=>{this.changeUser(e);}} type='text' placeholder='Username / "guest"' required/>
-					<i className="fa fa-user-o"/>
+					<form onSubmit={(e)=>{this.tryLogin(e);}}>
+						{this.state.message && <div style={{color: 'red', fontSize: '0.8em', textAlign: 'center', marginBottom: '0.5em'}}>{this.state.message}</div>}
+						<div>
+							<input value={this.state.user} onChange={(e)=>{this.changeUser(e);}} type='text' placeholder='Username / "guest"' required/>
+							<i className="fa fa-user-o"/>
+						</div>
+						<div>
+							<input value={this.state.password} onChange={(e)=>{this.changePassword(e);}} type='password' placeholder='Password'/>
+							<span className="fa-stack">
+								<i className="fa fa-circle fa-stack-2x" style={{fontSize: '1.3em'}}></i>
+								<i className="fa fa-lock fa-inverse fa-stack-1x" style={{'top': '-7px'}}/>
+							</span>
+						</div>
+						<input type='submit' value="Login" />
+					</form>
 				</div>
-				<div>
-					<input value={this.state.password} onChange={(e)=>{this.changePassword(e);}} type='password' placeholder='Password'/>
-					<span className="fa-stack" style={{position: 'absolute',top: '2px',left: '0px'}}>
-						<i className="fa fa-circle fa-stack-2x" style={{fontSize: '1.4em','top': '7px'}}></i>
-						<i className="fa fa-lock fa-inverse fa-stack-1x"/>
-					</span>
-				</div>
-				<input type='submit' value="Login" />
-			</form>
+			</div>
 		);
 	}
 }

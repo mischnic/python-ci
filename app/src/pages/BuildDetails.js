@@ -4,7 +4,7 @@ import "./BuildDetails.css";
 import "./Build.css";
 
 import {formatDate, formatTime, humanDate, makeCancelable} from "../utils.js";
-import {Loading} from "../utils.js";
+import {Loading, api} from "../utils.js";
 
 const logFormatting = {
 	latex:[
@@ -60,7 +60,7 @@ class BuildDetails extends React.Component {
 
 	load(file){
 		this.setState({files: {[file]: {loading: true}, ...this.state.files}});
-		const req = makeCancelable(fetch(this.getURL(file))
+		const req = makeCancelable(api(this, this.getURL(file))
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.text())
 			.then(res => this.setState({
@@ -95,7 +95,7 @@ class BuildDetails extends React.Component {
 		};
 
 		const checkStatus = () => 
-			fetch(this.getURL("status"))
+			api(this.getURL("status"))
 				.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 				.then(res => res.json())
 				.then(({status}) => {
@@ -106,7 +106,7 @@ class BuildDetails extends React.Component {
 					
 				});
 
-		fetch(this.getURL("build"))
+		api(this.getURL("build"))
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.text())
 			.then(() => {
@@ -124,7 +124,6 @@ class BuildDetails extends React.Component {
 			if(c){
 				const logF = logFormatting[this.props.info.data.language];
 				const {build, commit} = c;
-				console.log(build.stats.counts)
 				return (
 					<div>
 						<h1><Link to="." title="Go Back to List">Builds: {proj}</Link> &gt; {hash.substring(0,7)}</h1>
