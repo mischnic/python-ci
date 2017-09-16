@@ -13,6 +13,7 @@ TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
 PASSWORD = os.environ.get('PASSWORD', "")
 JWT_SECRET = os.environ.get('JWT_SECRET', "secret")
+PROJECTS = "[]" if os.environ.get('PROJECTS', None) is None else "["+",".join(['"'+x+'"' for x in os.environ.get('PROJECTS').split(",")])+"]"
 
 if TOKEN:
 	import gh
@@ -312,6 +313,30 @@ class Handler(BaseHTTPRequestHandler):
 						elif fileName == "log":
 							self._sendFile(getBuildPath(project, ref)+"/.log", [("Content-type", "text/plain")])
 							return
+		elif path == "/":
+			if "Authorization" in self.headers or "token" in query:
+				token = ""
+				if "Authorization" in self.headers:
+					token = self.headers['Authorization'][7:]
+				elif "token" in query:
+					token = query["token"][0]
+				else:
+					self._send(401)
+					return
+				try:
+					data = jwt.decode(token, JWT_SECRET)
+					if not data["user"] == "user":
+						self._send(401)
+						return
+				except jwt.ExpiredSignatureError:
+					self._send(401, "Expired")
+					return
+			else:
+				self._send(401)
+				return
+
+			self._send(200, PROJECTS)
+			return
 
 		self._send(status, message)
 
@@ -319,7 +344,7 @@ class Handler(BaseHTTPRequestHandler):
 		content_length = int(self.headers['Content-Length'])
 		post_data = self.rfile.read(content_length)
 
-		if urlparse(self.path).path == "/login":
+		if urlparse.urlparse(self.path).path == "/login":
 			data = json.loads(post_data)
 			username, password = data["username"], data["password"]
 			if username == "user" and password == PASSWORD:

@@ -1,0 +1,33 @@
+.projectList {
+	display: flex;
+	flex-wrap: wrap;
+	height: initial;
+}
+
+.projectList > div {
+	margin: 10px;
+	min-width: 150px;
+	height: 150px;
+	border: 1px solid #dfdfdf;
+	border-radius: 5px;
+
+	text-align: center;
+	vertical-align: middle;
+	line-height: 150px;
+
+	cursor: pointer;
+}
+
+@media (max-width: 360px) {
+	.projectList {
+		flex-wrap: nowrap;
+		flex-direction: column
+	}
+
+	.projectList > div {
+		align-self: stretch;
+		height: 120px;
+		line-height: 120px;
+	}
+
+}

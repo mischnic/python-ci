@@ -74,7 +74,7 @@ var Link = function (_React$Component) {
         replace = _props.replace,  // eslint-disable-line no-unused-vars
         to = _props.to,
         innerRef = _props.innerRef,
-        props = _objectWithoutProperties(_props, ['replace', 'to', 'innerRef']); // eslint-disable-line no-unused-vars
+        props = _objectWithoutProperties(_props, ['replace', 'to', 'innerRef', 'type']); // eslint-disable-line no-unused-vars
 
     (0, _invariant2.default)(this.context.router, 'You should not use <Link> outside a <Router>');
 
@@ -87,7 +87,7 @@ var Link = function (_React$Component) {
       newProps.href = href;
     }
 
-    return _react2.default.createElement('a', _extends({}, props, newProps));
+    return _react2.default.createElement(type, _extends({}, props, newProps));
   };
 
   return Link;

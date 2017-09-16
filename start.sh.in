@@ -7,6 +7,7 @@
 #	DOMAIN="https://ci.example.com"
 #	PASSWORD="something"
 #	JWT_SECRET="secret"
+#	PROJECTS="Maths,Other"
 #
 # example:
 #	OUTPUT_SUFFIX="_ci" ./python-ci.py

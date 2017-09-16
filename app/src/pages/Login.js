@@ -27,7 +27,7 @@ class Login extends React.Component {
 
 	redirect(){
 		if(isLoggedIn()){
-			console.log(this.props.history.location)
+			console.log(this.props.history.location.state)
 			var path = this.props.history.location.state ? this.props.history.location.state.from.pathname : '/';
 			this.props.history.replace(path);
 		}

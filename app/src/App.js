@@ -6,6 +6,7 @@ import {isLoggedIn, logout} from "./auth.js";
 import CustomLink from "./CustomLink.js";
 
 import BuildInfo from "./pages/BuildInfo.js";
+import ProjectList from "./pages/ProjectList.js";
 import Login from "./pages/Login.js";
 
 import "./index.css";
@@ -37,8 +38,9 @@ export default function App(){
 			<div className="main">
 				<Switch>
 					<Route path="/login" render={() => <Login/> } />
-					<PrivateRoute path="/:proj/" strict={true} component={BuildInfo} />
-					<Route render={() => (<p>Specify a project in the URL!</p>)}/>
+					<PrivateRoute path="/" strict exact component={ProjectList} />
+					<PrivateRoute path="/:proj/" strict component={BuildInfo} />
+					<Route render={()=><span>Not found</span>}/>
 				</Switch>
 			</div>
 		</div>)

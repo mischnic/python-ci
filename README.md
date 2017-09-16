@@ -14,6 +14,7 @@ Clone your source folder next to the script (see below) and make `start.sh` exec
 - `SECRET`: the secret from the GitHub webhook configuration; optional
 - `JWT_SECRET`: the secret for creating a JWT token
 - `PASSWORD`: the password (username is hardcoded: `user`)
+- `PROJECT`: comma-seperated string of your projects (e.g. `Maths` or `Maths,Name`)
 - Needed to set commit statuses, otherwise optional:
 	- `TOKEN`: a GitHub personal access token
 	- `DOMAIN`: the URL under which the server is accessible (including `http[s]://`)
@@ -71,6 +72,9 @@ The main interface is served unter http://ci.example.com/Maths/
 
 GET request alternative to a GitHub webhook:
 `http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/build`
+
+Get the list of projects (set via `PROJECTS`, see above):
+`http://ci.example.com/api/`
 
 The commit-hashes in the following URLs are **optional** (in that case, the files from the last build are used):
 

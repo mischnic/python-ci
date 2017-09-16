@@ -20,6 +20,10 @@ class BuildInfo extends React.Component {
 			loading: false,
 			error: false
 		};
+
+		// if(!props.match.url.endsWith("/")){
+		// 	props.history.replace(props.match.url+"/");
+		// }
 	}
 
 	componentDidMount(){
@@ -66,8 +70,8 @@ class BuildInfo extends React.Component {
 			reload: () => this.load()
 		};
 		return (
+			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>click to retry</a></span> :
 			this.state.loading || !this.state.data ? <Loading/> :
-			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>retry</a></span> :
 			<Switch>
 				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: pass})}/>
 				<Route path={"/:proj/:hash"} component={addProps(BuildDetails, {key: "BuildDetails", info: pass})}/>
