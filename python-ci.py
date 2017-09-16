@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
-import os, time, subprocess, errno, datetime
-from urlparse import urlparse
+import os, time, subprocess, errno, datetime, urlparse
 import hmac, hashlib, re, json, jwt
 
 import latex
@@ -231,7 +230,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 	def do_GET(self):
-		path = urlparse(self.path).path
+		parsed = urlparse.urlparse(self.path)
+		path = parsed.path
+		query = urlparse.parse_qs(parsed.query)
 
 		message = ""
 		status = 404
@@ -253,9 +254,17 @@ class Handler(BaseHTTPRequestHandler):
 											("cache-control", "no-cache")])
 					return
 
-				if "Authorization" in self.headers:
+				if "Authorization" in self.headers or "token" in query:
+					token = ""
+					if "Authorization" in self.headers:
+						token = self.headers['Authorization'][7:]
+					elif "token" in query:
+						token = query["token"][0]
+					else:
+						self._send(401)
+						return
 					try:
-						data = jwt.decode(self.headers['Authorization'][7:], JWT_SECRET)
+						data = jwt.decode(token, JWT_SECRET)
 						if not data["user"] == "user":
 							self._send(401)
 							return

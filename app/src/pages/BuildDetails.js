@@ -3,8 +3,8 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {formatDate, formatTime, humanDate, makeCancelable} from "../utils.js";
-import {Loading, api} from "../utils.js";
+import {Loading, api, formatDate, formatTime, humanDate, makeCancelable} from "../utils.js";
+import {getJWT} from "../auth.js";
 
 const logFormatting = {
 	latex:[
@@ -53,9 +53,10 @@ class BuildDetails extends React.Component {
 		}
 	}
 
-	getURL(file){
+	getURL(file, query=false){
 		if(file) file = "/"+file;
-		return `/api/${this.props.match.params.proj}/${this.props.match.params.hash}${file}`;
+		return `/api/${this.props.match.params.proj}/${this.props.match.params.hash}${file}`+
+				(query?`?token=${getJWT()}`:"");
 	}
 
 	load(file){
@@ -151,7 +152,7 @@ class BuildDetails extends React.Component {
 									<div>
 										Artifacts: <br/>
 										<ol>
-											<li><a target="_blank" href={this.getURL("pdf")}>PDF</a></li>
+											<li><a target="_blank" href={this.getURL("pdf", true)}>PDF</a></li>
 										</ol>
 									</div>
 									{
