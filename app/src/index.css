@@ -48,6 +48,10 @@ h1 {
 	padding: 10px;
 }
 
+.main > div > h1 a{
+	color: black;
+}
+
 
 #app > .header {
 	margin: 0;

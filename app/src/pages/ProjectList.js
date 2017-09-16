@@ -57,13 +57,18 @@ class ProjectList extends React.Component {
 		return (
 			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>click to retry</a></span> :
 			this.state.loading || !this.state.data ? <Loading/> :
-			<div className="projectList">{
-				this.state.data.map(proj=>(
-					<CustomLink type="div" to={proj+"/"} className="project" key={proj} style={{
-						backgroundColor: `#${strToColor(proj)}`
-					}}>{proj}</CustomLink>
-				))
-			}</div>
+			<div>
+				<h1>Projects</h1>
+				<div className="projectList">
+					{
+						this.state.data.map(proj=>(
+							<CustomLink type="div" to={proj+"/"} className="project" key={proj} style={{
+								backgroundColor: `#${strToColor(proj)}`
+							}}>{proj}</CustomLink>
+						))
+					}
+				</div>
+			</div>
 
 		);
 	}

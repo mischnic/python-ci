@@ -9,7 +9,7 @@ class BuildsList extends React.Component {
 	render(){
 		return (
 			<div>
-				<h1>Builds: {this.props.match.params.proj}</h1>
+				<h1><Link to="..">Builds</Link>: {this.props.match.params.proj}</h1>
 				<ul className="buildsList">
 					{
 						this.props.info.data.list.map( ({commit, build}) => 
