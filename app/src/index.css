@@ -2,12 +2,15 @@
 	box-sizing: border-box;
 }
 
-html, body, #root, #app, .main > div {
-	height: 100%;
-}
+@media (min-width: 570px) {
 
-.main {
-	height: calc(100% - 56px);
+	html, body, #root, #app, .main > div {
+		height: 100%;
+	}
+
+	.main {
+		height: calc(100% - 56px);
+	}
 }
 
 body {

@@ -11,6 +11,24 @@
 	overflow: scroll;
 }
 
+.buildDetails > .details > .window {
+	display: flex;
+}
+
+.buildDetails > .details > .window > div:nth-child(1) {
+	flex: 1 1 50%;
+}
+
+.buildDetails > .details > .window > div:nth-child(2) {
+	flex: 1 1 30%;
+}
+
+.buildDetails > .details > .window > div:nth-child(3) {
+	flex: 1 1 10;
+	text-align: right;
+}
+
+
 .buildDetails > .info {
 	display: flex;
 }
@@ -30,6 +48,8 @@
 
 
 .window.artifacts {
+	flex: 1 1 30%;
+
 	overflow: scroll;
 }
 
@@ -37,20 +57,23 @@
 	list-style: none;
 	padding-left: 0.7em;
 	margin-top: 0;
+    margin-bottom: 0;
 }
 
-.window.artifacts > div {
+.window.artifacts > div:not(:last-child) {
 	margin-bottom: 1em;
 }
 
 .window.log {
+	flex: 1 1 70%;
+
 	overflow: scroll;
 	min-height: 100px;
     background-color: black;
     color: white;
     padding: 10px;
     padding-top: 7px;
-    padding-bottom: 0;
+    padding-bottom: 7px;
 }
 
 .log code > div:empty {
@@ -67,4 +90,34 @@
 
 .log .warning {
 	color: yellow;
+}
+
+@media (max-width: 440px) {
+	.buildDetails > .files {
+		flex-direction: column;
+	}
+
+	.buildDetails > .files > .artifacts {
+		overflow: initial;
+	}
+
+	.buildDetails > .files > :first-child {
+		margin-right: 0;
+	}
+
+	.buildDetails > .details > .window {
+		flex-direction: column;
+	}
+
+	.buildDetails > .details > .window > div:nth-child(2) {
+		border-top: 1px solid #dfdfdf;
+		margin-top: 0.2em;
+		padding-top: 0.2em;
+	}
+
+	.buildDetails > .details > .window > div:nth-child(1) > a:first-of-type {
+		width: 7ch;
+		overflow: hidden;
+		display: inline-block;
+	}
 }

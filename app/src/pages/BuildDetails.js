@@ -129,17 +129,17 @@ class BuildDetails extends React.Component {
 						<h1><Link to="." title="Go Back to List">Builds: {proj}</Link> &gt; {hash.substring(0,7)}</h1>
 						<div className="buildDetails">
 							<div className="details">
-								<div className={`window build buildStatus ${build.status}`} style={{display: "flex"}}>
-									<div style={{flex: "1 1 50%"}}>
+								<div className={`window build buildStatus ${build.status}`}>
+									<div>
 										<img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}<br/>
 										{commit.msg}<br/>
 										<a href={commit.url}>{commit.ref}</a> <i className="fa fa-external-link"/> ({humanDate(commit.date)})<br/>
 									</div>
-									<div style={{flex: "1 1 30%"}}>
+									<div>
 										<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
 										{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
 									</div>
-									<div style={{flex: "1 1 10%", textAlign: "right"}}>
+									<div>
 										<a className="button" onClick={() => this.rebuild()}>
 											<i className={`fa fa-refresh ${this.state.rebuilding ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
 										</a>
@@ -147,7 +147,7 @@ class BuildDetails extends React.Component {
 								</div>
 							</div>
 							<div className="files">
-								<div className="window artifacts" style={{flex: "1 1 30%"}}>
+								<div className="window artifacts">
 									<div>
 										Artifacts: <br/>
 										<ol>
@@ -155,7 +155,7 @@ class BuildDetails extends React.Component {
 										</ol>
 									</div>
 									{
-										build.stats.counts ? 
+										build.stats && build.stats.counts ? 
 										( 
 										(()=>{
 											const letters = build.stats.counts.letters;
@@ -178,7 +178,7 @@ class BuildDetails extends React.Component {
 										) : null
 									}
 								</div>
-								<div className="window log" style={{flex: "1 1 70%"}}>
+								<div className="window log">
 									{
 										(this.state.files.log && this.state.files.log.content) ?
 										<pre>
