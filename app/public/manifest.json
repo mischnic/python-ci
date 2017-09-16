@@ -6,6 +6,11 @@
 			"src": "icon.png",
 			"sizes": "144x144",
 			"type": "image/png"
+		},
+		{
+			"src": "icon_l.png",
+			"sizes": "288x288",
+			"type": "image/png"
 		}
 	],
 	"start_url": "./index.html",
