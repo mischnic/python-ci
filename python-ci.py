@@ -38,9 +38,9 @@ def symlink_force(target, link_name):
 		else:
 			raise e
 
-def parseRef(ref):
-	if ref == "":
-		return "last"
+def parseRef(proj, ref):
+	if ref == "latest":
+		return os.path.basename(os.path.realpath(proj+OUTPUT_SUFFIX+"/"+ref))
 	else:
 		return ref
 
@@ -63,10 +63,7 @@ def getConfig(proj):
 	return loadJSON(proj+"/.ci.json")
 
 def getBuildPath(proj, ref):
-	if parseRef(ref) is None:
-		return proj+OUTPUT_SUFFIX +"/"+ "last"
-	else:
-		return proj+OUTPUT_SUFFIX +"/"+ parseRef(ref)
+	return proj+OUTPUT_SUFFIX +"/"+ ref
 
 
 def updateStatus(ref, proj, msg, (start, duration), errorMsg = None):
@@ -239,11 +236,12 @@ class Handler(BaseHTTPRequestHandler):
 		status = 404
 
 
-		match = re.search(r"^\/([a-zA-z+-]+)(?:\/?$|\/(?:([0-9a-f]*)\/)?(.*)?)", path)
+		match = re.search(r"^\/([a-zA-z+-]+)(?:\/?$|\/(?:([0-9a-f]*|latest)\/)?(.*)?)", path)
 		# matches: 1=Project | 2=hash or empty | 3=file or empty
 
 		if match is not None:
 			project, ref, fileName = match.group(1,2,3)
+			ref = parseRef(project,ref)
 			if os.path.isdir(project):
 				cfg = getConfig(project)
 				main = cfg.get('main') if cfg else None
@@ -278,7 +276,7 @@ class Handler(BaseHTTPRequestHandler):
 
 				# list of all commits
 				if not ref and not fileName:
-					dirs = [entry for entry in os.listdir(project+OUTPUT_SUFFIX) if entry != "last" and os.path.isdir(project+OUTPUT_SUFFIX+"/"+entry) ]
+					dirs = [entry for entry in os.listdir(project+OUTPUT_SUFFIX) if entry != "latest" and os.path.isdir(project+OUTPUT_SUFFIX+"/"+entry) ]
 
 					data = []
 					for ref in dirs:
@@ -289,7 +287,8 @@ class Handler(BaseHTTPRequestHandler):
 
 					self._send(200, json.dumps({
 							"list" : data,
-							"language" : cfg.get("language", None)
+							"language" : cfg.get("language", None),
+							"latest": parseRef(project, "latest")
 						}), [("Content-type", "application/json")])
 					return
 

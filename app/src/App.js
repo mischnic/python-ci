@@ -40,6 +40,7 @@ export default function App(){
 					<Route path="/login" render={() => <Login/> } />
 					<PrivateRoute path="/" strict exact component={ProjectList} />
 					<PrivateRoute path="/:proj/" strict component={BuildInfo} />
+					<Redirect from="/index.html" to="/"/>
 					<Route render={()=><span>Not found</span>}/>
 				</Switch>
 			</div>

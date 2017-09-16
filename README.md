@@ -89,7 +89,7 @@ Returns a svg-badge indicating the commit-hash of the last build and the build s
 
 Example for a badge which links to the log file:
 
-`[![build status](http://ci.example.com/api/Maths/svg)](http://ci.example.com/api/Maths/log)`
+`[![build status](http://ci.example.com/api/Maths/svg)](http://ci.example.com/Maths/latest)`
 
 ## As a GitHub webhook
 

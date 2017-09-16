@@ -119,8 +119,12 @@ class BuildDetails extends React.Component {
 	}
 
 	render(){
-		const {proj, hash} = this.props.match.params;
+		console.log(this.props.info.data);
+		let {proj, hash} = this.props.match.params;
 		if(this.props.info.data.list){
+			if(hash === "latest"){
+				hash = this.props.info.data.latest;
+			}
 			const c = this.props.info.data.list.find((v)=> v.commit.ref === hash);
 			if(c){
 				const logF = logFormatting[this.props.info.data.language];
