@@ -117,6 +117,7 @@
 
 	.buildDetails > .details > .window > div:nth-child(1) > a:first-of-type {
 		width: 7ch;
+		font-family: monospace;
 		overflow: hidden;
 		display: inline-block;
 	}
