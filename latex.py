@@ -48,8 +48,8 @@ def count(path, buildPath, fileName):
 	if not os.path.isfile(path+"/"+fileName):
 		return (False, "File not found: '"+path+"/"+fileName+"'")
 	cmd = [
-		TEXCOUNT_PATH,
-			"-merge", "-incbib", "-utf8", "-sum", "-relaxed", "-nocol", "-dir="+path+"/", "-auxdir="+buildPath+"/", path+"/"+fileName
+		TEXCOUNT_PATH, # "-incbib",
+			"-merge",  "-utf8", "-sum", "-relaxed", "-nocol", "-dir="+path+"/", "-auxdir="+buildPath+"/", path+"/"+fileName
 		]
 
 	try:
