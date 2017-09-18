@@ -88,7 +88,7 @@ class BuildDetails extends React.Component {
 
 	rebuild(){
 		const stop = () => {
-			this.setState({rebuilding: true});
+			this.setState({rebuilding: false});
 			if(this.rebuildInterval !== null) {
 				clearInterval(this.rebuildInterval);
 				this.rebuildInterval = null;
@@ -96,7 +96,7 @@ class BuildDetails extends React.Component {
 		};
 
 		const checkStatus = () => 
-			api(this.getURL("status"))
+			api(this, this.getURL("status"))
 				.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 				.then(res => res.json())
 				.then(({status}) => {
@@ -107,19 +107,18 @@ class BuildDetails extends React.Component {
 					
 				});
 
-		api(this.getURL("build"))
+		api(this, this.getURL("build"))
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.text())
 			.then(() => {
 					this.setState({rebuilding: true});
-					this.rebuildInterval= setInterval(() => checkStatus(), 1000);
+					this.rebuildInterval = setInterval(() => checkStatus(), 1000);
 					this.props.info.reload();
 				}
 				, console.error);
 	}
 
 	render(){
-		console.log(this.props.info.data);
 		let {proj, hash} = this.props.match.params;
 		if(this.props.info.data.list){
 			if(hash === "latest"){

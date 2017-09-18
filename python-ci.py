@@ -185,7 +185,7 @@ def doCompile(proj, ref):
 		"Config error" if not successfulCfg else
 		"Compile stage failed" if not successfulCompile else None)
 
-	symlink_force(ref, getBuildPath(proj, None))
+	symlink_force(ref, getBuildPath(proj, "latest"))
 
 
 def startCompile(proj, ref):
