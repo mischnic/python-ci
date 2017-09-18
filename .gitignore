@@ -5,7 +5,7 @@
 !.gitignore
 !.eslintrc
 !README.md
-!example_badge.svg
+!example_*
 !start.sh.in
 !python-ci.py
 !gh.py

@@ -6,6 +6,10 @@ A lightweight CI-server written in python, originally developed for a Raspberry 
 - Can be set up as a GitHub webhook
 - Can display the build status next to the commit on GitHub
 
+![List view](example_web1.png)
+
+![Details view](example_web2.png)
+
 ## Setup
 
 Clone your source folder next to the script (see below) and make `start.sh` executable (rename it to start.sh if you want). Enviroment variables for the python script serve as configuration:
