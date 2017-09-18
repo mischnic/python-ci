@@ -22,8 +22,7 @@ class BuildDetails extends React.Component {
 		super(props);
 
 		this.state = {
-			files: {},
-			rebuilding: false
+			files: {}
 		};
 
 		this.rebuildInterval = null;
@@ -87,32 +86,30 @@ class BuildDetails extends React.Component {
 	}
 
 	rebuild(){
-		const stop = () => {
-			this.setState({rebuilding: false});
-			if(this.rebuildInterval !== null) {
-				clearInterval(this.rebuildInterval);
-				this.rebuildInterval = null;
-			}
-		};
+		// const stop = () => {
+		// 	if(this.rebuildInterval !== null) {
+		// 		clearInterval(this.rebuildInterval);
+		// 		this.rebuildInterval = null;
+		// 	}
+		// };
 
-		const checkStatus = () => 
-			api(this, this.getURL("status"))
-				.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
-				.then(res => res.json())
-				.then(({status}) => {
-					if(status !== "pending"){
-						stop();
-						this.props.info.reload();
-					} 
+		// const checkStatus = () => 
+		// 	console.log("checked") || api(this, this.getURL("status"))
+		// 		.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
+		// 		.then(res => res.json())
+		// 		.then(({status}) => {
+		// 			if(status !== "pending"){
+		// 				stop();
+		// 				this.props.info.reload();
+		// 			} 
 					
-				});
+		// 		});
 
 		api(this, this.getURL("build"))
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.text())
 			.then(() => {
-					this.setState({rebuilding: true});
-					this.rebuildInterval = setInterval(() => checkStatus(), 1000);
+					// this.rebuildInterval = setTimeout(() => checkStatus(), 2000);
 					this.props.info.reload();
 				}
 				, console.error);
@@ -120,6 +117,7 @@ class BuildDetails extends React.Component {
 
 	render(){
 		let {proj, hash} = this.props.match.params;
+
 		if(this.props.info.data.list){
 			if(hash === "latest"){
 				hash = this.props.info.data.latest;
@@ -145,7 +143,7 @@ class BuildDetails extends React.Component {
 									</div>
 									<div>
 										<a className="button" onClick={() => this.rebuild()}>
-											<i className={`fa fa-refresh ${this.state.rebuilding ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
+											<i className={`fa fa-refresh ${build.status === "pending" ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
 										</a>
 									</div>
 								</div>
