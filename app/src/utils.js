@@ -36,7 +36,7 @@ function formatTime(sec){
 	} if(sec < 60){
 		return sec.toFixed(1)+" seconds";
 	} else {
-		return Math.floor(sec/60)+":"+Math.floor(sec%60)+(Math.floor(sec/60) === 1 ? " minute" : " minutes");
+		return Math.floor(sec/60)+":"+pad(Math.floor(sec%60), 2) + (Math.floor(sec/60) === 1 ? " minute" : " minutes");
 	}
 }
 
