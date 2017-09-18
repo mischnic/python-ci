@@ -66,7 +66,7 @@ def getBuildPath(proj, ref):
 	return proj+OUTPUT_SUFFIX +"/"+ ref
 
 
-def updateStatus(ref, proj, msg, (start, duration), errorMsg = None):
+def updateStatus(ref, proj, msg, (start, duration), errorMsg = None, stats = {}):
 	if msg == "success":
 		color = "#4c1"
 	elif msg == "pending":
@@ -101,17 +101,8 @@ def updateStatus(ref, proj, msg, (start, duration), errorMsg = None):
 		"errorMsg": errorMsg,
 		"start": round(start*1000),
 		"duration": duration,
-		"stats": {}
-	}
-
-	cfg = getConfig(proj)
-	if "stats" in cfg:
-		if cfg["language"] == "latex" and "counts" in cfg["stats"]:
-			(success, counts) = latex.count(proj, getBuildPath(proj, ref), cfg["main"]+".tex")
-			if success:
-				data["stats"]["counts"] = counts
-			else:
-				data["stats"]["counts"] = False		
+		"stats": stats
+	}	
 
 	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
 		f.write(json.dumps(data))
@@ -174,6 +165,17 @@ def doCompile(proj, ref):
 		else:
 			lastLog += "not compiling" + "\n"
 
+	stats = {}
+	if successful:
+		cfg = getConfig(proj)
+		if "stats" in cfg:
+			if cfg["language"] == "latex" and "counts" in cfg["stats"]:
+				(success, counts) = latex.count(proj, getBuildPath(proj, ref), cfg["main"]+".tex")
+				if success:
+					stats["counts"] = counts
+				else:
+					stats["counts"] = False	
+
 	log(">>> Finished "+ref)
 	lastLog += ">>> Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
@@ -183,7 +185,7 @@ def doCompile(proj, ref):
 	updateStatus(ref, proj, "success" if successful else "error", (timeStart, time.time() - timeStart),
 		"Git stage failed" if not successfulGit else
 		"Config error" if not successfulCfg else
-		"Compile stage failed" if not successfulCompile else None)
+		"Compile stage failed" if not successfulCompile else None, stats)
 
 	symlink_force(ref, getBuildPath(proj, "latest"))
 
