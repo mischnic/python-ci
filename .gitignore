@@ -7,8 +7,6 @@
 !README.md
 !example_*
 !start.sh.in
-!python-ci.py
-!gh.py
-!latex.py
+!*.py
 !app/
 !app/**
