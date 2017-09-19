@@ -13,6 +13,8 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
 
+const envDomain = process.env.DOMAIN;
+
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
 const publicPath = paths.servedPath;
@@ -315,7 +317,7 @@ module.exports = {
       // Don't precache sourcemaps (they're large) and build asset manifest:
       staticFileGlobsIgnorePatterns: [/\.map$/, /asset-manifest\.json$/],
       runtimeCaching: [{
-        urlPattern: /^\/api\/.*/,
+        urlPattern: process.env.DOMAIN ? new RegExp("^https:\/\/"+process.env.DOMAIN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"\/api\/") : /-/,
         handler: 'networkFirst'
       }]
     }),

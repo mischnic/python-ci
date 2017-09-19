@@ -40,6 +40,10 @@ if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
   process.exit(1);
 }
 
+if(process.env.DOMAIN == undefined){
+  console.log(chalk.yellow('DOMAIN not set, runtime api caching won\'t work!\n'));
+}
+
 // First, read the current file sizes in build directory.
 // This lets us display how much they changed later.
 measureFileSizesBeforeBuild(paths.appBuild)
