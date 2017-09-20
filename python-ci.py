@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 from functools import wraps
 from flask import Flask, request, send_file
-import jwt, datetime, hmac, hashlib, os
+import jwt, datetime, hmac, hashlib, os, json
 
-import compile
-from utils import getBuildPath, parseRef
+import compile, gh
+from utils import getBuildPath, parseRef, getConfig
 
 
 SECRET = os.environ.get('SECRET', "")
@@ -52,7 +52,8 @@ def error_handler(func):
 			return func(*args, **kwargs)
 		except IOError:
 			return "Not found", 404
-		except:
+		except Exception, e:
+			print e
 			return "Server error", 500
 
 	return wrapper
@@ -81,40 +82,61 @@ def login():
 def list_projects():
 	return PROJECTS, 200, {'Content-Type': 'text/css'}
 
-@app.route('/<proj>/')
+@app.route('/<proj>/', strict_slashes=True)
 @check_auth
 def get_builds(proj):
-	return proj
+	print "proj: "+proj
+	dirs = [entry for entry in os.listdir(getBuildPath(proj)) 
+					if entry != "latest" and os.path.isdir(getBuildPath(proj, entry)) ]
+
+	data = []
+	for ref in dirs:
+		data.append({
+			"commit": gh.getCommitDetails(proj, ref),
+			"build": compile.getStatus(proj, ref)
+		})
+
+	return json.dumps({
+			"list" : data,
+			"language" : getConfig(proj).get("language", None),
+			"latest": parseRef(proj, "latest")
+		}), [("Content-type", "application/json")]
 
 
-@app.route('/<proj>/<ref>')
+@app.route('/<proj>/<ref>/status')
 @check_auth
-def get_build_details(proj,ref):
-	return proj+"@"+ref
+def get_build_details(proj, ref):
+	return send_file(compile.getStatus(proj, ref, True), mimetype= "application/json")
 
 
 #
 # FILES
 #
 
+def sendFile(file, mimetype, add_etags="", headers={}):
+	response = send_file(file, mimetype=mimetype, add_etags=add_etags)
+	# response.headers.set("Cache-Control", "no-store, must-revalidate")
+	return response
+
 
 @app.route('/<proj>/<ref>/log')
 @check_auth
 @error_handler
-def get_build_log(proj,ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain")
+def get_build_log(proj, ref):
+	return sendFile(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=True)
+	# return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=True)
 
 @app.route('/<proj>/<ref>/svg')
 @check_auth
 @error_handler
-def get_build_svg(proj,ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml")
+def get_build_svg(proj, ref):
+	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml", add_etags=True)
 
 @app.route('/<proj>/<ref>/pdf')
 @check_auth
 @error_handler
-def get_build_pdf(proj,ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf")
+def get_build_pdf(proj, ref):
+	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=True)
 
 @app.route('/<proj>/latest/svg')
 @error_handler
@@ -128,25 +150,25 @@ def get_latest_svg(proj):
 
 @app.route('/<proj>/<ref>/build')
 @check_auth
+@error_handler
 def start_build(proj,ref):
-	return "start "+proj+"@"+ref+" build"
+	return compile.startCompile(proj, ref)
 
 
 @app.route('/<proj>', methods=["POST"])
-def github_build(project):
+@error_handler
+def github_build(proj):
 	(signature_func, signature) = request.headers['X-Hub-Signature'].split("=")
-	output = "Error"
-	status = 200
 
 	if SECRET and SECRET != "<<Github Webhook secret>>":
 		if signature_func == "sha1":
 			mac = hmac.new(str(SECRET), msg=request.data, digestmod=hashlib.sha1)
 			if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
-				return output, 403
+				return "Forbidden", 403
 
 	if request.headers["X-GitHub-Event"] == "push" and request.headers["content-type"] == "application/json":
 		data = request.get_json()
 		print data['head_commit']['id']+": "+data['head_commit']['message']
-		status, output = compile.startCompile(project, data['head_commit']['id'])
+		return  compile.startCompile(proj, data['head_commit']['id'])
 
-	return output, status
+	return "Not found", 404
