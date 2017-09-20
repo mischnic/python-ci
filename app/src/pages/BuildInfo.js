@@ -34,7 +34,7 @@ class BuildInfo extends React.Component {
 		if(inital)
 			this.setState({loading: true});
 		
-		api(this, `/api/${this.props.match.params.proj}`)
+		api(this, `/api/${this.props.match.params.proj}/`)
 			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
 			.then(res => res.json())
 			.then(({list, ...r}) => this.setState(

@@ -2,17 +2,34 @@
 from functools import wraps
 from flask import Flask, request, send_file
 import jwt, datetime, hmac, hashlib, os, json
+from werkzeug.routing import BaseConverter, ValidationError
 
 import compile, gh
 from utils import getBuildPath, parseRef, getConfig
-
 
 SECRET = os.environ.get('SECRET', "")
 PASSWORD = os.environ.get('PASSWORD', "")
 JWT_SECRET = os.environ.get('JWT_SECRET', "secret")
 PROJECTS = "[]" if os.environ.get('PROJECTS', None) is None else "["+",".join(['"'+x+'"' for x in os.environ.get('PROJECTS').split(",")])+"]"
 
+
+
+class StringConverter(BaseConverter):
+	def __init__(self, url_map, exc="."):
+		super(StringConverter, self).__init__(url_map)
+		self.exc = list(exc)
+
+	def to_python(self, value):
+		if any(x not in value for x in self.exc):
+			return value
+		raise ValidationError()
+
+	def to_url(self, value):
+		return value and 'yes' or 'no'
+
+
 app = Flask(__name__, static_url_path='')
+app.url_map.converters['str'] = StringConverter
 
 #
 # UTILS
@@ -21,25 +38,25 @@ app = Flask(__name__, static_url_path='')
 def check_auth(func):
 	@wraps(func)
 	def wrapper(*args, **kwargs):
-		# if "Authorization" in request.headers or "token" in request.args:
-		# 	token = ""
-		# 	if "Authorization" in request.headers:
-		# 		token = request.headers['Authorization'][7:]
-		# 	elif "token" in request.args:
-		# 		token = request.args["token"]
-		# 	else:
-		# 		return "", 401
-		# 	try:
-		# 		data = jwt.decode(token, JWT_SECRET)
-		# 		if data["user"] != "user":
-		# 			return "", 401
-		# 	except jwt.ExpiredSignatureError:
-		# 		return "Expired token", 401
-		# 	except jwt.DecodeError as e:
-		# 		print e
-		# 		return "Invalid token", 401
-		# else:
-		# 	return "", 401
+		if "Authorization" in request.headers or "token" in request.args:
+			token = ""
+			if "Authorization" in request.headers:
+				token = request.headers['Authorization'][7:]
+			elif "token" in request.args:
+				token = request.args["token"]
+			else:
+				return "", 401
+			try:
+				data = jwt.decode(token, JWT_SECRET)
+				if data["user"] != "user":
+					return "", 401
+			except jwt.ExpiredSignatureError:
+				return "Expired token", 401
+			except jwt.DecodeError as e:
+				print e
+				return "Invalid token", 401
+		else:
+			return "", 401
 
 		return func(*args, **kwargs)
 
@@ -71,7 +88,7 @@ def login():
 	if username == "user" and password == PASSWORD:
 		jwt_payload = jwt.encode({
 			"user": username,
-		    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+			"exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
 		}, JWT_SECRET)
 		return jwt_payload
 
@@ -82,7 +99,7 @@ def login():
 def list_projects():
 	return PROJECTS, 200, {'Content-Type': 'text/css'}
 
-@app.route('/<proj>/', strict_slashes=True)
+@app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
 def get_builds(proj):
 	print "proj: "+proj
