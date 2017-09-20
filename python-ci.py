@@ -45,16 +45,16 @@ def check_auth(func):
 			elif "token" in request.args:
 				token = request.args["token"]
 			else:
-				return "", 401
+				return "Unauthorized", 401
 			try:
 				data = jwt.decode(token, JWT_SECRET)
 				if data["user"] != "user":
-					return "", 401
+					return "Forbidden", 403
 			except jwt.ExpiredSignatureError:
 				return "Expired token", 401
 			except jwt.DecodeError as e:
 				print e
-				return "Invalid token", 401
+				return "Invalid token", 403
 		else:
 			return "", 401
 
@@ -102,7 +102,6 @@ def list_projects():
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
 def get_builds(proj):
-	print "proj: "+proj
 	dirs = [entry for entry in os.listdir(getBuildPath(proj)) 
 					if entry != "latest" and os.path.isdir(getBuildPath(proj, entry)) ]
 
