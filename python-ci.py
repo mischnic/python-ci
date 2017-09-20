@@ -56,7 +56,7 @@ def check_auth(func):
 				print e
 				return "Invalid token", 403
 		else:
-			return "", 401
+			return "Unauthorized", 401
 
 		return func(*args, **kwargs)
 
@@ -97,7 +97,7 @@ def login():
 @app.route('/')
 @check_auth
 def list_projects():
-	return PROJECTS, 200, {'Content-Type': 'text/css'}
+	return PROJECTS, 200, {'Content-Type': 'application/json'}
 
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
@@ -116,31 +116,24 @@ def get_builds(proj):
 			"list" : data,
 			"language" : getConfig(proj).get("language", None),
 			"latest": parseRef(proj, "latest")
-		}), [("Content-type", "application/json")]
+		}), {"Content-Type": "application/json"}
 
 
 @app.route('/<proj>/<ref>/status')
 @check_auth
 def get_build_details(proj, ref):
-	return send_file(compile.getStatus(proj, ref, True), mimetype= "application/json")
+	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype= "application/json")
 
 
 #
 # FILES
 #
 
-def sendFile(file, mimetype, add_etags="", headers={}):
-	response = send_file(file, mimetype=mimetype, add_etags=add_etags)
-	# response.headers.set("Cache-Control", "no-store, must-revalidate")
-	return response
-
-
 @app.route('/<proj>/<ref>/log')
 @check_auth
 @error_handler
 def get_build_log(proj, ref):
-	return sendFile(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=True)
-	# return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=True)
+	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=True)
 
 @app.route('/<proj>/<ref>/svg')
 @check_auth
