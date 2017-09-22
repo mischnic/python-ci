@@ -5,13 +5,13 @@ import BuildDetails from "./BuildDetails.js";
 
 import {Route, Switch} from "react-router-dom";
 
-import {api, Loading} from "../utils.js";
+import {Loading, withFetcher} from "../utils.js";
 
 const addProps = (Component, props) => (p) => (
 	<Component {...props} {...p}>{p.children}</Component>
 );
 
-class BuildInfo extends React.Component {
+export default withFetcher(class BuildInfo extends React.Component {
 	constructor(props){
 		super(props);
 
@@ -34,8 +34,7 @@ class BuildInfo extends React.Component {
 		if(inital)
 			this.setState({loading: true});
 		
-		api(this, `/api/${this.props.match.params.proj}`)
-			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
+		this.props.fetch(`/api/${this.props.match.params.proj}/`)
 			.then(res => res.json())
 			.then(({list, ...r}) => this.setState(
 				{
@@ -80,6 +79,4 @@ class BuildInfo extends React.Component {
 		);
 	}
 		
-}
-
-export default BuildInfo;
+});

@@ -1,6 +1,6 @@
 import React from "react";
 
-import {api, Loading} from "../utils.js";
+import {Loading, withFetcher} from "../utils.js";
 import CustomLink from "../CustomLink.js"
 
 import "./ProjectList.css"
@@ -21,7 +21,8 @@ function strToColor(str){
 }
 
 
-class ProjectList extends React.Component {
+
+export default withFetcher(class ProjectList extends React.Component {
 	constructor(props){
 		super(props);
 
@@ -40,7 +41,7 @@ class ProjectList extends React.Component {
 		if(inital)
 			this.setState({loading: true});
 		
-		api(this, `/api/`)
+		this.props.fetch(`/api/`)
 			.then(res => res.json())
 			.then((d) => this.setState(
 				{
@@ -73,6 +74,4 @@ class ProjectList extends React.Component {
 		);
 	}
 		
-}
-
-export default ProjectList;
+});

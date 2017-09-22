@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {Loading, api, formatDate, formatTime, humanDate, makeCancelable} from "../utils.js";
+import {Loading, formatDate, formatTime, humanDate, withFetcher} from "../utils.js";
 import {getJWT} from "../auth.js";
 
 const logFormatting = {
@@ -17,7 +17,8 @@ const logFormatting = {
 	]
 };
 
-class BuildDetails extends React.Component {
+
+export default withFetcher(class BuildDetails extends React.Component {
 	constructor(props){
 		super(props);
 
@@ -26,14 +27,6 @@ class BuildDetails extends React.Component {
 		};
 
 		this.rebuildInterval = null;
-		this.loadPromises = [];
-		this.loadPromises.remove = function(v){
-			v.cancel();
-			const i = this.indexOf(v);
-			if(i > -1){
-				this.splice(i, 1);
-			}
-		};
 	}
 
 	componentDidMount(){
@@ -47,9 +40,6 @@ class BuildDetails extends React.Component {
 			clearInterval(this.rebuildInterval);
 			this.rebuildInterval = null;
 		}
-		for(const p of this.loadPromises){
-			this.loadPromises.remove(p);
-		}
 	}
 
 	getURL(file, query=false){
@@ -60,8 +50,7 @@ class BuildDetails extends React.Component {
 
 	load(file){
 		this.setState({files: {[file]: {loading: true}, ...this.state.files}});
-		const req = makeCancelable(api(this, this.getURL(file))
-			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
+		this.props.fetch(this.getURL(file))
 			.then(res => res.text())
 			.then(res => this.setState({
 					files: {
@@ -80,9 +69,6 @@ class BuildDetails extends React.Component {
 						...this.state.files
 						}
 					}))
-			.then(() => this.loadPromises.remove(req)));
-
-		this.loadPromises.push(req);
 	}
 
 	rebuild(){
@@ -105,8 +91,7 @@ class BuildDetails extends React.Component {
 					
 		// 		});
 
-		api(this, this.getURL("build"))
-			.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
+		this.props.fetch(this.getURL("build"))
 			.then(res => res.text())
 			.then(() => {
 					// this.rebuildInterval = setTimeout(() => checkStatus(), 2000);
@@ -182,7 +167,7 @@ class BuildDetails extends React.Component {
 								</div>
 								<div className="window log">
 									{
-										(this.state.files.log && this.state.files.log.content) ?
+										(this.state.files.log && this.state.files.log.content && build.status !== "pending") ?
 										<pre>
 										<code>
 											{
@@ -198,7 +183,7 @@ class BuildDetails extends React.Component {
 											}
 										</code>
 										</pre>
-										: <Loading/>
+										: <Loading opacity={0.5}/>
 									}
 								</div>
 							</div>
@@ -210,6 +195,4 @@ class BuildDetails extends React.Component {
 		return null;
 	}
 
-}
-
-export default BuildDetails;
+});
