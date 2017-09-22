@@ -10,6 +10,6 @@
 #	PROJECTS="Maths,Other"
 #
 # example:
-#	OUTPUT_SUFFIX="_ci" ./python-ci.py
+#	OUTPUT_SUFFIX="_ci" gunicorn python-ci:app
 
-./python-ci.py
+gunicorn python-ci:app

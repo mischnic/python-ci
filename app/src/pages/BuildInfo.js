@@ -34,6 +34,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 		if(inital)
 			this.setState({loading: true});
 		
+
 		this.props.fetch(`/api/${this.props.match.params.proj}/`)
 			.then(res => res.json())
 			.then(({list, ...r}) => this.setState(

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re, subprocess, os
 
-TEXCOUNT_PATH = "TeXcount_3_0_1/texcount.pl"
+TEXCOUNT_PATH = "TeXcount_3_1/texcount.pl"
 
 def parseOutput(data, regex):
 	s, s2 = None, None

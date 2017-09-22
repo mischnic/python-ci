@@ -12,7 +12,9 @@ A lightweight CI-server written in python, originally developed for a Raspberry 
 
 ## Setup
 
-Clone your source folder next to the script (see below) and make `start.sh` executable (rename it to start.sh if you want). Enviroment variables for the python script serve as configuration:
+Install required libs: `pip install flask gunicorn`
+
+Clone your source folder next to the script (see below), copy `start.sh.in` to `start.sh` and make `start.sh` executable. Enviroment variables in `start.sh` for the python script serve as configuration:
 
 - `OUTPUT_SUFFIX`: the `_build` below; optional (default: `_build`)
 - `SECRET`: the secret from the GitHub webhook configuration; optional
@@ -28,7 +30,7 @@ You need the following file hierarchy:
 	python-ci
 	 |- python-ci.py
 	 |- README.md
-	 |- [TeXcount_3_0_1]
+	 |- [TeXcount_3_1]
 	 |- ...
 	 |- Maths
 	 |  - .ci.json
@@ -57,7 +59,7 @@ Currently implemented "stats":
 	
 	
 Note:
-For the `counts` stats, [TeXcount](http://app.uio.no/ifi/texcount/download.html) options needs to be downloaded to a folder `TeXcount_3_0_1` inside `python-ci`. To count bibliography, `%TC:subst \printbibliography \bibliography` needs to be the first line of your document and you'll have to patch TeXcount (from [here](https://gist.github.com/mischnic/f8b0433934e046c4e6d0202d99276b82)).
+For the `counts` stats, [TeXcount](http://app.uio.no/ifi/texcount/download.html) options needs to be downloaded to a folder `TeXcount_3_1` inside `python-ci`. To count bibliography, `%TC:subst \printbibliography \bibliography` needs to be the first line of your document and you'll have to patch TeXcount (from [here](https://gist.github.com/mischnic/f8b0433934e046c4e6d0202d99276b82)).
 
 ## Usage
 
@@ -74,26 +76,30 @@ The main interface is served unter http://ci.example.com/Maths/
 
 (The following links are only correct, if you use a dedicated webserver as a proxy to python-ci with a configuration as seen below. The python-ci server itself responds to requests like `/Maths/1f2a23..`, without `/api`.)
 
+All API requests except for the latest svg badge need a JWT token either specified as a GET parameter (`...?token=eyJhbGciOiJIUz...`) or as a  header: `Authentification: Bearer eyJhbGciOiJIUz...`.
+
+`http://ci.example.com/api/login`
+
 GET request alternative to a GitHub webhook:
 `http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/build`
 
 Get the list of projects (set via `PROJECTS`, see above):
 `http://ci.example.com/api/`
 
-The commit-hashes in the following URLs are **optional** (in that case, the files from the last build are used):
+The commit-hashes in the following URLs can be replaced by `latest`:
 
 Would correspond to the file `Maths_build/Document.pdf`:
-`http://ci.example.com/api/Maths/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]pdf`
+`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/pdf`
 
 Returns the compile-log which was saved as `Maths_build/.log`:
-`http://ci.example.com/api/Maths/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]log`
+`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/log`
 
 Returns a svg-badge indicating the commit-hash of the last build and the build status (successful, error, currently running):
-`http://ci.example.com/api/Maths/[1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/]svg` ![badge example](example_badge.svg)
+`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/svg` ![badge example](example_badge.svg)
 
 Example for a badge which links to the log file:
 
-`[![build status](http://ci.example.com/api/Maths/svg)](http://ci.example.com/Maths/latest)`
+`[![build status](http://ci.example.com/api/Maths/latest/svg)](http://ci.example.com/Maths/latest)`
 
 ## As a GitHub webhook
 

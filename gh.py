@@ -1,6 +1,6 @@
 import os, datetime, github
 
-TOKEN = os.environ['TOKEN']
+TOKEN = os.environ.get('TOKEN', "")
 gu = github.Github(TOKEN).get_user()
 
 cache = dict()
