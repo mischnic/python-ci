@@ -1,6 +1,49 @@
 import React from "react";
 import {getJWT, logout} from "./auth.js";
 
+const withFetcher = (Component) => (
+	class Fetcher extends React.Component {
+		constructor(props){
+			super(props);
+			this.requests = [];
+			this.requests.remove = function(v){
+				v.cancel();
+				const i = this.indexOf(v);
+				if(i > -1){
+					this.splice(i, 1);
+				}
+			};
+		}
+
+		componentWillUnmount(){
+			this.requests.map((v)=>v.cancel());
+		}
+
+		fetch(...a){
+			const req = makeCancelable(
+				api(Component, ...a)
+					// .then((v)=>{
+					// 	req.cancel();
+					// 	this.requests.splice(this.requests.indexOf(req), 1);
+					// 	return v;
+					// }, (v)=>{
+					// 	req.cancel();
+					// 	this.requests.splice(this.requests.indexOf(req), 1);
+					// 	return v;
+					// })
+			);
+			this.requests.push(req);
+			return req.promise;
+		}
+
+		render(){
+			const {...props} = this.props;
+			return <Component {...props} fetch={(...a)=>this.fetch(...a)}/>;
+		}
+	}
+)
+
+
 const makeCancelable = (promise, errorFree = true) => {
 	let hasCanceled_ = false;
 
@@ -42,7 +85,7 @@ function formatTime(sec){
 
 function humanDate(date){
 	let diff = (new Date() - date);
-	let diffMinutes = Math.floor(diff / 1000 / 60);
+	let diffMinutes = Math.round(diff / 1000 / 60);
 	let diffHours = Math.floor(diff / 1000 / 60 / 60);
 
 	if(diffMinutes > 60){
@@ -118,8 +161,8 @@ const api = (comp, url, settings={}, type = "json") => {
 // 	});
 // };
 
-const Loading = () =>
-	<div style={{display:"flex",justifyContent:"center",alignItems:"center", opacity: "0.07", fontSmoothing: "none"}}>
+const Loading = (props) =>
+	<div style={{display:"flex",justifyContent:"center",alignItems:"center", opacity: props.opacity ? props.opacity : "0.07", fontSmoothing: "none"}}>
 		<i className="fa fa-cog fa-4x fa-spin"/>
 	</div>;
 
@@ -131,4 +174,4 @@ const Loading = () =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, formatTime, humanDate, pad, makeCancelable, Loading};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, Loading, withFetcher};
