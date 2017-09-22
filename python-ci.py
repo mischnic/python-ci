@@ -133,19 +133,19 @@ def get_build_details(proj, ref):
 @check_auth
 @error_handler
 def get_build_log(proj, ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=True)
+	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=False)
 
 @app.route('/<proj>/<ref>/svg')
 @check_auth
 @error_handler
 def get_build_svg(proj, ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml", add_etags=True)
+	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml", add_etags=False)
 
 @app.route('/<proj>/<ref>/pdf')
 @check_auth
 @error_handler
 def get_build_pdf(proj, ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=True)
+	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=False)
 
 @app.route('/<proj>/latest/svg')
 @error_handler
