@@ -150,7 +150,7 @@ def get_build_pdf(proj, ref):
 @app.route('/<proj>/latest/svg')
 @error_handler
 def get_latest_svg(proj):
-	return get_build_svg(proj, "latest")
+	return send_file(getBuildPath(proj, parseRef(proj,"latest"))+"/.status.svg", mimetype="image/svg+xml", add_etags=False)
 
 
 #
