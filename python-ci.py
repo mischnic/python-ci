@@ -102,21 +102,28 @@ def list_projects():
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
 def get_builds(proj):
-	dirs = [entry for entry in os.listdir(getBuildPath(proj)) 
-					if entry != "latest" and os.path.isdir(getBuildPath(proj, entry)) ]
+	if os.path.exists(getBuildPath(proj)):
+		dirs = [entry for entry in os.listdir(getBuildPath(proj)) 
+						if entry != "latest" and os.path.isdir(getBuildPath(proj, entry)) ]
 
-	data = []
-	for ref in dirs:
-		data.append({
-			"commit": gh.getCommitDetails(proj, ref),
-			"build": compile.getStatus(proj, ref)
-		})
+		data = []
+		for ref in dirs:
+			data.append({
+				"commit": gh.getCommitDetails(proj, ref),
+				"build": compile.getStatus(proj, ref)
+			})
 
-	return json.dumps({
-			"list" : data,
-			"language" : getConfig(proj).get("language", None),
-			"latest": parseRef(proj, "latest")
-		}), {"Content-Type": "application/json"}
+		return json.dumps({
+				"list" : data,
+				"language" : getConfig(proj).get("language", None),
+				"latest": parseRef(proj, "latest")
+			}), {"Content-Type": "application/json"}
+	else:
+		return json.dumps({
+				"list" : [],
+				"language" : getConfig(proj).get("language", None),
+				"latest": ""
+			}), {"Content-Type": "application/json"}
 
 
 @app.route('/<proj>/<ref>/status')
