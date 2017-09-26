@@ -163,6 +163,11 @@ const Loading = (props) =>
 		<i className="fa fa-cog fa-4x fa-spin"/>
 	</div>;
 
+const Errors = (props) =>
+	<div style={{display:"flex",justifyContent:"center",alignItems:"center", color: "white", height: "100%"}}>
+		An error occured
+	</div>;
+
 
 // fetch("/api/files/rename", {
 //     method: "POST",
@@ -171,4 +176,4 @@ const Loading = (props) =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, withFetcher};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher};

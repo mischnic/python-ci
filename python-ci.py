@@ -129,7 +129,7 @@ def get_builds(proj):
 @app.route('/<proj>/<ref>/status')
 @check_auth
 def get_build_details(proj, ref):
-	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype= "application/json")
+	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype="application/json")
 
 
 #

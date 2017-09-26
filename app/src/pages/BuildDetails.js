@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {Loading, formatDate, formatTime, humanDate, withFetcher} from "../utils.js";
+import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher} from "../utils.js";
 import {getJWT} from "../auth.js";
 
 const logFormatting = {
@@ -50,25 +50,26 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 	load(file){
 		this.setState({files: {[file]: {loading: true}, ...this.state.files}});
-		this.props.fetch(this.getURL(file))
+		return this.props.fetch(this.getURL(file))
 			.then(res => res.text())
 			.then(res => this.setState({
 					files: {
+						...this.state.files,
 						[file]: {
 							content: res,
-							loading: false
+							loading: false,
 						}
 					}
-				}), () => this.setState(
-					{
-						files: {
-							[file]: {
-								loading: false,
-								error: true
-							},
-						...this.state.files
-						}
-					}))
+				}))
+			.catch(() => this.setState({
+					files: {
+						...this.state.files,
+						[file]: {
+							loading: false,
+							error: true
+						},
+					}
+				}, ))
 	}
 
 	rebuild(){
@@ -167,23 +168,25 @@ export default withFetcher(class BuildDetails extends React.Component {
 								</div>
 								<div className="window log">
 									{
-										(this.state.files.log && this.state.files.log.content && build.status !== "pending") ?
-										<pre>
-										<code>
-											{
-											this.state.files.log.content
-												.split("\n").map((v, i) => {
-													const key = logF.findIndex(e => (
-														typeof e[0] === "object" ?
-															(e[0].test(v)) :
-															(v.indexOf(e[0]) === 0) 
-													));
-													return <div className={key>-1? logF[key][1] :""} key={i}>{v}</div>;
-												})
-											}
-										</code>
-										</pre>
-										: <Loading opacity={0.5}/>
+										this.state.files["log"] &&
+										(this.state.files["log"].loading || build.status === "pending" ? <Loading opacity={0.5}/> :
+											this.state.files["log"].error ? <Errors/> : 
+											<pre>
+											<code>
+												{
+												this.state.files["log"].content
+													.split("\n").map((v, i) => {
+														const key = logF.findIndex(e => (
+															typeof e[0] === "object" ?
+																(e[0].test(v)) :
+																(v.indexOf(e[0]) === 0) 
+														));
+														return <div className={key>-1? logF[key][1] :""} key={i}>{v}</div>;
+													})
+												}
+											</code>
+											</pre>
+										)
 									}
 								</div>
 							</div>
