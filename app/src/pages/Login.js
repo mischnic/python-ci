@@ -39,6 +39,8 @@ class Login extends React.Component {
 			.then(() => this.redirect(), (res) => {
 				if(res.status === 401){
 					this.setState({message: 'Wrong username or password'});
+				} else {
+					this.setState({message: 'An error occured'});
 				}
 			});
 	}
@@ -49,7 +51,7 @@ class Login extends React.Component {
 				<h1>Login</h1>
 				<div>
 					<form onSubmit={(e)=>{this.tryLogin(e);}}>
-						{this.state.message && <div style={{color: 'red', fontSize: '0.8em', textAlign: 'center', marginBottom: '0.5em'}}>{this.state.message}</div>}
+						<div style={{color: 'red', fontSize: '0.8em', textAlign: 'center', marginBottom: '0.5em', height: "1em"}}>{this.state.message}</div>
 						<div>
 							<input value={this.state.user} onChange={(e)=>{this.changeUser(e);}} type='text' placeholder='Username / "guest"' required/>
 							<i className="fa fa-user-o"/>

@@ -1,7 +1,8 @@
 import React from "react";
+import {withRouter} from 'react-router-dom'
 import {getJWT, logout} from "./auth.js";
 
-const withFetcher = (Component) => (
+const withFetcher = (Component) => withRouter(
 	class Fetcher extends React.Component {
 		constructor(props){
 			super(props);
@@ -21,7 +22,7 @@ const withFetcher = (Component) => (
 
 		fetch(...a){
 			const req = makeCancelable(
-				api(Component, ...a)
+				api(this, ...a)
 					// .then((v)=>{
 					// 	req.cancel();
 					// 	this.requests.splice(this.requests.indexOf(req), 1);
@@ -33,33 +34,30 @@ const withFetcher = (Component) => (
 					// })
 			);
 			this.requests.push(req);
-			return req.promise;
+			return req;
 		}
 
 		render(){
-			const {...props} = this.props;
-			return <Component {...props} fetch={(...a)=>this.fetch(...a)}/>;
+			return <Component {...this.props} fetch={(...a)=>this.fetch(...a)}/>;
 		}
 	}
 )
 
 
-const makeCancelable = (promise, errorFree = true) => {
-	let hasCanceled_ = false;
+const StopPromise = {
+	then: (v,e) => StopPromise,
+	catch: (e) => StopPromise
+};
 
-	const wrappedPromise = new Promise((resolve, reject) => {
-		promise.then(
-			val => hasCanceled_ ? (errorFree ? resolve() : reject({isCanceled: true})) : resolve(val),
-			error => hasCanceled_ ? (errorFree ? reject() : reject({isCanceled: true})) : reject(error)
-		);
+const makeCancelable = (p) => {
+	let cancelled = false;
+	const newPromise = new Promise((res, rej) => {
+		p.then(
+			val => cancelled ? StopPromise : res(val),
+			err => cancelled ? StopPromise : rej(err))
 	});
-
-	return {
-		promise: wrappedPromise,
-		cancel() {
-			hasCanceled_ = true;
-		},
-	};
+	newPromise.cancel = () => cancelled = true;
+	return newPromise;
 };
 
 function pad(n, width, z) {
@@ -106,13 +104,12 @@ const api = (comp, url, settings={}, type = "json") => {
 				return res;
 			} else return Promise.reject(res);
 		}).catch((res)=>{
-			if(res.status === 401){
-				if(comp){
-					logout();
-					comp.props.history.push("/");
-				} else {
-					return Promise.reject(res);
-				}
+			if(comp && (res.status === 401 || res.status === 403)){
+				logout();
+				comp.props.history.push("/");
+				return StopPromise;
+			} else{
+				return Promise.reject(res);
 			}
 		});
 };
@@ -174,4 +171,4 @@ const Loading = (props) =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, formatTime, humanDate, pad, makeCancelable, Loading, withFetcher};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, withFetcher};
