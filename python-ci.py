@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from functools import wraps
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, make_response
 import jwt, datetime, hmac, hashlib, os, json
 from werkzeug.routing import BaseConverter, ValidationError
 
@@ -75,6 +75,18 @@ def error_handler(func):
 
 	return wrapper
 
+def nocache(view):
+	@wraps(view)
+	def no_cache(*args, **kwargs):
+		response = make_response(view(*args, **kwargs))
+		# response.headers['Last-Modified'] = datetime.now()
+		response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+		response.headers['Pragma'] = 'no-cache'
+		response.headers['Expires'] = '-1'
+		return response
+
+	return no_cache
+
 
 #
 # GENERAL
@@ -128,6 +140,7 @@ def get_builds(proj):
 
 @app.route('/<proj>/<ref>/status')
 @check_auth
+@nocache
 def get_build_details(proj, ref):
 	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype="application/json")
 
@@ -138,23 +151,27 @@ def get_build_details(proj, ref):
 
 @app.route('/<proj>/<ref>/log')
 @check_auth
+@nocache
 @error_handler
 def get_build_log(proj, ref):
 	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=False)
 
 @app.route('/<proj>/<ref>/svg')
 @check_auth
+@nocache
 @error_handler
 def get_build_svg(proj, ref):
 	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml", add_etags=False)
 
 @app.route('/<proj>/<ref>/pdf')
 @check_auth
+@nocache
 @error_handler
 def get_build_pdf(proj, ref):
 	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=False)
 
 @app.route('/<proj>/latest/svg')
+@nocache
 @error_handler
 def get_latest_svg(proj):
 	return send_file(getBuildPath(proj, parseRef(proj,"latest"))+"/.status.svg", mimetype="image/svg+xml", add_etags=False)
