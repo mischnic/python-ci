@@ -211,7 +211,7 @@ module.exports = {
           },
           // "file" loader makes sure assets end up in the `build` folder.
           // When you `import` an asset, you get its filename.
-          // This loader don't uses a "test" so it will catch all modules
+          // This loader doesn't use a "test" so it will catch all modules
           // that fall through the other loaders.
           {
             loader: require.resolve('file-loader'),
@@ -316,10 +316,10 @@ module.exports = {
       navigateFallbackWhitelist: [/^(?!\/api).*/],
       // Don't precache sourcemaps (they're large) and build asset manifest:
       staticFileGlobsIgnorePatterns: [/\.map$/, /asset-manifest\.json$/],
-      runtimeCaching: [{
-        urlPattern: process.env.DOMAIN ? new RegExp("^https:\/\/"+process.env.DOMAIN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"\/api\/") : /-/,
-        handler: 'networkFirst'
-      }]
+      // runtimeCaching: [{
+      //   urlPattern: process.env.DOMAIN ? new RegExp("^https:\/\/"+process.env.DOMAIN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"\/api\/") : /-/,
+      //   handler: 'networkFirst'
+      // }]
     }),
     // Moment.js is an extremely popular library that bundles large locale files
     // by default due to how Webpack interprets its code. This is a practical
