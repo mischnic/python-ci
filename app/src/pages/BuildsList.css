@@ -60,6 +60,11 @@
 
 	.buildsList > li > .commitInfo > div:nth-child(2) {
 		flex: none;
+
+		width: 100%;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
 	}
 
 	.buildsList > li > .commitData {
