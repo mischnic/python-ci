@@ -92,7 +92,7 @@
 	color: yellow;
 }
 
-@media (max-width: 440px) {
+@media (max-width: 730px) {
 	.buildDetails > .files {
 		flex-direction: column;
 	}

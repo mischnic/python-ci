@@ -2,7 +2,7 @@
 	box-sizing: border-box;
 }
 
-@media (min-width: 570px) {
+@media (min-width: 660px) {
 
 	html, body, #root, #app, .main > div {
 		height: 100%;

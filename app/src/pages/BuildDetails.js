@@ -114,7 +114,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 				const {build, commit} = c;
 				return (
 					<div>
-						<h1><Link to="." title="Go Back to List">Builds: {proj}</Link> &gt; {hash.substring(0,7)}</h1>
+						<h1><Link to="." title="Go Back to List">{proj}</Link> &gt; {hash.substring(0,7)}</h1>
 						<div className="buildDetails">
 							<div className="details">
 								<div className={`window build buildStatus ${build.status}`}>
