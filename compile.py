@@ -1,4 +1,4 @@
-import subprocess, time, os, json
+import subprocess, time, os, json, shutil
 from threading import Thread
 import latex, gh
 from utils import symlink_force, getBuildPath, log, getConfig, loadJSON
@@ -82,11 +82,43 @@ def updateGit(proj, ref):
 
 	return (successful, lastLog)
 
+def npm(proj, buildPath, cfg):
+	lastLog = ""
+	successful = True
+
+	output = cfg.get("output", None)
+	env = cfg.get("env", {})
+	cwd = proj+"/"+cfg.get("source", "")
+	env["PATH"] = "/usr/local/bin"
+
+	if output:
+		try:
+			lastLog += ">>> yarn install\n"
+			lastLog += subprocess.check_output(["yarn", "install"], cwd=cwd, stderr=subprocess.STDOUT, env=env) + "\n"
+			lastLog += ">>> yarn build\n"
+			lastLog += subprocess.check_output(["yarn", "build"], cwd=cwd, stderr=subprocess.STDOUT, env=env) + "\n"
+			
+			lastLog += ">>> creating output archive...\n"
+			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd, base_dir="./"+output)
+
+		except (subprocess.CalledProcessError, OSError) as exc:
+			if type(exc).__name__ == "OSError":
+				lastLog += "yarn: "+str(exc.strerror) + "\n"
+			else:
+				lastLog += exc.output + "\n"
+				lastLog += "yarn failed: "+str(exc.returncode) + "\n"
+			successful = False
+	else:
+		successful = False
+		lastLog += "Missing 'output' in config"
+
+	return (successful, lastLog)
+
 compileLang = dict(
 	latex = latex.doCompile,
-	git = lambda a,b,c,d: (True, "")
+	git = lambda a,b,c: (True, ""),
+	npm = npm
 )
-
 
 def doCompile(proj, ref):
 	timeStart = time.time()
@@ -106,9 +138,8 @@ def doCompile(proj, ref):
 		successfulCfg = True
 		cfg = getConfig(proj)
 		lang = cfg.get("language", None)
-		main = cfg.get("main", None)
 
-		if not lang or not main:
+		if not lang:
 			successfulCfg = False
 			successful = successfulCfg
 
@@ -116,7 +147,7 @@ def doCompile(proj, ref):
 			if not os.path.exists(getBuildPath(proj)):
 				print "creating "+getBuildPath(proj)
 				os.makedirs(getBuildPath(proj))
-			successfulCompile, lastLogCompile = compileLang[lang](proj, getBuildPath(proj, ref), main)
+			successfulCompile, lastLogCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg)
 			lastLog += lastLogCompile
 			successful = successfulCompile
 		else:
@@ -134,7 +165,7 @@ def doCompile(proj, ref):
 					stats["counts"] = False	
 
 	log(">>> Finished "+ref)
-	lastLog += ">>> Finished: "+time.strftime("%X")+" "+ref  + "\n"
+	lastLog += (">>>" if successful else ">!>")+" Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
 	with open(getBuildPath(proj, ref)+"/.log", 'w') as lastLogFile:
 		lastLogFile.write(lastLog)

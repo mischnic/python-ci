@@ -144,10 +144,24 @@ def get_builds(proj):
 def get_build_details(proj, ref):
 	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype="application/json")
 
+def artifacts(proj):
+	lang = getConfig(proj).get("language", None)
+	if lang == "latex":
+		return {"pdf": "PDF"}
+	elif lang == "npm":
+		return {"output.zip": "Output"}
 
 #
 # FILES
 #
+
+@app.route('/<proj>/<ref>/artifacts')
+@check_auth
+@nocache
+@error_handler
+def get_artifacts(proj, ref):
+	return json.dumps(artifacts(proj)), {"Content-Type": "application/json"}
+
 
 @app.route('/<proj>/<ref>/log')
 @check_auth
@@ -169,6 +183,14 @@ def get_build_svg(proj, ref):
 @error_handler
 def get_build_pdf(proj, ref):
 	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=False)
+
+@app.route('/<proj>/<ref>/output.zip')
+@check_auth
+@nocache
+@error_handler
+def get_build_zip(proj, ref):
+	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/output.zip", mimetype="application/zip", add_etags=False)
+
 
 @app.route('/<proj>/latest/svg')
 @nocache

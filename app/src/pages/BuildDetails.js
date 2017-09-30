@@ -7,6 +7,10 @@ import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher} from ".
 import {getJWT} from "../auth.js";
 
 const logFormatting = {
+	all: [
+		[">>> ", "command"],
+		[">!> ", "error"]
+	],
 	latex:[
 		[">>> ", "command"],
 		[/Package [a-zA-z]+ Warning:/, "warning"],
@@ -32,6 +36,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 	componentDidMount(){
 		if(this.props.info.data){
 			this.load("log");
+			this.load("artifacts", res=>res.json());
 		}
 	}
 
@@ -48,10 +53,10 @@ export default withFetcher(class BuildDetails extends React.Component {
 				(query?`?token=${getJWT()}`:"");
 	}
 
-	load(file){
+	load(file, type=(res)=>res.text()){
 		this.setState({files: {[file]: {loading: true}, ...this.state.files}});
 		return this.props.fetch(this.getURL(file))
-			.then(res => res.text())
+			.then(type)
 			.then(res => this.setState({
 					files: {
 						...this.state.files,
@@ -110,7 +115,8 @@ export default withFetcher(class BuildDetails extends React.Component {
 			}
 			const c = this.props.info.data.list.find((v)=> v.commit.ref === hash);
 			if(c){
-				const logF = logFormatting[this.props.info.data.language];
+				const logF = logFormatting[this.props.info.data.language] || logFormatting["all"];
+
 				const {build, commit} = c;
 				return (
 					<div>
@@ -138,9 +144,21 @@ export default withFetcher(class BuildDetails extends React.Component {
 								<div className="window artifacts">
 									<div>
 										Artifacts: <br/>
-										<ol>
-											<li><a target="_blank" href={this.getURL("pdf", true)}>PDF</a></li>
-										</ol>
+										{
+											this.state.files["artifacts"] && (
+												this.state.files["artifacts"].content ?
+												<ol>
+													{
+														Object.keys(this.state.files["artifacts"].content).map(v=>(
+															<li key={v}><a target="_blank" href={this.getURL(v, true)}>
+																{this.state.files["artifacts"].content[v]}
+															</a></li>
+														))
+													}
+												</ol>
+												: this.state.files["artifacts"].loading && <Loading/>
+											)
+										}
 									</div>
 									{
 										build.stats && build.stats.counts ? 

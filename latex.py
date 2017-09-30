@@ -17,8 +17,6 @@ def parseOutput(data, regex):
 		# (sumc, text, headers, outside, headersN, floatsN, mathsI, mathsD) = l
 		res["total"] = l
 
-	# print re.search(regex, s, re.U).group(1,2,3,4,5,6)
-
 	if s2:
 		for l in re.findall(r"^  ([0-9]+)\+([0-9]+)\+([0-9]+) \(([0-9]+)\/([0-9]+)\/([0-9]+)\/([0-9]+)\) ([\w: äöü]+)", s2, re.U|re.M):
 			# (text, headers, captions, headersH, floatsH, inlinesH, displayedH, name) = l
@@ -34,11 +32,6 @@ def correctLetters(letters, words):
 					letters[k][ci] = tuple((int(ccv) + int(words[k][ci][cci]) if not isinstance(ccv, basestring) else ccv) for cci, ccv in enumerate(cv))
 			else:
 				letters[k] = tuple(int(cv) + int(words[k][ci]) for ci, cv in enumerate(v))
-	# return {k: (v if k not in words else
-	# 				(correctLettersB(letters[k], words[k]) if isinstance(v, dict) else
-	# 				v+words[k])
-	# 			)
-	# 		for k, v in letters.items()}
 
 
 lettersR = r"Sum count: ([0-9]+)\nLetters in text: ([0-9]+)\nLetters in headers: ([0-9]+)\nLetters in captions: ([0-9]+)\nNumber of headers: ([0-9]+)\nNumber of floats/tables/figures: ([0-9]+)\nNumber of math inlines: ([0-9]+)\nNumber of math displayed: ([0-9]+)"
@@ -83,29 +76,36 @@ def copyFolderStructure(src, target):
 			pass
 
 
-def doCompile(proj, buildPath, fileName):
+def doCompile(proj, buildPath, cfg):
 	lastLog = ""
 	successful = True
 
 	copyFolderStructure(proj, buildPath)
 
-	cmd = ["latexmk",
-				"-interaction=nonstopmode",
-				# "-gg",
-				"-file-line-error",
-				"-outdir=../"+buildPath,
-				"-pdf", fileName+".tex" ]
+	main = cfg.get("main", None)
 
-	try:
-		lastLog += ">>> "+(" ".join(cmd))+"\n"
-		lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT) + "\n"
+	if main:
 
-	except (subprocess.CalledProcessError, OSError) as exc:
-		if type(exc).__name__ == "OSError":
-			lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
-		else:
-			lastLog += exc.output + "\n"
-			lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
+		cmd = ["latexmk",
+					"-interaction=nonstopmode",
+					# "-gg",
+					"-file-line-error",
+					"-outdir=../"+buildPath,
+					"-pdf", main+".tex" ]
+
+		try:
+			lastLog += ">>> "+(" ".join(cmd))+"\n"
+			lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT) + "\n"
+
+		except (subprocess.CalledProcessError, OSError) as exc:
+			if type(exc).__name__ == "OSError":
+				lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
+			else:
+				lastLog += exc.output + "\n"
+				lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
+			successful = False
+	else:
 		successful = False
+		lastLog += "Missing 'main' in config"
 
 	return (successful, lastLog)

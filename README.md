@@ -52,6 +52,7 @@ You need the following file hierarchy:
 Currently implemented languages:
 - `git`: Update repository only
 - `latex`: Update repository and run `latexmk` on the `${main}.tex` file
+- `npm`: Update repository, run `yarn install` and `yarn build` (with env variables specified in the `env` dict) in the `source` folder, excepts output in the `source`/`output` folder and packages the content into a zip file.
 
 Currently implemented "stats":
 - for `latex`:
@@ -59,7 +60,7 @@ Currently implemented "stats":
 	
 	
 Note:
-For the `counts` stats, [TeXcount](http://app.uio.no/ifi/texcount/download.html) options needs to be downloaded to a folder `TeXcount_3_1` inside `python-ci`. To count bibliography, `%TC:subst \printbibliography \bibliography` needs to be the first line of your document and you'll have to patch TeXcount (from [here](https://gist.github.com/mischnic/f8b0433934e046c4e6d0202d99276b82)).
+The `counts` stats options needs [TeXcount](http://app.uio.no/ifi/texcount/download.html) to be downloaded to a folder `TeXcount_3_1` inside `python-ci`. To count bibliography, `%TC:subst \printbibliography \bibliography` needs to be the first line of your document and you'll have to patch TeXcount (from [here](https://gist.github.com/mischnic/f8b0433934e046c4e6d0202d99276b82)).
 
 ## Usage
 
