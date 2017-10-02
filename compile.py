@@ -16,7 +16,7 @@ def updateStatus(proj, ref, msg, (start, duration), errorMsg = None, stats = {})
 	if msg == "success":
 		color = "#4c1"
 	elif msg == "pending":
-		color = "darkgrey"
+		color = "#efc60f"
 	else:
 		color = "red"
 
