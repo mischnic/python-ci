@@ -57,3 +57,9 @@
 	left: 0.5em;
 	top: 0.4em;
 }
+
+@media (max-width: 660px) {
+	.login > h1 {
+		position: initial;
+	}
+}
