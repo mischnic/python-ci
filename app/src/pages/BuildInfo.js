@@ -53,8 +53,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 											...rBuild
 										}
 									}
-								)).sort(
-								(a,b) => a.commit.date < b.commit.date),
+								)).sort((a,b) => b.commit.date - a.commit.date),
 						...r
 					}
 				}),() => this.setState(
