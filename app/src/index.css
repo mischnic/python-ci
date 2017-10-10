@@ -24,6 +24,9 @@ h1 {
 	margin-bottom: 0;
 }
 
+input {
+	-webkit-appearance: none;
+}
 
 .button {
 	background-color: #eee;
