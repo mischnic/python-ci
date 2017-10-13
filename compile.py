@@ -3,6 +3,10 @@ from threading import Thread
 import latex, gh
 from utils import symlink_force, getBuildPath, log, getConfig, loadJSON
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
 

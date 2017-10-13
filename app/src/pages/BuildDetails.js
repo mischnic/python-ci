@@ -12,12 +12,13 @@ const logFormatting = {
 		[">!> ", "error"]
 	],
 	latex:[
-		[">>> ", "command"],
-		[/Package [a-zA-z]+ Warning:/, "warning"],
-		[/^\(([a-zA-z]+)\)/, "warning"],
+		[/Package [a-zA-z0-9]+ Warning:/, "warning"],
+		[/^\(([a-zA-z0-9]+)\)/, "warning"],
 		[/LaTeX (?:[a-zA-z]+ )?Warning:/, "warning"],
 		["Overfull \\hbox", "warning"],
-		["Underfull \\hbox", "warning"]
+		["Underfull \\hbox", "warning"],
+		["Latexmk: List of undefined refs and citations:", "warning"],
+		[/  Label `[^']+' multiply defined/, "warning"]
 	]
 };
 
@@ -115,7 +116,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 			}
 			const c = this.props.info.data.list.find((v)=> v.commit.ref === hash);
 			if(c){
-				const logF = logFormatting[this.props.info.data.language] || logFormatting["all"];
+				const logF = logFormatting[this.props.info.data.language] ? [...logFormatting["all"], ...logFormatting[this.props.info.data.language]] : logFormatting["all"];
 
 				const {build, commit} = c;
 				return (
