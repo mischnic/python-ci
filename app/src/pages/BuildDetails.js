@@ -142,11 +142,11 @@ export default withFetcher(class BuildDetails extends React.Component {
 							</div>
 							<div className="files">
 								<div className="window artifacts">
-									<div>
-										Artifacts: <br/>
-										{
-											this.state.files["artifacts"] && (
-												this.state.files["artifacts"].content ?
+									{
+										this.state.files["artifacts"] && (
+											this.state.files["artifacts"].content ?
+											<div>
+												Artifacts: <br/>
 												<ol>
 													{
 														Object.keys(this.state.files["artifacts"].content).map(v=>(
@@ -156,10 +156,10 @@ export default withFetcher(class BuildDetails extends React.Component {
 														))
 													}
 												</ol>
-												: this.state.files["artifacts"].loading && <Loading/>
-											)
-										}
-									</div>
+											</div>
+											: this.state.files["artifacts"].loading && <Loading/>
+										)
+									}
 									{
 										build.stats && build.stats.counts ? 
 										( 
