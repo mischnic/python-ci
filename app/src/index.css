@@ -51,7 +51,7 @@ input {
 	padding: 10px;
 }
 
-a{
+.main a{
 	color: black;
 }
 
@@ -71,6 +71,10 @@ a{
 #app > .header > .title {
 	font-size: xx-large;
 	font-family: monospace;
+    user-select: none;
+    cursor: pointer;
+    color: white;
+    text-decoration: none;
 }
 
 #app > .header > .account {
