@@ -223,9 +223,9 @@ def start_build(proj,ref):
 @app.route('/<proj>', methods=["POST"])
 @error_handler
 def github_build(proj):
-	(signature_func, signature) = request.headers['X-Hub-Signature'].split("=")
 
 	if SECRET and SECRET != "<<Github Webhook secret>>":
+		(signature_func, signature) = request.headers['X-Hub-Signature'].split("=")
 		if signature_func == "sha1":
 			mac = hmac.new(str(SECRET), msg=request.data, digestmod=hashlib.sha1)
 			if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):

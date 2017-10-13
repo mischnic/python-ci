@@ -40,6 +40,7 @@ def loadJSON(fileName):
 	return data
 
 def getConfig(proj):
+	print os.path.abspath(proj+"/.ci.json")
 	return loadJSON(proj+"/.ci.json")
 
 def getBuildPath(proj, ref = None):
