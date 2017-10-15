@@ -8,5 +8,8 @@
 !example_*
 !start.sh.in
 !*.py
+!python-ci.service.in
+!install-service.sh
+!ssh-fix.sh
 !app/
 !app/**

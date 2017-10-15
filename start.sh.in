@@ -1,15 +1,25 @@
 #!/usr/bin/env bash
 
+# uncomment if there are errors like
+# 	Permission denied (publickey)
+#
+# if [ -z "$SSH_AGENT_PID" ]; then
+# 	echo "(Re)starting ssh_agent"
+# 	source ssh-fix.sh
+# fi
+
+
 # optional:
-#	OUTPUT_SUFFIX="_build"
-#	SECRET="<<Github Webhook secret>>"
-#	TOKEN="<<Github personal access token>>"
-#	DOMAIN="https://ci.example.com"
-#	PASSWORD="something"
-#	JWT_SECRET="secret"
-#	PROJECTS="Maths,Other"
+#	OUTPUT_SUFFIX="_build" \
+#	SECRET="<<Github Webhook secret>>" \
+#	TOKEN="<<Github personal access token>>" \
+#	DOMAIN="https://ci.example.com" \
+#	URL="something" \
+#	JWT_SECRET="secret" \
+#	PROJECTS="Maths,Other" \
+#	PASSWORD="password" \
 #
 # example:
-#	OUTPUT_SUFFIX="_ci" gunicorn python-ci:app
+#	PASSWORD="password" gunicorn python-ci:app
 
 gunicorn python-ci:app

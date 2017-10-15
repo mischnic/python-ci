@@ -23,7 +23,14 @@ Clone your source folder next to the script (see below), copy `start.sh.in` to `
 - `PROJECT`: comma-seperated string of your projects (e.g. `Maths` or `Maths,Name`)
 - Needed to set commit statuses, otherwise optional:
 	- `TOKEN`: a GitHub personal access token
-	- `DOMAIN`: the URL under which the server is accessible (including `http[s]://`)
+	- `URL`: the URL under which the server is accessible (including `http[s]://`)
+
+If you get the error `Permission denied (publickey)` during build, uncomment the corresponding section in `start.sh`
+
+To install python-ci as a systemd service, run `./install-service.sh`, this will configure the service and enable it. Then you can use commands like:
+
+- `sudo systemctl start/stop/restart python-ci` to start/stop/restart the server
+- `sudo systemctl enable/disable python-ci` to enable/disable the autostart on boot
 
 You need the following file hierarchy: 
 

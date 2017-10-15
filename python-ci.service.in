@@ -1,0 +1,12 @@
+[Unit]
+Description=Python-CI server
+After=network.target
+
+[Service]
+Type=simple
+User=?USER?
+WorkingDirectory=?DIR?
+ExecStart=?DIR?/start.sh
+
+[Install]
+WantedBy=multi-user.target
