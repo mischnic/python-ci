@@ -38,6 +38,15 @@ export default withFetcher(class BuildDetails extends React.Component {
 		if(this.props.info.data){
 			this.load("log");
 			this.load("artifacts", res=>res.json());
+
+			let {hash} = this.props.match.params;
+			if(hash === "latest"){
+				hash = this.props.info.data.latest;
+			}
+			const c = this.props.info.data.list.findIndex((v)=> v.commit.ref === hash);
+			if(this.props.info.data.list[c+1]){
+				this.load(`diff/${this.props.info.data.list[c+1].commit.ref}`, res=>res.json(), "diff");
+			}
 		}
 	}
 
@@ -54,14 +63,14 @@ export default withFetcher(class BuildDetails extends React.Component {
 				(query?`?token=${getJWT()}`:"");
 	}
 
-	load(file, type=(res)=>res.text()){
-		this.setState({files: {[file]: {loading: true}, ...this.state.files}});
+	load(file, type=(res)=>res.text(), as=file){
+		this.setState({files: {[as]: {loading: true}, ...this.state.files}});
 		return this.props.fetch(this.getURL(file))
 			.then(type)
 			.then(res => this.setState({
 					files: {
 						...this.state.files,
-						[file]: {
+						[as]: {
 							content: res,
 							loading: false,
 						}
@@ -70,7 +79,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 			.catch(() => this.setState({
 					files: {
 						...this.state.files,
-						[file]: {
+						[as]: {
 							loading: false,
 							error: true
 						},
@@ -183,6 +192,21 @@ export default withFetcher(class BuildDetails extends React.Component {
 											</div>);
 										})()
 										) : null
+									}
+									{
+										this.state.files["diff"] && this.state.files["diff"].content && (
+											<div>
+												<a title="Compare on github" href={this.state.files["diff"].content.diff}>Commits</a> since last build:
+												<ol>
+													{
+														this.state.files["diff"].content.commits.map(v=>(
+															<li key={v.ref}>{v.msg} <a title="Open on Github" href={v.url}>({v.ref.substring(0,7)})</a></li>
+														))
+													}
+												</ol>
+											</div>
+
+										)
 									}
 								</div>
 								<div className="window log">

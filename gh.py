@@ -22,19 +22,33 @@ def getCommit(repo, ref):
 		cache[repo][ref] = getRepo(repo).get_commit(ref)
 	return cache[repo][ref]
 
-def getCommitDetails(repo, ref):
-	git_commit = getCommit(repo, ref)
+def getCommitDetails(repo, ref=None):
+	if ref is None:
+		git_commit = repo
+	else:
+		git_commit = getCommit(repo, ref)
+
 	commit = git_commit.commit
+	committer = git_commit.committer
 	return {
 		"author": {
-			"name": git_commit.committer.name,
-			"avatar_url": git_commit.committer.avatar_url
+			"name": committer.name,
+			"avatar_url": committer.avatar_url
 		},
-		"ref": ref,
+		"ref": ref if ref else commit.sha,
 		"msg": commit.message,
 		"date": unix_time_millis(commit.committer.date),
 		"url": commit.html_url
 	}
+
+def getCommitDiff(repo, last, curr):
+	commits = list()
+	for c in getRepo(repo).get_commits(sha=curr):
+		if c.sha == last:
+			break
+		else:
+			commits.append(c)
+	return commits
 
 def setStatus(repo, ref, status, url, desc = github.GithubObject.NotSet):
 	desc = github.GithubObject.NotSet if desc is None else desc

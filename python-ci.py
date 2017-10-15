@@ -114,6 +114,9 @@ def list_projects():
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
 def get_builds(proj):
+	if not os.path.isfile(proj+"/.ci.json"):
+		return "Not found", 404
+
 	if os.path.exists(getBuildPath(proj)):
 		dirs = [entry for entry in os.listdir(getBuildPath(proj)) 
 						if entry != "latest" and os.path.isdir(getBuildPath(proj, entry)) ]
@@ -143,6 +146,19 @@ def get_builds(proj):
 @nocache
 def get_build_details(proj, ref):
 	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype="application/json")
+
+@app.route('/<proj>/<ref>/diff/<ref2>')
+@check_auth
+@nocache
+def get_diff(proj, ref, ref2):
+	return json.dumps(
+		{
+			"diff": gh.getRepo(proj).compare(ref2, ref).html_url,
+			"commits": [gh.getCommitDetails(x) for x in gh.getCommitDiff(proj, ref2, ref)]
+		}
+		), {"Content-Type": "application/json"}
+
+
 
 def artifacts(proj, ref):
 	config = getConfig(proj)
