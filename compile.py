@@ -1,7 +1,7 @@
 import subprocess, time, os, json, shutil
 from threading import Thread
 import latex, gh
-from utils import symlink_force, getBuildPath, log, getConfig, loadJSON
+from utils import symlink_force, getBuildPath, getConfig, loadJSON
 
 import sys
 reload(sys)
@@ -168,7 +168,7 @@ def doCompile(proj, ref):
 				else:
 					stats["counts"] = False	
 
-	log ">>> Finished "+ref
+	print ">>> Finished "+ref
 	lastLog += (">>>" if successful else ">!>")+" Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
 	with open(getBuildPath(proj, ref)+"/.log", 'w') as lastLogFile:
