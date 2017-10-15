@@ -126,7 +126,7 @@ compileLang = dict(
 
 def doCompile(proj, ref):
 	timeStart = time.time()
-	log(">>> Started: "+time.strftime("%c"))
+	print ">>> Started: "+time.strftime("%c")
 	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
 
 	if not os.path.exists(getBuildPath(proj, ref)):
@@ -168,7 +168,7 @@ def doCompile(proj, ref):
 				else:
 					stats["counts"] = False	
 
-	log(">>> Finished "+ref)
+	log ">>> Finished "+ref
 	lastLog += (">>>" if successful else ">!>")+" Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
 	with open(getBuildPath(proj, ref)+"/.log", 'w') as lastLogFile:

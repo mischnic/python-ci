@@ -2,12 +2,6 @@ import os, json, errno
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 
-def log(s):
-	print s
-	# with open('python-ci.log', 'a') as logFile:
-	# 	logFile.write(s+"\n")
-
-
 def symlink_force(target, link_name):
 	try:
 		os.symlink(target, link_name)
