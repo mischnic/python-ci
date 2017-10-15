@@ -208,7 +208,9 @@ def get_build_svg(proj, ref):
 @nocache
 @error_handler
 def get_build_pdf(proj, ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=False)
+	response = make_response(send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=False))
+	response.headers['content-disposition'] = 'inline; filename='+proj+'.pdf'
+	return response
 
 @app.route('/<proj>/<ref>/output.zip')
 @check_auth
