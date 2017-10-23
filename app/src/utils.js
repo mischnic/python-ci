@@ -160,7 +160,7 @@ const api = (comp, url, settings={}, type = "json") => {
 
 const Loading = (props) =>
 	<div style={{display:"flex",justifyContent:"center",alignItems:"center", opacity: props.opacity ? props.opacity : "0.07", fontSmoothing: "none"}}>
-		<i className="fa fa-cog fa-4x fa-spin"/>
+		<span className="loading"/>
 	</div>;
 
 const Errors = (props) =>

@@ -82,3 +82,25 @@ input {
 	line-height: 33px;
 	cursor: pointer;
 }
+
+.loading {
+	font-size: 4em;
+}
+
+.loading:before {
+	content: "\f25A1";
+}
+
+.loading, .jumping {
+	animation: jumping 1.5s infinite cubic-bezier(0.2, 0.95, 0.95, 0.99);
+	animation-direction: alternate;
+}
+
+@keyframes jumping {
+	0% {
+		transform: translateY(50%);
+	}
+	100% {
+		transform: translateY(0%);
+	}
+}
