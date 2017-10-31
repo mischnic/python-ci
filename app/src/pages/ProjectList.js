@@ -1,25 +1,9 @@
 import React from "react";
 
-import {Loading, withFetcher} from "../utils.js";
+import {Loading, withFetcher, strToColor} from "../utils.js";
 import CustomLink from "../CustomLink.js"
 
 import "./ProjectList.css"
-
-function hash(str) {
-	let hash = 5361,
-	i = str.length;
-
-	while(i) {
-		hash = (hash * 33) ^ str.charCodeAt(--i);
-	}
-
-	return hash >>> 0;
-}
-
-function strToColor(str){
-	return Math.round(hash(str)).toString(16).substring(0,6);
-}
-
 
 
 export default withFetcher(class ProjectList extends React.Component {

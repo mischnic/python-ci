@@ -20,6 +20,6 @@
 #	PASSWORD="password" \
 #
 # example:
-#	PASSWORD="password" gunicorn python-ci:app
+#	PASSWORD="password" gunicorn python-ci:app --chdir src
 
-gunicorn python-ci:app
+gunicorn python-ci:app --chdir src

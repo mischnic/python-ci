@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher} from "../utils.js";
+import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher, strToColor} from "../utils.js";
 import {getJWT} from "../auth.js";
 
 const logFormatting = {
@@ -135,7 +135,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 							<div className="details">
 								<div className={`window build buildStatus ${build.status}`}>
 									<div>
-										<img className="avatar" alt="" src={commit.author.avatar_url}/>{commit.author.name}<br/>
+										<img className="avatar" alt="" style={!commit.author_avatar ? {backgroundColor: "#"+strToColor(commit.author_name)} : null} src={commit.author_avatar || null}/>{commit.author_name}<br/>
 										{commit.msg}<br/>
 										<a href={commit.url}>{commit.ref}</a> <i className="fa fa-external-link"/> ({humanDate(commit.date)})<br/>
 									</div>
@@ -196,11 +196,11 @@ export default withFetcher(class BuildDetails extends React.Component {
 									{
 										this.state.files["diff"] && this.state.files["diff"].content && (
 											<div>
-												<a title="Compare on github" href={this.state.files["diff"].content.diff}>Commits</a> since last build:
+												<a title="Compare on github" href={this.state.files["diff"].content.diff}>Commits</a> between last build:
 												<ol>
 													{
 														this.state.files["diff"].content.commits.map(v=>(
-															<li key={v.ref}>{v.msg} <a title="Open on Github" href={v.url}>({v.ref.substring(0,7)})</a></li>
+															<li key={v.ref}>{v.msg.split("\n")[0]} <a title="Open on Github" href={v.url}>({v.ref.substring(0,7)})</a></li>
 														))
 													}
 												</ol>

@@ -4,14 +4,16 @@ from flask import Flask, request, send_file, make_response
 import jwt, datetime, hmac, hashlib, os, json
 from werkzeug.routing import BaseConverter, ValidationError
 
-import compile, gh
+import compile, git
 from utils import getBuildPath, getProjPath, parseRef, getConfig
 
 SECRET = os.environ.get('SECRET', "")
 PASSWORD = os.environ.get('PASSWORD', "")
 JWT_SECRET = os.environ.get('JWT_SECRET', "secret")
-PROJECTS = "[]" if os.environ.get('PROJECTS', None) is None else "["+",".join(['"'+x+'"' for x in os.environ.get('PROJECTS').split(",")])+"]"
+PROJECTS = json.loads("[]" if os.environ.get('PROJECTS', None) is None else "["+",".join(['"'+x+'"' for x in os.environ.get('PROJECTS').split(",")])+"]")
 
+for p in PROJECTS:
+	git.getRepo(p, getProjPath(p))
 
 class StringConverter(BaseConverter):
 	def __init__(self, url_map, exc="."):
@@ -108,7 +110,7 @@ def login():
 @app.route('/')
 @check_auth
 def list_projects():
-	return PROJECTS, 200, {'Content-Type': 'application/json'}
+	return json.dumps(PROJECTS), 200, {'Content-Type': 'application/json'}
 
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
@@ -123,7 +125,7 @@ def get_builds(proj):
 		data = []
 		for ref in dirs:
 			data.append({
-				"commit": gh.getCommitDetails(proj, ref),
+				"commit": git.getCommitDetails(proj, ref),
 				"build": compile.getStatus(proj, ref)
 			})
 
@@ -152,8 +154,8 @@ def get_build_details(proj, ref):
 def get_diff(proj, ref, ref2):
 	return json.dumps(
 		{
-			"diff": gh.getRepo(proj).compare(ref2, ref).html_url,
-			"commits": [gh.getCommitDetails(x) for x in gh.getCommitDiff(proj, ref2, ref)]
+			"diff": "https://github.com/{id}/compare/{r1}...{r2}".format(id=git.repos[proj]["github"], r1=ref2, r2=ref),
+			"commits": git.getCommits(proj, ref, ref2)
 		}
 		), {"Content-Type": "application/json"}
 

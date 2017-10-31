@@ -114,6 +114,22 @@ const api = (comp, url, settings={}, type = "json") => {
 		});
 };
 
+
+function hash(str) {
+	let hash = 5361,
+	i = str.length;
+
+	while(i) {
+		hash = (hash * 33) ^ str.charCodeAt(--i);
+	}
+
+	return hash >>> 0;
+}
+
+function strToColor(str){
+	return Math.round(hash(str)).toString(16).substring(0,6);
+}
+
 // const api = (comp, url, settings={}, type = "json") => {
 // 	let i = {
 // 		...settings,
@@ -176,4 +192,4 @@ const Errors = (props) =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher, strToColor};

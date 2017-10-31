@@ -2,4 +2,4 @@ start.sh
 TeXcount_*
 
 __pycache__
-# build/*
+build/*

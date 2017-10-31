@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildsList.css";
 import "./Build.css";
 
-import {humanDate, formatTime} from "../utils.js";
+import {humanDate, formatTime, strToColor} from "../utils.js";
 import CustomLink from "../CustomLink.js";
 
 
@@ -18,9 +18,9 @@ class BuildsList extends React.Component {
 							<CustomLink type="li" to={commit.ref} key={commit.ref} className={`window buildStatus ${build.status}`}>
 								<div className="commitInfo">
 									<div>
-										<img className="avatar" alt="" src={commit.author.avatar_url}/><span>{commit.author.name}</span>
+										<img className="avatar" alt="" style={!commit.author_avatar ? {backgroundColor: "#"+strToColor(commit.author_name)} : null} src={commit.author_avatar}/><span>{commit.author_name}</span>
 									</div>
-									<div>{commit.msg}</div>
+									<div>{commit.msg.split("\n")[0]}</div>
 								</div>
 								<div className="commitData">
 									<div>

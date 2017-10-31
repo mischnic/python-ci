@@ -1,6 +1,6 @@
 import subprocess, time, os, json, shutil
 from threading import Thread
-import latex, gh
+import latex, git
 from utils import symlink_force, getBuildPath, getProjPath, getConfig, loadJSON
 
 TOKEN = os.environ.get('TOKEN', "")
@@ -55,7 +55,7 @@ def updateStatus(proj, ref, msg, start_duration, errorMsg = None, stats = {}):
 		f.write(json.dumps(data))
 
 	if TOKEN:
-		gh.setStatus(proj, ref, msg, DOMAIN+"/"+proj+"/"+ref, errorMsg)
+		git.setStatus(proj, ref, msg, DOMAIN+"/"+proj+"/"+ref, errorMsg)
 
 
 #
