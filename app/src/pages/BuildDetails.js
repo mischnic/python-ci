@@ -18,7 +18,7 @@ const logFormatting = {
 		["Overfull \\hbox", "warning"],
 		["Underfull \\hbox", "warning"],
 		["Latexmk: List of undefined refs and citations:", "warning"],
-		[/  Label `[^']+' multiply defined/, "warning"]
+		[/ {2}Label `[^']+' multiply defined/, "warning"]
 	]
 };
 

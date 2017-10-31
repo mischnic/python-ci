@@ -22,11 +22,11 @@ def getCommit(repo, ref):
 		cache[repo][ref] = getRepo(repo).get_commit(ref)
 	return cache[repo][ref]
 
-def getCommitDetails(repo, ref=None):
+def getCommitDetails(repoOrCommit, ref=None):
 	if ref is None:
-		git_commit = repo
+		git_commit = repoOrCommit
 	else:
-		git_commit = getCommit(repo, ref)
+		git_commit = getCommit(repoOrCommit, ref)
 
 	commit = git_commit.commit
 	committer = git_commit.committer

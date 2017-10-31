@@ -3,10 +3,6 @@ from threading import Thread
 import latex, gh
 from utils import symlink_force, getBuildPath, getConfig, loadJSON
 
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
-
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
 
@@ -16,7 +12,8 @@ compileThread = None
 # STATUS
 #
 
-def updateStatus(proj, ref, msg, (start, duration), errorMsg = None, stats = {}):
+def updateStatus(proj, ref, msg, start_duration, errorMsg = None, stats = {}):
+	(start, duration) = start_duration
 	if msg == "success":
 		color = "#4c1"
 	elif msg == "pending":
@@ -65,6 +62,8 @@ def updateStatus(proj, ref, msg, (start, duration), errorMsg = None, stats = {})
 # COMPILE
 #
 
+ENCODING = "utf-8"
+
 def getStatus(proj, ref, raw=False):
 	if raw:
 		return getBuildPath(proj, ref)+"/.status.json"
@@ -76,8 +75,8 @@ def updateGit(proj, ref):
 	lastLog = ""
 	successful = True
 	try:
-		lastLog += subprocess.check_output(["git", "pull", "origin", "master"], cwd=proj, stderr=subprocess.STDOUT) + "\n"
-		lastLog += subprocess.check_output(["git", "reset", "--hard", ref], cwd=proj, stderr=subprocess.STDOUT) + "\n"
+		lastLog += subprocess.check_output(["git", "pull", "origin", "master"], cwd=proj, stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
+		lastLog += subprocess.check_output(["git", "reset", "--hard", ref], cwd=proj, stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
 
 	except subprocess.CalledProcessError as exc:
 		lastLog += exc.output + "\n"
@@ -98,9 +97,9 @@ def npm(proj, buildPath, cfg):
 	if output:
 		try:
 			lastLog += ">>> yarn install\n"
-			lastLog += subprocess.check_output(["yarn", "install"], cwd=cwd, stderr=subprocess.STDOUT, env=env) + "\n"
+			lastLog += subprocess.check_output(["yarn", "install"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n"
 			lastLog += ">>> yarn build\n"
-			lastLog += subprocess.check_output(["yarn", "build"], cwd=cwd, stderr=subprocess.STDOUT, env=env) + "\n"
+			lastLog += subprocess.check_output(["yarn", "build"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n"
 			
 			lastLog += ">>> creating output archive...\n"
 			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd, base_dir="./"+output)
@@ -126,7 +125,7 @@ compileLang = dict(
 
 def doCompile(proj, ref):
 	timeStart = time.time()
-	print ">>> Started: "+time.strftime("%c")
+	print(">>> Started: "+time.strftime("%c"))
 	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
 
 	if not os.path.exists(getBuildPath(proj, ref)):
@@ -149,7 +148,7 @@ def doCompile(proj, ref):
 
 		if successful:
 			if not os.path.exists(getBuildPath(proj)):
-				print "creating "+getBuildPath(proj)
+				print("creating "+getBuildPath(proj))
 				os.makedirs(getBuildPath(proj))
 			successfulCompile, lastLogCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg)
 			lastLog += lastLogCompile
@@ -168,7 +167,7 @@ def doCompile(proj, ref):
 				else:
 					stats["counts"] = False	
 
-	print ">>> Finished "+ref
+	print(">>> Finished "+ref)
 	lastLog += (">>>" if successful else ">!>")+" Finished: "+time.strftime("%X")+" "+ref  + "\n"
 
 	with open(getBuildPath(proj, ref)+"/.log", 'w') as lastLogFile:

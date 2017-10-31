@@ -2,6 +2,7 @@
 import re, subprocess, os
 
 TEXCOUNT_PATH = "TeXcount_3_1/texcount.pl"
+ENCODING = "utf-8"
 
 def parseOutput(data, regex):
 	s, s2 = None, None
@@ -29,7 +30,7 @@ def correctLetters(letters, words):
 		if k in words:
 			if k == "chapters":
 				for ci, cv in enumerate(v):
-					letters[k][ci] = tuple((int(ccv) + int(words[k][ci][cci]) if not isinstance(ccv, basestring) else ccv) for cci, ccv in enumerate(cv))
+					letters[k][ci] = tuple((int(ccv) + int(words[k][ci][cci]) if not isinstance(ccv, str) else ccv) for cci, ccv in enumerate(cv))
 			else:
 				letters[k] = tuple(int(cv) + int(words[k][ci]) for ci, cv in enumerate(v))
 
@@ -46,11 +47,11 @@ def count(path, buildPath, fileName):
 		]
 
 	try:
-		wordsOut = subprocess.check_output(cmd)
+		wordsOut = subprocess.check_output(cmd).decode(ENCODING)
 		if "File not found" in wordsOut:
 			raise subprocess.CalledProcessError(1, cmd, wordsOut)
 		words = parseOutput(wordsOut, wordsR)
-		lettersOut = subprocess.check_output(cmd + ["-chars"])
+		lettersOut = subprocess.check_output(cmd + ["-chars"]).decode(ENCODING)
 		letters = parseOutput(lettersOut, lettersR)
 		correctLetters(letters, words)
 	except (subprocess.CalledProcessError, OSError, ValueError) as exc:
@@ -71,7 +72,7 @@ def copyFolderStructure(src, target):
 		subFolders[:] = [d for d in subFolders if not d[0] == '.']
 		f = "."+root[len(src):]
 		try:
-			os.mkdir(os.path.join(target, f), 0755)
+			os.mkdir(os.path.join(target, f), 0o755)
 		except OSError:
 			pass
 
@@ -95,7 +96,7 @@ def doCompile(proj, buildPath, cfg):
 
 		try:
 			lastLog += ">>> "+(" ".join(cmd))+"\n"
-			lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT) + "\n"
+			lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
 
 		except (subprocess.CalledProcessError, OSError) as exc:
 			if type(exc).__name__ == "OSError":

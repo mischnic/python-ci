@@ -13,7 +13,6 @@ JWT_SECRET = os.environ.get('JWT_SECRET', "secret")
 PROJECTS = "[]" if os.environ.get('PROJECTS', None) is None else "["+",".join(['"'+x+'"' for x in os.environ.get('PROJECTS').split(",")])+"]"
 
 
-
 class StringConverter(BaseConverter):
 	def __init__(self, url_map, exc="."):
 		super(StringConverter, self).__init__(url_map)
@@ -53,7 +52,7 @@ def check_auth(func):
 			except jwt.ExpiredSignatureError:
 				return "Expired token", 401
 			except jwt.DecodeError as e:
-				print e
+				print(e)
 				return "Invalid token", 403
 		else:
 			return "Unauthorized", 401
@@ -69,8 +68,8 @@ def error_handler(func):
 			return func(*args, **kwargs)
 		except IOError:
 			return "Not found", 404
-		except Exception, e:
-			print e
+		except Exception as e:
+			print(e)
 			return "Server error", 500
 
 	return wrapper
@@ -251,7 +250,7 @@ def github_build(proj):
 
 	if request.headers["X-GitHub-Event"] == "push" and request.headers["content-type"] == "application/json":
 		data = request.get_json()
-		print data['head_commit']['id']+": "+data['head_commit']['message']
+		print(data['head_commit']['id']+": "+data['head_commit']['message'])
 		return  compile.startCompile(proj, data['head_commit']['id'])
 
 	return "Not found", 404
