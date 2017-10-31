@@ -37,7 +37,7 @@ def getConfig(proj):
 	return loadJSON(getProjPath(proj)+"/.ci.json")
 
 def getProjPath(proj):
-	return "../"+proj
+	return "../build/"+proj
 
 def getBuildPath(proj, ref = None):
-	return "../"+proj+OUTPUT_SUFFIX + ("" if ref is None else ("/"+ ref))
+	return "../build/"+proj+OUTPUT_SUFFIX + ("" if ref is None else ("/"+ ref))

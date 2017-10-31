@@ -33,20 +33,22 @@ To install python-ci as a systemd service, run `./install-service.sh`, this will
 - `sudo systemctl start/stop/restart python-ci` to start/stop/restart the server
 - `sudo systemctl enable/disable python-ci` to enable/disable the autostart on boot
 
-You need the following file hierarchy: 
+You need the following file hierarchy: (clone your project like `Maths`)
 
 	python-ci
-	 |- python-ci.py
+	 |- build
+	 	|- Maths
+			|- .git
+			|- .ci.json
+			| - Document.tex
+		|- Maths_build
+			|- Document.pdf
+			|- Document.aux
+	     - ...
 	 |- README.md
+	 |- src
 	 |- [TeXcount_3_1]
 	 |- ...
-	 |- Maths
-	 |  - .ci.json
-	 |  - Document.tex
-	  - Maths_build
-	    |- Document.pdf
-	    |- Document.aux
-	     - ...
 (`Maths` and `Document` will serve as example names for the rest of this document)
 
 `.ci.json` is the project's configuration file:

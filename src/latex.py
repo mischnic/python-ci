@@ -93,7 +93,7 @@ def doCompile(proj, buildPath, cfg):
 					"-interaction=nonstopmode",
 					# "-gg",
 					"-file-line-error",
-					"-outdir="+buildPath,
+					"-outdir=../"+buildPath,
 					"-pdf", main+".tex" ]
 
 		try:
