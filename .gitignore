@@ -13,3 +13,8 @@
 !ssh-fix.sh
 !app/
 !app/**
+!docs/
+!docs/**
+!src/
+!src/**
+__pycache__

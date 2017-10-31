@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import re, subprocess, os
 
-TEXCOUNT_PATH = "TeXcount_3_1/texcount.pl"
+from utils import getProjPath
+
+TEXCOUNT_PATH = "../TeXcount_3_1/texcount.pl"
 ENCODING = "utf-8"
 
 def parseOutput(data, regex):
@@ -81,7 +83,7 @@ def doCompile(proj, buildPath, cfg):
 	lastLog = ""
 	successful = True
 
-	copyFolderStructure(proj, buildPath)
+	copyFolderStructure(getProjPath(proj), buildPath)
 
 	main = cfg.get("main", None)
 
@@ -91,20 +93,20 @@ def doCompile(proj, buildPath, cfg):
 					"-interaction=nonstopmode",
 					# "-gg",
 					"-file-line-error",
-					"-outdir=../"+buildPath,
+					"-outdir="+buildPath,
 					"-pdf", main+".tex" ]
 
 		try:
 			lastLog += ">>> "+(" ".join(cmd))+"\n"
-			lastLog += subprocess.check_output(cmd, cwd=proj, stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
-
-		except (subprocess.CalledProcessError, OSError) as exc:
-			if type(exc).__name__ == "OSError":
-				lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
-			else:
-				lastLog += exc.output + "\n"
-				lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
+			lastLog += subprocess.check_output(cmd, cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
+		except subprocess.CalledProcessError as exc:
+			lastLog += exc.output.decode(ENCODING) + "\n"
+			lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
 			successful = False
+		except OSError as exc:
+			lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
+			successful = False
+		
 	else:
 		successful = False
 		lastLog += "Missing 'main' in config"

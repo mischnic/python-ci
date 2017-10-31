@@ -5,7 +5,7 @@ import jwt, datetime, hmac, hashlib, os, json
 from werkzeug.routing import BaseConverter, ValidationError
 
 import compile, gh
-from utils import getBuildPath, parseRef, getConfig
+from utils import getBuildPath, getProjPath, parseRef, getConfig
 
 SECRET = os.environ.get('SECRET', "")
 PASSWORD = os.environ.get('PASSWORD', "")
@@ -113,7 +113,7 @@ def list_projects():
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
 def get_builds(proj):
-	if not os.path.isfile(proj+"/.ci.json"):
+	if not os.path.isfile(getProjPath(proj)+"/.ci.json"):
 		return "Not found", 404
 
 	if os.path.exists(getBuildPath(proj)):

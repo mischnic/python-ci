@@ -1,7 +1,7 @@
 import subprocess, time, os, json, shutil
 from threading import Thread
 import latex, gh
-from utils import symlink_force, getBuildPath, getConfig, loadJSON
+from utils import symlink_force, getBuildPath, getProjPath, getConfig, loadJSON
 
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
@@ -75,8 +75,8 @@ def updateGit(proj, ref):
 	lastLog = ""
 	successful = True
 	try:
-		lastLog += subprocess.check_output(["git", "pull", "origin", "master"], cwd=proj, stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
-		lastLog += subprocess.check_output(["git", "reset", "--hard", ref], cwd=proj, stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
+		lastLog += subprocess.check_output(["git", "pull", "origin", "master"], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
+		lastLog += subprocess.check_output(["git", "reset", "--hard", ref], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
 
 	except subprocess.CalledProcessError as exc:
 		lastLog += exc.output + "\n"
@@ -91,7 +91,7 @@ def npm(proj, buildPath, cfg):
 
 	output = cfg.get("output", None)
 	env = cfg.get("env", {})
-	cwd = proj+"/"+cfg.get("source", "")
+	cwd = getProjPath(proj)+"/"+cfg.get("source", "")
 	env["PATH"] = "/usr/local/bin"
 
 	if output:
@@ -161,7 +161,7 @@ def doCompile(proj, ref):
 		cfg = getConfig(proj)
 		if "stats" in cfg:
 			if cfg["language"] == "latex" and "counts" in cfg["stats"]:
-				(success, counts) = latex.count(proj, getBuildPath(proj, ref), cfg["main"]+".tex")
+				(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")
 				if success:
 					stats["counts"] = counts
 				else:

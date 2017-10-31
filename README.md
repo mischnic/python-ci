@@ -6,9 +6,9 @@ A lightweight CI-server written in python, originally developed for a Raspberry 
 - Can be set up as a GitHub webhook
 - Can display the build status next to the commit on GitHub
 
-![List view](example_web1.png)
+![List view](docs/example_web1.png)
 
-![Details view](example_web2.png)
+![Details view](docs/example_web2.png)
 
 ## Setup
 
@@ -104,7 +104,7 @@ Returns the compile-log which was saved as `Maths_build/.log`:
 `http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/log`
 
 Returns a svg-badge indicating the commit-hash of the last build and the build status (successful, error, currently running):
-`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/svg` ![badge example](example_badge.svg)
+`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/svg` ![badge example](docs/example_badge.svg)
 
 Example for a badge which links to the log file:
 
