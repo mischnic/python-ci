@@ -137,7 +137,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 									<div>
 										<img className="avatar" alt="" style={!commit.author_avatar ? {backgroundColor: "#"+strToColor(commit.author_name)} : null} src={commit.author_avatar || null}/>{commit.author_name}<br/>
 										{commit.msg}<br/>
-										<a href={commit.url}>{commit.ref}</a> <i className="fa fa-external-link"/> ({humanDate(commit.date)})<br/>
+										<a title="Open on Github" href={commit.url}>{commit.ref}</a>({humanDate(commit.date)})<br/>
 									</div>
 									<div>
 										<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
@@ -195,8 +195,9 @@ export default withFetcher(class BuildDetails extends React.Component {
 									}
 									{
 										this.state.files["diff"] && this.state.files["diff"].content && (
-											<div>
-												<a title="Compare on github" href={this.state.files["diff"].content.diff}>Commits</a> between last build:
+											this.state.files["diff"].content.commits.length > 0 ?
+											(<div>
+												<a title="Compare on Github" href={this.state.files["diff"].content.diff}>Commits</a> between last build:
 												<ol>
 													{
 														this.state.files["diff"].content.commits.map(v=>(
@@ -204,8 +205,11 @@ export default withFetcher(class BuildDetails extends React.Component {
 														))
 													}
 												</ol>
-											</div>
-
+											</div>)
+											:
+											(<div>
+												<a title="Compare on Github" href={this.state.files["diff"].content.diff}>Compare to last build</a>
+											</div>)
 										)
 									}
 								</div>
