@@ -71,6 +71,7 @@ def getStatus(proj, ref, raw=False):
 
 def updateGit(proj, ref, log):
 	successful = True
+	log(">>> Updating git repository\n")
 	try:
 		rv = runSubprocess(["git", "pull", "origin", "master"], log, cwd=getProjPath(proj))
 		if rv != 0:
@@ -134,8 +135,8 @@ def doCompile(proj, ref):
 			logFile.write(s)
 
 		timeStart = time.time()
-		print(">>> Started: "+time.strftime("%c"))
-		log(">>> Started: "+time.strftime("%c") + "\n")
+		print(">> Started: "+time.strftime("%c"))
+		log(">> Started: "+time.strftime("%c") + "\n")
 
 		if not os.path.exists(getBuildPath(proj, ref)):
 			os.makedirs(getBuildPath(proj, ref))
@@ -174,8 +175,8 @@ def doCompile(proj, ref):
 					else:
 						stats["counts"] = False	
 
-		print(">>> Finished "+ref)
-		log((">>>" if successful else ">!>")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
+		print(">> Finished "+ref)
+		log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
 
 	updateStatus(proj, ref, "success" if successful else "error", (timeStart, time.time() - timeStart),
 		"Git stage failed" if not successfulGit else

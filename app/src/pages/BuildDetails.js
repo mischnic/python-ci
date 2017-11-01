@@ -9,7 +9,8 @@ import {getJWT} from "../auth.js";
 const logFormatting = {
 	all: [
 		[">>> ", "command"],
-		[">!> ", "error"]
+		[">> ", "info"],
+		[">! ", "info error"]
 	],
 	latex:[
 		[/Package [a-zA-z0-9]+ Warning:/, "warning"],
@@ -21,6 +22,67 @@ const logFormatting = {
 		[/ {2}Label `[^']+' multiply defined/, "warning"]
 	]
 };
+
+
+class Log extends React.Component{
+	constructor(props){
+		super(props);
+
+		this.state = {
+			expanded: []
+		}
+	}
+	
+	render() {
+		const logF = logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"];
+		return	<pre>
+					<code>
+						{(()=>{
+						const showCollapsible = window.matchMedia("(min-width: 660px)").matches;
+						let lastCommandShow = !showCollapsible;
+						return this.props.content
+							.split("\n")
+							.filter((v,i)=> v !== "")
+							.map((v, i, arr) => {
+								const key = logF.findIndex(e => (
+									typeof e[0] === "object" ?
+										(e[0].test(v)) :
+										(v.indexOf(e[0]) === 0) 
+								));
+
+								if(key > -1){
+									const classes = logF[key][1]
+									if(showCollapsible){
+										if(classes === "command"){
+											if(i !== arr.length-1){
+												lastCommandShow = this.state.expanded[i];
+												return <div onClick={(e)=> this.setState(
+													{	
+														expanded: {...this.state.expanded, [i]: !this.state.expanded[i]}
+													})
+												} className={lastCommandShow ? "command-exp" : "command-mini"} key={i}>{v}</div>;
+											} else{
+												return <div className="command" key={i}>{v}</div>;
+											}
+										} else{
+											if(classes.indexOf("info")>-1){
+												return <div className={classes} key={i}>{v.substring(3)}</div>;
+											} else {
+												return lastCommandShow && <div className={classes} key={i}>{v}</div>;
+											}
+										}
+									} else {
+										return <div className={classes} key={i}>{v}</div>;
+									}
+								} else {
+									return lastCommandShow && <div key={i}>{v}</div>;
+								}
+							})
+						})()}
+					</code>
+				</pre>
+	}
+}
 
 
 export default withFetcher(class BuildDetails extends React.Component {
@@ -61,8 +123,9 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 		if(nextProps.info.data.list.find((v)=> v.commit.ref === this.hash).build.status === "success"){
 			this.load("artifacts", res=>res.json());
+			this.load("log");
 		}else{
-			this.setState({files: {...this.state.files, artifacts: null}});
+			this.setState({files: {...this.state.files, artifacts: null, log: null}});
 		}
 	}
 
@@ -138,8 +201,6 @@ export default withFetcher(class BuildDetails extends React.Component {
 			}
 
 			if(this.commit){
-				const logF = logFormatting[this.props.info.data.language] ? [...logFormatting["all"], ...logFormatting[this.props.info.data.language]] : logFormatting["all"];
-
 				const {build, commit} = this.commit;
 				return (
 					<div>
@@ -232,21 +293,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 										this.state.files["log"] &&
 										(this.state.files["log"].loading || build.status === "pending" ? <Loading opacity={0.5}/> :
 											this.state.files["log"].error ? <Errors/> : 
-											<pre>
-											<code>
-												{
-												this.state.files["log"].content
-													.split("\n").map((v, i) => {
-														const key = logF.findIndex(e => (
-															typeof e[0] === "object" ?
-																(e[0].test(v)) :
-																(v.indexOf(e[0]) === 0) 
-														));
-														return <div className={key>-1? logF[key][1] :""} key={i}>{v}</div>;
-													})
-												}
-											</code>
-											</pre>
+											<Log lang={this.props.info.data.language} content={this.state.files["log"].content}/>
 										)
 									}
 								</div>
