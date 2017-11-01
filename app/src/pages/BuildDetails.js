@@ -110,6 +110,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 			.then(res => res.text())
 			.then(() => {
 					this.rebuildInterval = setInterval(() => checkStatus(), 1000);
+					this.props.info.reload();
 				}, console.error);
 	}
 
@@ -141,8 +142,8 @@ export default withFetcher(class BuildDetails extends React.Component {
 										{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
 									</div>
 									<div>
-										<a className="button" onClick={() => this.rebuild()}>
-											<i className={`fa fa-refresh ${build.status === "pending" ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>Rebuild
+										<a className="button" onClick={() => this.rebuild()} style={build.status === "pending" && {pointerEvents: "none", opacity: 0.5}}>
+											<i className={`fa fa-refresh ${build.status === "pending" ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>{build.status === "pending" ? "Rebuilding" : "Rebuild"}
 										</a>
 									</div>
 								</div>
@@ -151,7 +152,8 @@ export default withFetcher(class BuildDetails extends React.Component {
 								<div className="window artifacts">
 									{
 										this.state.files["artifacts"] && (
-											this.state.files["artifacts"].content ?
+											this.state.files["artifacts"].content &&
+											Object.keys(this.state.files["artifacts"].content).length > 0 ?
 											<div>
 												Artifacts: <br/>
 												<ol>

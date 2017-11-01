@@ -164,6 +164,10 @@ def get_diff(proj, ref, ref2):
 def artifacts(proj, ref):
 	config = getConfig(proj)
 	lang = config.get("language", None)
+	print(compile.getStatus(proj, ref)["status"])
+	if compile.getStatus(proj, ref)["status"] == "pending":
+		return {}
+
 	if lang == "latex":
 		data = {}
 		main = config.get("main", None)

@@ -35,6 +35,7 @@ input {
 	border: 1px solid #dfdfdf;
 	cursor: pointer;
 	display: inline-block;
+	user-select: none;
 }
 
 .button:hover {

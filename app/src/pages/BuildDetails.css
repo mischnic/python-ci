@@ -24,7 +24,7 @@
 }
 
 .buildDetails > .details > .window > div:nth-child(3) {
-	flex: 1 1 10;
+	flex: 0 0 auto;
 	text-align: right;
 }
 
