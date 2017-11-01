@@ -89,10 +89,12 @@ input {
 
 .loading:before {
 	content: "\f25A1";
+	animation: rotating 2.6s infinite linear;
+	display: block;
 }
 
 .loading, .jumping {
-	animation: jumping 1.5s infinite cubic-bezier(0.2, 0.95, 0.95, 0.99);
+	animation: jumping 1.3s infinite cubic-bezier(0.2, 0.95, 0.95, 0.99);
 	animation-direction: alternate;
 }
 
@@ -102,5 +104,14 @@ input {
 	}
 	100% {
 		transform: translateY(0%);
+	}
+}
+
+@keyframes rotating {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(180deg);
 	}
 }
