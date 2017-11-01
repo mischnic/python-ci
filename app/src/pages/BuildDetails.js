@@ -103,10 +103,6 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 			this.load("log");
 
-			if(this.commit.build.status === "success"){
-				this.load("artifacts", res=>res.json());
-			}
-
 			let {hash} = this.props.match.params;
 			if(hash === "latest"){
 				hash = this.props.info.data.latest;
@@ -122,10 +118,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 		this.commit = nextProps.info.data.list.find((v)=> v.commit.ref === this.hash);
 
 		if(nextProps.info.data.list.find((v)=> v.commit.ref === this.hash).build.status === "success"){
-			this.load("artifacts", res=>res.json());
 			this.load("log");
-		}else{
-			this.setState({files: {...this.state.files, artifacts: null, log: null}});
 		}
 	}
 
@@ -227,23 +220,19 @@ export default withFetcher(class BuildDetails extends React.Component {
 							<div className="files">
 								<div className="window artifacts">
 									{
-										this.state.files["artifacts"] && (
-											this.state.files["artifacts"].content &&
-											Object.keys(this.state.files["artifacts"].content).length > 0 ?
-											<div>
-												Artifacts: <br/>
-												<ol>
-													{
-														Object.keys(this.state.files["artifacts"].content).map(v=>(
-															<li key={v}><a target="_blank" href={this.getURL(v, true)}>
-																{this.state.files["artifacts"].content[v]}
-															</a></li>
-														))
-													}
-												</ol>
-											</div>
-											: this.state.files["artifacts"].loading && <Loading/>
-										)
+										build.artifacts && 	Object.keys(build.artifacts).length > 0 &&
+										<div>
+											Artifacts: <br/>
+											<ol>
+												{
+													Object.keys(build.artifacts).map(v=>(
+														<li key={v}><a target="_blank" href={this.getURL(v, true)}>
+															{build.artifacts[v]}
+														</a></li>
+													))
+												}
+											</ol>
+										</div>
 									}
 									{
 										build.stats && build.stats.counts ? 

@@ -42,14 +42,28 @@ def updateStatus(proj, ref, msg, start_duration, errorMsg = None, stats = {}):
 	with open(getBuildPath(proj, ref)+"/.status.svg", "w") as f:
 		f.write(svg)
 
+	artifacts = {}
+	if msg == "success":
+		config = getConfig(proj)
+		lang = config.get("language", None)
+		if lang == "latex":
+			main = config.get("main", None)
+			if os.path.isfile(getBuildPath(proj,ref)+"/"+main+".pdf"):
+				artifacts["pdf"] = "PDF"		
+		elif lang == "npm":
+			if os.path.isfile(getBuildPath(proj,ref)+"/output.zip"):
+				artifacts["output.zip"] = "Output"		
+
 	data = {
 		"ref": ref,
 		"status": msg,
 		"errorMsg": errorMsg,
 		"start": round(start*1000),
 		"duration": duration,
-		"stats": stats
-	}	
+		"stats": stats,
+		"artifacts": artifacts
+	}
+
 
 	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
 		f.write(json.dumps(data))

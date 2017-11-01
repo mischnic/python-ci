@@ -159,39 +159,9 @@ def get_diff(proj, ref, ref2):
 		}
 		), {"Content-Type": "application/json"}
 
-
-
-def artifacts(proj, ref):
-	config = getConfig(proj)
-	lang = config.get("language", None)
-	if compile.getStatus(proj, ref)["status"] == "pending":
-		return {}
-
-	if lang == "latex":
-		data = {}
-		main = config.get("main", None)
-		if os.path.isfile(getBuildPath(proj,ref)+"/"+main+".pdf"):
-			data["pdf"] = "PDF"
-		
-		return data if data else None
-	elif lang == "npm":
-		data = {}
-		if os.path.isfile(getBuildPath(proj,ref)+"/output.zip"):
-			data["output.zip"] = "Output"
-		
-		return data if data else None
-
 #
 # FILES
 #
-
-@app.route('/<proj>/<ref>/artifacts')
-@check_auth
-@nocache
-@error_handler
-def get_artifacts(proj, ref):
-	return json.dumps(artifacts(proj, ref)), {"Content-Type": "application/json"}
-
 
 @app.route('/<proj>/<ref>/log')
 @check_auth
