@@ -7,10 +7,6 @@ import {Route, Switch} from "react-router-dom";
 
 import {Loading, withFetcher} from "../utils.js";
 
-const addProps = (Component, props) => (p) => (
-	<Component {...props} {...p}>{p.children}</Component>
-);
-
 export default withFetcher(class BuildInfo extends React.Component {
 	constructor(props){
 		super(props);
@@ -72,8 +68,8 @@ export default withFetcher(class BuildInfo extends React.Component {
 			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>click to retry</a></span> :
 			this.state.loading || !this.state.data ? <Loading/> :
 			<Switch>
-				<Route path={"/:proj/"} exact={true} strict={true} component={addProps(BuildsList, {key: "BuildsList", info: pass})}/>
-				<Route path={"/:proj/:hash"} component={addProps(BuildDetails, {key: "BuildDetails", info: pass})}/>
+				<Route path={"/:proj/"} exact={true} strict={true} render={(props)=> <BuildsList info={pass} {...props}/>}/>
+				<Route path={"/:proj/:hash"} render={(props)=> <BuildDetails info={pass} {...props}/>}/>
 				<Route render={() => (<p>Specify a project in the URL!</p>)}/>
 			</Switch>
 		);
