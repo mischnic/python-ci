@@ -142,7 +142,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 										{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
 									</div>
 									<div>
-										<a className="button" onClick={() => this.rebuild()} style={build.status === "pending" && {pointerEvents: "none", opacity: 0.5}}>
+										<a className="button" onClick={() => this.rebuild()} style={build.status === "pending" ? {pointerEvents: "none", opacity: 0.5} : null}>
 											<i className={`fa fa-refresh ${build.status === "pending" ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>{build.status === "pending" ? "Rebuilding" : "Rebuild"}
 										</a>
 									</div>

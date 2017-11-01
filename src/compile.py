@@ -71,22 +71,20 @@ def getStatus(proj, ref, raw=False):
 	return loadJSON(getBuildPath(proj, ref)+"/.status.json")
 
 
-def updateGit(proj, ref):
-	lastLog = ""
+def updateGit(proj, ref, log):
 	successful = True
 	try:
-		lastLog += subprocess.check_output(["git", "pull", "origin", "master"], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
-		lastLog += subprocess.check_output(["git", "reset", "--hard", ref], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
+		log(subprocess.check_output(["git", "pull", "origin", "master"], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n")
+		log(subprocess.check_output(["git", "reset", "--hard", ref], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n")
 
 	except subprocess.CalledProcessError as exc:
-		lastLog += exc.output + "\n"
-		lastLog += "git operations failed: "+str(exc.returncode) + "\n"
+		log(exc.output + "\n")
+		log("git operations failed: "+str(exc.returncode) + "\n")
 		successful = False
 
-	return (successful, lastLog)
+	return successful
 
-def npm(proj, buildPath, cfg):
-	lastLog = ""
+def npm(proj, buildPath, cfg, log):
 	successful = True
 
 	output = cfg.get("output", None)
@@ -96,82 +94,81 @@ def npm(proj, buildPath, cfg):
 
 	if output:
 		try:
-			lastLog += ">>> yarn install\n"
-			lastLog += subprocess.check_output(["yarn", "install"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n"
-			lastLog += ">>> yarn build\n"
-			lastLog += subprocess.check_output(["yarn", "build"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n"
+			log(">>> yarn install\n")
+			log(subprocess.check_output(["yarn", "install"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n")
+			log(">>> yarn build\n")
+			log(subprocess.check_output(["yarn", "build"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n")
 			
-			lastLog += ">>> creating output archive...\n"
+			log(">>> creating output archive...\n")
 			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd, base_dir="./"+output)
 
 		except (subprocess.CalledProcessError, OSError) as exc:
 			if type(exc).__name__ == "OSError":
-				lastLog += "yarn: "+str(exc.strerror) + "\n"
+				log("yarn: "+str(exc.strerror) + "\n")
 			else:
-				lastLog += exc.output + "\n"
-				lastLog += "yarn failed: "+str(exc.returncode) + "\n"
+				log(exc.output + "\n")
+				log("yarn failed: "+str(exc.returncode) + "\n")
 			successful = False
 	else:
 		successful = False
-		lastLog += "Missing 'output' in config"
+		log("Missing 'output' in config")
 
-	return (successful, lastLog)
+	return successful
 
 compileLang = dict(
 	latex = latex.doCompile,
-	git = lambda a,b,c: (True, ""),
+	git = lambda a,b,c,d: (True, ""),
 	npm = npm
 )
 
 def doCompile(proj, ref):
-	timeStart = time.time()
-	print(">>> Started: "+time.strftime("%c"))
-	lastLog = ">>> Started: "+time.strftime("%c") + "\n"
+	with open(getBuildPath(proj, ref)+"/.log", 'w', 1) as logFile:
 
-	if not os.path.exists(getBuildPath(proj, ref)):
-		os.makedirs(getBuildPath(proj, ref))
-	updateStatus(proj, ref, "pending", (timeStart, None))
-	successful = True
+		log = lambda s: logFile.write(s)
 
-	successfulGit, lastLogGit = updateGit(proj, ref)
-	lastLog += lastLogGit
-	successful = successfulGit
+		timeStart = time.time()
+		print(">>> Started: "+time.strftime("%c"))
+		log(">>> Started: "+time.strftime("%c") + "\n")
 
-	if successful:
-		successfulCfg = True
-		cfg = getConfig(proj)
-		lang = cfg.get("language", None)
+		if not os.path.exists(getBuildPath(proj, ref)):
+			os.makedirs(getBuildPath(proj, ref))
+		updateStatus(proj, ref, "pending", (timeStart, None))
+		successful = True
 
-		if not lang:
-			successfulCfg = False
-			successful = successfulCfg
+		successfulGit = updateGit(proj, ref, log)
+		successful = successfulGit
 
 		if successful:
-			if not os.path.exists(getBuildPath(proj)):
-				print("creating "+getBuildPath(proj))
-				os.makedirs(getBuildPath(proj))
-			successfulCompile, lastLogCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg)
-			lastLog += lastLogCompile
-			successful = successfulCompile
-		else:
-			lastLog += "not compiling" + "\n"
+			successfulCfg = True
+			cfg = getConfig(proj)
+			lang = cfg.get("language", None)
 
-	stats = {}
-	if successful:
-		cfg = getConfig(proj)
-		if "stats" in cfg:
-			if cfg["language"] == "latex" and "counts" in cfg["stats"]:
-				(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")
-				if success:
-					stats["counts"] = counts
-				else:
-					stats["counts"] = False	
+			if not lang:
+				successfulCfg = False
+				successful = successfulCfg
 
-	print(">>> Finished "+ref)
-	lastLog += (">>>" if successful else ">!>")+" Finished: "+time.strftime("%X")+" "+ref  + "\n"
+			if successful:
+				if not os.path.exists(getBuildPath(proj)):
+					log("creating "+getBuildPath(proj))
+					os.makedirs(getBuildPath(proj))
+				successfulCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg, log)
+				successful = successfulCompile
+			else:
+				log("not compiling" + "\n")
 
-	with open(getBuildPath(proj, ref)+"/.log", 'w') as lastLogFile:
-		lastLogFile.write(lastLog)
+		stats = {}
+		if successful:
+			cfg = getConfig(proj)
+			if "stats" in cfg:
+				if cfg["language"] == "latex" and "counts" in cfg["stats"]:
+					(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")
+					if success:
+						stats["counts"] = counts
+					else:
+						stats["counts"] = False	
+
+		print(">>> Finished "+ref)
+		log((">>>" if successful else ">!>")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
 
 	updateStatus(proj, ref, "success" if successful else "error", (timeStart, time.time() - timeStart),
 		"Git stage failed" if not successfulGit else

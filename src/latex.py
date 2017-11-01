@@ -79,16 +79,12 @@ def copyFolderStructure(src, target):
 			pass
 
 
-def doCompile(proj, buildPath, cfg):
-	lastLog = ""
+def doCompile(proj, buildPath, cfg, log):
 	successful = True
-
 	copyFolderStructure(getProjPath(proj), buildPath)
-
+	
 	main = cfg.get("main", None)
-
 	if main:
-
 		cmd = ["latexmk",
 					"-interaction=nonstopmode",
 					# "-gg",
@@ -97,18 +93,18 @@ def doCompile(proj, buildPath, cfg):
 					"-pdf", main+".tex" ]
 
 		try:
-			lastLog += ">>> "+(" ".join(cmd))+"\n"
-			lastLog += subprocess.check_output(cmd, cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n"
+			log(">>> " + (" ".join(cmd)) + "\n")
+			log(subprocess.check_output(cmd, cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n")
 		except subprocess.CalledProcessError as exc:
-			lastLog += exc.output.decode(ENCODING) + "\n"
-			lastLog += "latexmk failed: "+str(exc.returncode) + "\n"
+			log(exc.output.decode(ENCODING) + "\n")
+			log("latexmk failed: "+str(exc.returncode) + "\n")
 			successful = False
 		except OSError as exc:
-			lastLog += "latexmk failed: "+str(exc.strerror) + "\n"
+			log("latexmk failed: "+str(exc.strerror) + "\n")
 			successful = False
 		
 	else:
 		successful = False
-		lastLog += "Missing 'main' in config"
+		log("Missing 'main' in config")
 
-	return (successful, lastLog)
+	return successful
