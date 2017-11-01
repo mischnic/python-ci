@@ -207,7 +207,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 											</div>)
 											:
 											(<div>
-												<a title="Compare on Github" href={this.state.files["diff"].content.diff}>Compare to last build</a>
+												<a title="Compare on Github" href={this.state.files["diff"].content.diff}>Compare to last build's commit</a>
 											</div>)
 										)
 									}
