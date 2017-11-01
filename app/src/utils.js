@@ -93,7 +93,11 @@ function humanDate(date){
 			return `${diffHours} hours ago`;
 		}
 	} else {
-		return `${diffMinutes} ${diffMinutes === 1 ? "minute" : "minutes"} ago`;
+		if(diffMinutes === 0){
+			return `less than a minute ago`;
+		} else {
+			return `${diffMinutes} ${diffMinutes === 1 ? "minute" : "minutes"} ago`;
+		}
 	}
 }
 
