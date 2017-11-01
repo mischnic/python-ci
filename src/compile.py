@@ -62,8 +62,6 @@ def updateStatus(proj, ref, msg, start_duration, errorMsg = None, stats = {}):
 # COMPILE
 #
 
-ENCODING = "utf-8"
-
 def getStatus(proj, ref, raw=False):
 	if raw:
 		return getBuildPath(proj, ref)+"/.status.json"

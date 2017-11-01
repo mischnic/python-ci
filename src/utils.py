@@ -5,18 +5,20 @@ OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 
 def runSubprocess(cmd, out, cwd=None, env=None):
 	try:
-		process = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding="utf-8")
-		while True:
+		process = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		while process.poll() is None:
 			line = process.stdout.readline()
 			if not line: break
-			out(line)
+			out(line.decode("utf-8"))
 		# while True:
 		# 	output = process.stdout.readline()
 		# 	if output == '' and process.poll() is not None:
 		# 		break
 		# 	if output:
-		# 		out(output)
-		return process.poll()
+		# 		print(output.decode("utf-8"))
+		# 		out(output.decode("utf-8"))
+		process.wait()
+		return process.returncode
 	except OSError as e:
 		out(e.strerror+"\n")
 		return 1
