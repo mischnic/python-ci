@@ -44,7 +44,7 @@ def updateStatus(proj, ref, msg, start_duration, errorMsg = None, stats = {}):
 
 	artifacts = {}
 	if msg == "success":
-		config = getConfig(proj)
+		config = getConfig(proj, ref)
 		lang = config.get("language", None)
 		if lang == "latex":
 			main = config.get("main", None)
@@ -85,7 +85,7 @@ def getStatus(proj, ref, raw=False):
 
 def updateGit(proj, ref, log):
 	successful = True
-	log(">>> Updating git repository\n")
+	log(">>> git pull origin master && git reset --hard "+ref+"\n")
 	try:
 		rv = runSubprocess(["git", "pull", "origin", "master"], log, cwd=getProjPath(proj))
 		if rv != 0:
@@ -154,15 +154,18 @@ def doCompile(proj, ref):
 
 		if not os.path.exists(getBuildPath(proj, ref)):
 			os.makedirs(getBuildPath(proj, ref))
+
 		updateStatus(proj, ref, "pending", (timeStart, None))
 		successful = True
 
 		successfulGit = updateGit(proj, ref, log)
 		successful = successfulGit
 
+		shutil.copy2(getProjPath(proj)+"/.ci.json", getBuildPath(proj, ref)+"/.ci.json");
+
+		cfg = getConfig(proj, ref)
 		if successful:
 			successfulCfg = True
-			cfg = getConfig(proj)
 			lang = cfg.get("language", None)
 
 			if not lang:
@@ -180,7 +183,6 @@ def doCompile(proj, ref):
 
 		stats = {}
 		if successful:
-			cfg = getConfig(proj)
 			if "stats" in cfg:
 				if cfg["language"] == "latex" and "counts" in cfg["stats"]:
 					(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")

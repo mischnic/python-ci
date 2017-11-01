@@ -54,7 +54,11 @@ def loadJSON(fileName):
 
 	return data
 
-def getConfig(proj):
+def getConfig(proj, ref=None):
+	if ref is not None:
+		if os.path.exists(getBuildPath(proj, ref)+"/.ci.json"):
+			return loadJSON(getBuildPath(proj, ref)+"/.ci.json")
+
 	return loadJSON(getProjPath(proj)+"/.ci.json")
 
 def getProjPath(proj):
