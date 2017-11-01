@@ -56,7 +56,7 @@ def getCommitDetails(repo, sha):
 		# "author_avatar": getAvatar(commit.author.name),
 		"ref": commit.hex,
 		"msg": commit.message,
-		"date": commit.author.time,
+		"date": commit.author.time*1000,
 		"url": "https://github.com/{id}/commit/{sha}".format(id=repos[repo]["github"], sha=commit.hex),
 		"parents": [c.hex for c in commit.parents]
 	}

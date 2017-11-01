@@ -137,7 +137,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 									<div>
 										<img className="avatar" alt="" style={!commit.author_avatar ? {backgroundColor: "#"+strToColor(commit.author_name)} : null} src={commit.author_avatar || null}/>{commit.author_name}<br/>
 										{commit.msg}<br/>
-										<a title="Open on Github" href={commit.url}>{commit.ref}</a>({humanDate(commit.date)})<br/>
+										<a title="Open on Github" href={commit.url}>{commit.ref}</a> ({humanDate(commit.date)})<br/>
 									</div>
 									<div>
 										<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
