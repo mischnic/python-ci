@@ -36,8 +36,14 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 	componentDidMount(){
 		if(this.props.info.data){
+			this.hash = this.props.match.params.hash;
+			this.commit = this.props.info.data.list.find((v)=> v.commit.ref === this.hash);
+
 			this.load("log");
-			this.load("artifacts", res=>res.json());
+
+			if(this.commit.build.status === "success"){
+				this.load("artifacts", res=>res.json());
+			}
 
 			let {hash} = this.props.match.params;
 			if(hash === "latest"){
@@ -50,6 +56,16 @@ export default withFetcher(class BuildDetails extends React.Component {
 		}
 	}
 
+	componentWillReceiveProps(nextProps){
+		this.commit = nextProps.info.data.list.find((v)=> v.commit.ref === this.hash);
+
+		if(nextProps.info.data.list.find((v)=> v.commit.ref === this.hash).build.status === "success"){
+			this.load("artifacts", res=>res.json());
+		}else{
+			this.setState({files: {...this.state.files, artifacts: null}});
+		}
+	}
+
 	componentWillUnmount(){
 		if(this.rebuildInterval !== null){
 			clearInterval(this.rebuildInterval);
@@ -59,12 +75,12 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 	getURL(file, query=false){
 		if(file) file = "/"+file;
-		return `/api/${this.props.match.params.proj}/${this.props.match.params.hash}${file}`+
+		return `/api/${this.props.match.params.proj}/${this.hash}${file}`+
 				(query?`?token=${getJWT()}`:"");
 	}
 
 	load(file, type=(res)=>res.text(), as=file){
-		this.setState({files: {[as]: {loading: true}, ...this.state.files}});
+		this.setState({files: {...this.state.files, [as]: {loading: true}}});
 		return this.props.fetch(this.getURL(file))
 			.then(type)
 			.then(res => this.setState({
@@ -110,22 +126,21 @@ export default withFetcher(class BuildDetails extends React.Component {
 			.then(res => res.text())
 			.then(() => {
 					this.rebuildInterval = setInterval(() => checkStatus(), 1000);
-					this.props.info.reload();
+					setTimeout(()=>this.props.info.reload(), 50);
 				}, console.error);
 	}
 
 	render(){
 		let {proj, hash} = this.props.match.params;
-
 		if(this.props.info.data.list){
 			if(hash === "latest"){
 				hash = this.props.info.data.latest;
 			}
-			const c = this.props.info.data.list.find((v)=> v.commit.ref === hash);
-			if(c){
+
+			if(this.commit){
 				const logF = logFormatting[this.props.info.data.language] ? [...logFormatting["all"], ...logFormatting[this.props.info.data.language]] : logFormatting["all"];
 
-				const {build, commit} = c;
+				const {build, commit} = this.commit;
 				return (
 					<div>
 						<h1><Link to="." title="Go Back to List">{proj}</Link> &gt; {hash.substring(0,7)}</h1>
