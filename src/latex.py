@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re, subprocess, os
 
-from utils import getProjPath
+from utils import getProjPath, runSubprocess
 
 TEXCOUNT_PATH = "../TeXcount_3_1/texcount.pl"
 ENCODING = "utf-8"
@@ -92,19 +92,14 @@ def doCompile(proj, buildPath, cfg, log):
 					"-outdir=../"+buildPath,
 					"-pdf", main+".tex" ]
 
-		try:
-			log(">>> " + (" ".join(cmd)) + "\n")
-			log(subprocess.check_output(cmd, cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n")
-		except subprocess.CalledProcessError as exc:
-			log(exc.output.decode(ENCODING) + "\n")
-			log("latexmk failed: "+str(exc.returncode) + "\n")
-			successful = False
-		except OSError as exc:
-			log("latexmk failed: "+str(exc.strerror) + "\n")
+		log(">>> " + (" ".join(cmd)) + "\n")
+		rv = runSubprocess(cmd, log, cwd=getProjPath(proj))
+		if rv != 0:
+			log("latexmk failed: "+str(rv) + "\n")
 			successful = False
 		
 	else:
-		successful = False
 		log("Missing 'main' in config")
+		successful = False
 
 	return successful

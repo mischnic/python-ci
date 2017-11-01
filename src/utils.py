@@ -1,6 +1,25 @@
-import os, json, errno
+import os, json, errno, subprocess
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
+
+
+def runSubprocess(cmd, out, cwd=None, env=None):
+	try:
+		process = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding="utf-8")
+		while True:
+			line = process.stdout.readline()
+			if not line: break
+			out(line)
+		# while True:
+		# 	output = process.stdout.readline()
+		# 	if output == '' and process.poll() is not None:
+		# 		break
+		# 	if output:
+		# 		out(output)
+		return process.poll()
+	except OSError as e:
+		out(e.strerror+"\n")
+		return 1
 
 def symlink_force(target, link_name):
 	try:

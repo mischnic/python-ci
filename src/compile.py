@@ -1,7 +1,7 @@
-import subprocess, time, os, json, shutil
+import time, os, json, shutil
 from threading import Thread
 import latex, git
-from utils import symlink_force, getBuildPath, getProjPath, getConfig, loadJSON
+from utils import symlink_force, getBuildPath, getProjPath, getConfig, loadJSON, runSubprocess
 
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
@@ -74,13 +74,18 @@ def getStatus(proj, ref, raw=False):
 def updateGit(proj, ref, log):
 	successful = True
 	try:
-		log(subprocess.check_output(["git", "pull", "origin", "master"], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n")
-		log(subprocess.check_output(["git", "reset", "--hard", ref], cwd=getProjPath(proj), stderr=subprocess.STDOUT).decode(ENCODING) + "\n")
+		rv = runSubprocess(["git", "pull", "origin", "master"], log, cwd=getProjPath(proj))
+		if rv != 0:
+			successful = False
+			raise Exception(rv)
 
-	except subprocess.CalledProcessError as exc:
-		log(exc.output + "\n")
-		log("git operations failed: "+str(exc.returncode) + "\n")
-		successful = False
+		rv = runSubprocess(["git", "reset", "--hard", ref], log, cwd=getProjPath(proj))
+		if rv != 0:
+			successful = False
+			raise Exception(rv)
+
+	except Exception as e:
+		log("git operations failed: "+str(e) + "\n")
 
 	return successful
 
@@ -95,19 +100,22 @@ def npm(proj, buildPath, cfg, log):
 	if output:
 		try:
 			log(">>> yarn install\n")
-			log(subprocess.check_output(["yarn", "install"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n")
+			rv = runSubprocess(["yarn", "install", "--non-interactive"], log, cwd=cwd, env=env)
+			if rv != 0:
+				successful = False
+				raise Exception(rv)
+
 			log(">>> yarn build\n")
-			log(subprocess.check_output(["yarn", "build"], cwd=cwd, stderr=subprocess.STDOUT, env=env).decode(ENCODING) + "\n")
-			
+			rv = runSubprocess(["yarn", "build"], log, cwd=cwd, env=env)
+			if rv != 0:
+				successful = False
+				raise Exception(rv)
+
 			log(">>> creating output archive...\n")
 			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd, base_dir="./"+output)
 
-		except (subprocess.CalledProcessError, OSError) as exc:
-			if type(exc).__name__ == "OSError":
-				log("yarn: "+str(exc.strerror) + "\n")
-			else:
-				log(exc.output + "\n")
-				log("yarn failed: "+str(exc.returncode) + "\n")
+		except Exception as e:
+			log("yarn failed: "+str(e) + "\n")
 			successful = False
 	else:
 		successful = False
@@ -124,7 +132,8 @@ compileLang = dict(
 def doCompile(proj, ref):
 	with open(getBuildPath(proj, ref)+"/.log", 'w', 1) as logFile:
 
-		log = lambda s: logFile.write(s)
+		def log(s):
+			logFile.write(s)
 
 		timeStart = time.time()
 		print(">>> Started: "+time.strftime("%c"))
