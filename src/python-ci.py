@@ -163,6 +163,7 @@ def get_diff(proj, ref, ref2):
 		), {"Content-Type": "application/json"}
 
 @app.route('/subscribe')
+@check_auth
 def subscribe():
 	return channel.subscribe(), {"Access-Control-Allow-Origin": "*"}
 

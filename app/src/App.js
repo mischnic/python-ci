@@ -1,7 +1,7 @@
 import React from "react";
 import {Route, Redirect, Switch, Link} from "react-router-dom";
 
-import {isLoggedIn, logout} from "./auth.js";
+import {isLoggedIn, logout, getJWT} from "./auth.js";
 
 import CustomLink from "./CustomLink.js";
 
@@ -24,16 +24,31 @@ function PrivateRoute({component: Component, render, authed = isLoggedIn, ...res
 }
 
 class App extends React.Component {
-	componentWillMount(){
+
+	subscribe(){
 		this.events = new EventSource(
-			process.env.NODE_ENV === "development" ? 
+			(process.env.NODE_ENV === "development" ? 
 			`${window.location.protocol}//${window.location.hostname}:5000/subscribe` :
-			`${window.location.origin}/api/subscribe`
+			`${window.location.origin}/api/subscribe`) + `?token=${getJWT()}`
 		);
 	}
 
+	componentWillMount(){
+		if(isLoggedIn() && !this.events){
+			this.subscribe();
+		}
+	}
+
+	componentWillUpdate(){
+		if(isLoggedIn() && !this.events){
+			this.subscribe();
+		}
+	}
+
 	componentWillUnmount(){
-		this.events.close();
+		if(this.events){
+			this.events.close();
+		}
 	}
 
 	render(){
