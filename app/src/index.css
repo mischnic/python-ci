@@ -89,7 +89,7 @@ input {
 }
 
 .loading:before {
-	content: "\f25A1";
+	content: "\25A1"; /* "\2610" */
 	animation: rotating 2.6s infinite linear;
 	display: block;
 }

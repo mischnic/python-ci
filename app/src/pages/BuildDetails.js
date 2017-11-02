@@ -181,7 +181,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 									<div>
 										<img className="avatar" alt="" style={!commit.author_avatar ? {backgroundColor: "#"+strToColor(commit.author_name)} : null} src={commit.author_avatar || null}/>{commit.author_name}<br/>
 										{commit.msg}<br/>
-										<a title="Open on Github" href={commit.url}>{commit.ref}</a> ({humanDate(commit.date)})<br/>
+										<a title="Open on Github" href={commit.url} target="_blank">{commit.ref}</a> ({humanDate(commit.date)})<br/>
 									</div>
 									<div>
 										<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
@@ -238,18 +238,18 @@ export default withFetcher(class BuildDetails extends React.Component {
 										this.state.files["diff"] && this.state.files["diff"].content && (
 											this.state.files["diff"].content.commits.length > 0 ?
 											(<div>
-												<a title="Compare on Github" href={this.state.files["diff"].content.diff}>Commits</a> between last build:
+												<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Commits</a> between last build:
 												<ol>
 													{
 														this.state.files["diff"].content.commits.map(v=>(
-															<li key={v.ref}>{v.msg.split("\n")[0]} <a title="Open on Github" href={v.url}>({v.ref.substring(0,7)})</a></li>
+															<li key={v.ref}>{v.msg.split("\n")[0]} <a title="Open on Github" href={v.url} target="_blank">({v.ref.substring(0,7)})</a></li>
 														))
 													}
 												</ol>
 											</div>)
 											:
 											(<div>
-												<a title="Compare on Github" href={this.state.files["diff"].content.diff}>Compare to last build's commit</a>
+												<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Compare to last build's commit</a>
 											</div>)
 										)
 									}
