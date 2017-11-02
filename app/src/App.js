@@ -23,26 +23,42 @@ function PrivateRoute({component: Component, render, authed = isLoggedIn, ...res
 	);
 }
 
-export default function App(){
-	return (
-		<div id="app">
-			<div className="header">
-				<Link className="title" to="/">Python-CI</Link>
-				{
-					isLoggedIn() ?
-					<span className="account" onClick={logout}><CustomLink type="span" to="/login">Logout</CustomLink></span>
-					:
-					<span className="account"><CustomLink type="span" to="/login">Login</CustomLink></span>
-				}
-			</div>
-			<div className="main">
-				<Switch>
-					<Route path="/login" render={() => <Login/> } />
-					<PrivateRoute path="/" strict exact component={ProjectList} />
-					<PrivateRoute path="/:proj/" strict component={BuildInfo} />
-					<Redirect from="/index.html" to="/"/>
-					<Route render={()=><span>Not found</span>}/>
-				</Switch>
-			</div>
-		</div>)
+class App extends React.Component {
+	componentWillMount(){
+		this.events = new EventSource(
+			process.env.NODE_ENV === "development" ? 
+			`${window.location.protocol}//${window.location.hostname}:5000/subscribe` :
+			`${window.location.origin}/api/subscribe`
+		);
+	}
+
+	componentWillUnmount(){
+		this.events.close();
+	}
+
+	render(){
+		return (
+			<div id="app">
+				<div className="header">
+					<Link className="title" to="/">Python-CI</Link>
+					{
+						isLoggedIn() ?
+						<span className="account" onClick={logout}><CustomLink type="span" to="/login">Logout</CustomLink></span>
+						:
+						<span className="account"><CustomLink type="span" to="/login">Login</CustomLink></span>
+					}
+				</div>
+				<div className="main">
+					<Switch>
+						<Route path="/login" render={() => <Login/> } />
+						<PrivateRoute path="/" strict exact render={(props)=><ProjectList {...props}/>} />
+						<PrivateRoute path="/:proj/" strict render={(props)=><BuildInfo {...props} events={this.events}/>} />
+						<Redirect from="/index.html" to="/"/>
+						<Route render={()=><span>Not found</span>}/>
+					</Switch>
+				</div>
+			</div>)
+	}
 }
+
+export default App;

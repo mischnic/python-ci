@@ -12,7 +12,7 @@ compileThread = None
 # STATUS
 #
 
-def updateStatus(proj, ref, msg, start_duration, errorMsg = None, stats = {}):
+def updateStatus(proj, ref, channel, msg, start_duration, errorMsg = None, stats = {}):
 	(start, duration) = start_duration
 	if msg == "success":
 		color = "#4c1"
@@ -64,6 +64,7 @@ def updateStatus(proj, ref, msg, start_duration, errorMsg = None, stats = {}):
 		"artifacts": artifacts
 	}
 
+	channel.publish(proj, data)
 
 	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
 		f.write(json.dumps(data))
@@ -142,7 +143,7 @@ compileLang = dict(
 	npm = npm
 )
 
-def doCompile(proj, ref):
+def doCompile(proj, ref, channel):
 	with open(getBuildPath(proj, ref)+"/.log", 'w', 1) as logFile:
 
 		def log(s):
@@ -155,7 +156,7 @@ def doCompile(proj, ref):
 		if not os.path.exists(getBuildPath(proj, ref)):
 			os.makedirs(getBuildPath(proj, ref))
 
-		updateStatus(proj, ref, "pending", (timeStart, None))
+		updateStatus(proj, ref, channel, "pending", (timeStart, None))
 		successful = True
 
 		successfulGit = updateGit(proj, ref, log)
@@ -194,7 +195,7 @@ def doCompile(proj, ref):
 		print(">> Finished "+ref)
 		log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
 
-	updateStatus(proj, ref, "success" if successful else "error", (timeStart, time.time() - timeStart),
+	updateStatus(proj, ref, channel, "success" if successful else "error", (timeStart, time.time() - timeStart),
 		"Git stage failed" if not successfulGit else
 		"Config error" if not successfulCfg else
 		"Compile stage failed" if not successfulCompile else None, stats)
@@ -202,12 +203,12 @@ def doCompile(proj, ref):
 	symlink_force(ref, getBuildPath(proj, "latest"))
 
 
-def startCompile(proj, ref):
+def startCompile(proj, ref, channel):
 	global compileThread
 	# pylint: disable=no-member
 	if compileThread and compileThread.isAlive():
 		return "Currently compiling", 503
 	else:
-		compileThread =	Thread(target=doCompile, args=(proj, ref))
+		compileThread =	Thread(target=doCompile, args=(proj, ref, channel))
 		compileThread.start()
 		return "Compiling Started", 200

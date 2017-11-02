@@ -41,7 +41,7 @@ const withFetcher = (Component) => withRouter(
 			return <Component {...this.props} fetch={(...a)=>this.fetch(...a)}/>;
 		}
 	}
-)
+);
 
 
 const StopPromise = {

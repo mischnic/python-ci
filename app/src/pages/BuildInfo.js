@@ -24,6 +24,30 @@ export default withFetcher(class BuildInfo extends React.Component {
 
 	componentDidMount(){
 		this.load(true);
+
+		this.props.events.onmessage = (e)=>{
+			const {event, data: build} = JSON.parse(e.data);
+			console.log(this.props.match.params.proj, event);
+			if(this.state.data && this.props.match.params.proj === event){
+				const cond = (v)=>v.build.ref === build.ref;
+				const el = this.state.data.list.find(cond);
+				this.setState({
+					data: {
+						...this.state.data,
+						list: [
+							...this.state.data.list.filter((v)=>!cond(v)),
+							{
+								...el,
+								build: {
+									...build,
+									start: new Date(build.start)
+								}
+							}
+						]
+					}
+				})
+			}
+		};
 	}
 
 	load(inital){

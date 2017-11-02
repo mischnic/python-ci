@@ -4,6 +4,7 @@ from flask import Flask, request, send_file, make_response
 import jwt, datetime, hmac, hashlib, os, json
 from werkzeug.routing import BaseConverter, ValidationError
 
+import flask_sse
 import compile, git
 from utils import getBuildPath, getProjPath, parseRef, getConfig
 
@@ -31,6 +32,8 @@ class StringConverter(BaseConverter):
 
 app = Flask(__name__, static_url_path='')
 app.url_map.converters['str'] = StringConverter
+
+channel = flask_sse.Channel()
 
 #
 # UTILS
@@ -159,6 +162,10 @@ def get_diff(proj, ref, ref2):
 		}
 		), {"Content-Type": "application/json"}
 
+@app.route('/subscribe')
+def subscribe():
+	return channel.subscribe(), {"Access-Control-Allow-Origin": "*"}
+
 #
 # FILES
 #
@@ -209,7 +216,7 @@ def get_latest_svg(proj):
 @check_auth
 @error_handler
 def start_build(proj,ref):
-	return compile.startCompile(proj, ref)
+	return compile.startCompile(proj, ref, channel)
 
 
 @app.route('/<proj>', methods=["POST"])
@@ -226,6 +233,6 @@ def github_build(proj):
 	if request.headers["X-GitHub-Event"] == "push" and request.headers["content-type"] == "application/json":
 		data = request.get_json()
 		print(data['head_commit']['id']+": "+data['head_commit']['message'])
-		return  compile.startCompile(proj, data['head_commit']['id'])
+		return compile.startCompile(proj, data['head_commit']['id'], channel)
 
 	return "Not found", 404

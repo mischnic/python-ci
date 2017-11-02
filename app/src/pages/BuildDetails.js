@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./Build.css";
 
-import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher, strToColor, api} from "../utils.js";
+import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher, strToColor} from "../utils.js";
 import {getJWT} from "../auth.js";
 
 const logFormatting = {
@@ -160,30 +160,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 	}
 
 	rebuild(){
-		const stop = () => {
-			if(this.rebuildInterval !== null) {
-				clearInterval(this.rebuildInterval);
-				this.rebuildInterval = null;
-			}
-		};
-
-		const checkStatus = () =>
-			api(this, this.getURL("status"))
-				.then(res => !res.ok ? Promise.reject({status: res.status, text: res.statusText}) : res)
-				.then(res => res.json())
-				.then(({status}) => {
-					if(status !== "pending"){
-						stop();
-						this.props.info.reload();
-					}
-				});
-
-		this.props.fetch(this.getURL("build"))
-			.then(res => res.text())
-			.then(() => {
-					this.rebuildInterval = setInterval(() => checkStatus(), 1000);
-					setTimeout(()=>this.props.info.reload(), 50);
-				}, console.error);
+		this.props.fetch(this.getURL("build"));
 	}
 
 	render(){
