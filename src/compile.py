@@ -144,6 +144,9 @@ compileLang = dict(
 )
 
 def doCompile(proj, ref, channel):
+	if not os.path.exists(getBuildPath(proj, ref)):
+			os.makedirs(getBuildPath(proj, ref))
+
 	with open(getBuildPath(proj, ref)+"/.log", 'w', 1) as logFile:
 
 		def log(s):
@@ -152,9 +155,6 @@ def doCompile(proj, ref, channel):
 		timeStart = time.time()
 		print(">> Started: "+time.strftime("%c"))
 		log(">> Started: "+time.strftime("%c") + "\n")
-
-		if not os.path.exists(getBuildPath(proj, ref)):
-			os.makedirs(getBuildPath(proj, ref))
 
 		updateStatus(proj, ref, channel, "pending", (timeStart, None))
 		successful = True

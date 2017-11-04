@@ -8,7 +8,7 @@ import flask_sse
 import compile, git
 from utils import getBuildPath, getProjPath, parseRef, getConfig
 
-SECRET = os.environ.get('SECRET', "")
+SECRET = os.environ.get('SECRET', "").encode("utf-8")
 PASSWORD = os.environ.get('PASSWORD', "")
 JWT_SECRET = os.environ.get('JWT_SECRET', "secret")
 PROJECTS = json.loads("[]" if os.environ.get('PROJECTS', None) is None else "["+",".join(['"'+x+'"' for x in os.environ.get('PROJECTS').split(",")])+"]")
@@ -227,13 +227,13 @@ def github_build(proj):
 	if SECRET and SECRET != "<<Github Webhook secret>>":
 		(signature_func, signature) = request.headers['X-Hub-Signature'].split("=")
 		if signature_func == "sha1":
-			mac = hmac.new(str(SECRET), msg=request.data, digestmod=hashlib.sha1)
+			mac = hmac.new(SECRET, msg=request.data, digestmod=hashlib.sha1)
 			if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
 				return "Forbidden", 403
 
 	if request.headers["X-GitHub-Event"] == "push" and request.headers["content-type"] == "application/json":
 		data = request.get_json()
-		print(data['head_commit']['id']+": "+data['head_commit']['message'])
+		print("Webhook "+data['head_commit']['id']+": "+data['head_commit']['message'].split("\n")[0])
 		return compile.startCompile(proj, data['head_commit']['id'], channel)
 
 	return "Not found", 404
