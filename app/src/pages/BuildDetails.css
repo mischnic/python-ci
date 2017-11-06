@@ -51,6 +51,7 @@
 	flex: 1 1 30%;
 
 	overflow: auto;
+	white-space: nowrap;
 }
 
 .window.artifacts ol {
@@ -135,6 +136,7 @@
 
 	.buildDetails > .files > .artifacts {
 		overflow: initial;
+		white-space: initial;
 	}
 
 	.buildDetails > .files > :first-child {
