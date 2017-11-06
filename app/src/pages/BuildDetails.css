@@ -8,7 +8,7 @@
 
 	height: calc(100% - 37px);
 	padding-top: 0.7em;
-	overflow: scroll;
+	overflow: auto;
 }
 
 .buildDetails > .details > .window {
@@ -50,14 +50,14 @@
 .window.artifacts {
 	flex: 1 1 30%;
 
-	overflow: scroll;
+	overflow: auto;
 }
 
 .window.artifacts ol {
 	list-style: none;
 	padding-left: 0.7em;
 	margin-top: 0;
-    margin-bottom: 0;
+	margin-bottom: 0;
 }
 
 .window.artifacts > div:not(:last-child) {
@@ -67,17 +67,17 @@
 .window.log {
 	flex: 1 1 70%;
 
-	overflow: scroll;
+	overflow: auto;
 	min-height: 100px;
-    background-color: black;
-    color: white;
-    padding: 10px;
-    padding-top: 7px;
-    padding-bottom: 7px;
+	background-color: black;
+	color: white;
+	padding: 10px;
+	padding-top: 7px;
+	padding-bottom: 7px;
 }
 
 .log code > div:empty {
-    height: 9px;
+	height: 9px;
 }
 
 .log .command, .log .command-mini, .log .command-exp {
