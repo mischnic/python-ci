@@ -22,6 +22,7 @@ Clone your source folder next to the script (see below), copy `start.sh.in` to `
 - `JWT_SECRET`: the secret for creating a JWT token
 - `PASSWORD`: the password (username is hardcoded: `user`)
 - `PROJECT`: comma-seperated string of your projects (e.g. `Maths` or `Maths,Name`)
+- `NGINX_ACCEL`: set to any value to use nginx's `X-Accel-Redirect` for build files
 - Needed to set commit statuses, otherwise optional:
 	- `TOKEN`: a GitHub personal access token
 	- `URL`: the URL under which the server is accessible (including `http[s]://`)
@@ -145,6 +146,12 @@ By default, python-ci listens on `localhost:8000`, meaning that it will only acc
 
 If your router doesn't support [NAT loopback](https://en.wikipedia.org/wiki/NAT_loopback) alias [Hairpinning](https://en.wikipedia.org/wiki/Hairpinning) (meaning that trying to access `ci.example.com` in the same network as the server causes a `ERR_CONNECTION_REFUSED`) then you have to add `ci.example.com*` to the `server_name` directive. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server in your local network.
 
+To use nginx to send your build files add the following inside the `server` block and set `NGINX_ACCEL` to any value in your `start.sh` file:
+
+	location /data/ {
+		internal;
+		alias /set/to/path/to/python-ci/;
+	}
 
 If you only want the api and webhook without the web interface, then you don't need a seperate webserver. In that case, change `'localhost'` in [this](https://github.com/mischnic/python-ci/blob/b5d7e55e94ac528c41a8e30fe6297d768cb244d9/python-ci.py#L323) line to `''`, so the server will be reachable not only from localhost. (i.e. via `192.168.0.4:8000/Maths/svg`)
 

@@ -18,6 +18,7 @@
 #	JWT_SECRET="secret" \
 #	PROJECTS="Maths,Other" \
 #	PASSWORD="password" \
+#	NGINX_ACCEL="yes" \
 #
 # example:
 #	PASSWORD="password" gunicorn python-ci:app --chdir src -k gevent

@@ -171,42 +171,61 @@ def subscribe():
 # FILES
 #
 
+useNginx = os.environ.get("NGINX_ACCEL")
+
+def mySendFile(path, mimetype, content_disposition=None):
+	if useNginx is None:
+		response = make_response(send_file(path, mimetype=mimetype, add_etags=False))
+		if content_disposition is not None:
+			response.headers['content-disposition'] = 'inline; filename='+proj+'.pdf'
+		return response
+	else:
+		headers = {
+			'Content-Type': mimetype,
+			'X-Accel-Redirect': "/data/"+path[3:]
+		}
+
+		if content_disposition is not None:
+			headers['content-disposition'] = content_disposition
+
+		return "", headers
+
+
 @app.route('/<proj>/<ref>/log')
 @check_auth
 @nocache
 @error_handler
 def get_build_log(proj, ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain", add_etags=False)
+	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain")
 
 @app.route('/<proj>/<ref>/svg')
 @check_auth
 @nocache
 @error_handler
 def get_build_svg(proj, ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml", add_etags=False)
+	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml")
 
 @app.route('/<proj>/<ref>/pdf')
 @check_auth
 @nocache
 @error_handler
 def get_build_pdf(proj, ref):
-	response = make_response(send_file(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf", mimetype="application/pdf", add_etags=False))
-	response.headers['content-disposition'] = 'inline; filename='+proj+'.pdf'
-	return response
+	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf",
+							mimetype="application/pdf", content_disposition='inline; filename='+proj+'.pdf')
 
 @app.route('/<proj>/<ref>/output.zip')
 @check_auth
 @nocache
 @error_handler
 def get_build_zip(proj, ref):
-	return send_file(getBuildPath(proj, parseRef(proj,ref))+"/output.zip", mimetype="application/zip", add_etags=False)
+	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/output.zip", mimetype="application/zip")
 
 
 @app.route('/<proj>/latest/svg')
 @nocache
 @error_handler
 def get_latest_svg(proj):
-	return send_file(getBuildPath(proj, parseRef(proj,"latest"))+"/.status.svg", mimetype="image/svg+xml", add_etags=False)
+	return mySendFile(getBuildPath(proj, parseRef(proj,"latest"))+"/.status.svg", mimetype="image/svg+xml")
 
 
 #
