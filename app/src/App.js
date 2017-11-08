@@ -2,7 +2,7 @@ import React from "react";
 import {Route, Redirect, Switch, Link} from "react-router-dom";
 
 import {isLoggedIn, logout, getJWT} from "./auth.js";
-
+import {PrivateRoute} from "./utils.js";
 import CustomLink from "./CustomLink.js";
 
 import BuildInfo from "./pages/BuildInfo.js";
@@ -11,17 +11,6 @@ import Login from "./pages/Login.js";
 
 import "./index.css";
 
-
-function PrivateRoute({component: Component, render, authed = isLoggedIn, ...rest}) {
-	return (
-		<Route
-			{...rest}
-			render={(props) => authed()
-				? ( Component ? <Component {...props}/> : render(props))
-				: <Redirect to={{pathname: "/login", state: {from: props.location}}} />}
-		/>
-	);
-}
 
 class App extends React.Component {
 
@@ -51,6 +40,19 @@ class App extends React.Component {
 		}
 	}
 
+	login(){
+		if(this.events){
+			this.events.close();
+		}
+		this.subscribe();
+	}
+
+	logout(){
+		if(this.events){
+			this.events.close();
+		}
+	}
+
 	render(){
 		return (
 			<div id="app">
@@ -58,14 +60,14 @@ class App extends React.Component {
 					<Link className="title" to="/">Python-CI</Link>
 					{
 						isLoggedIn() ?
-						<span className="account" onClick={logout}><CustomLink type="span" to="/login">Logout</CustomLink></span>
+						<span className="account" onClick={()=>logout() || this.logout()}><CustomLink type="span" to="/login">Logout</CustomLink></span>
 						:
 						<span className="account"><CustomLink type="span" to="/login">Login</CustomLink></span>
 					}
 				</div>
 				<div className="main">
 					<Switch>
-						<Route path="/login" render={() => <Login/> } />
+						<Route path="/login" render={() => <Login afterLogin={()=>this.login()}/> } />
 						<PrivateRoute path="/" strict exact render={(props)=><ProjectList {...props}/>} />
 						<PrivateRoute path="/:proj/" strict render={(props)=><BuildInfo {...props} events={this.events}/>} />
 						<Redirect from="/index.html" to="/"/>

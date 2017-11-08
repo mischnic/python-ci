@@ -1,6 +1,6 @@
 import React from "react";
-import {withRouter} from 'react-router-dom'
-import {getJWT, logout} from "./auth.js";
+import {withRouter, Route, Redirect} from 'react-router-dom'
+import {getJWT, logout, isLoggedIn} from "./auth.js";
 
 const withFetcher = (Component) => withRouter(
 	class Fetcher extends React.Component {
@@ -43,6 +43,18 @@ const withFetcher = (Component) => withRouter(
 	}
 );
 
+
+
+function PrivateRoute({component: Component, render, authed = isLoggedIn, ...rest}) {
+	return (
+		<Route
+			{...rest}
+			render={(props) => authed()
+				? ( Component ? <Component {...props}/> : render(props))
+				: <Redirect to={{pathname: "/login", state: {from: props.location}}} />}
+		/>
+	);
+}
 
 const StopPromise = {
 	then: (v,e) => StopPromise,
@@ -196,4 +208,4 @@ const Errors = (props) =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher, strToColor};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher, strToColor, PrivateRoute};

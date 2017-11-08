@@ -36,7 +36,12 @@ class Login extends React.Component {
 	tryLogin(event){
 		event.preventDefault();
 		login(this.state.user, this.state.password)
-			.then(() => this.redirect(), (res) => {
+			.then(() => {
+					if(this.props.afterLogin)
+						this.props.afterLogin(this.state.user);
+					this.redirect();
+				}
+				, (res) => {
 				if(res.status === 401){
 					this.setState({message: 'Wrong username or password'});
 				} else {
@@ -57,7 +62,7 @@ class Login extends React.Component {
 							<i className="fa fa-user-o"/>
 						</div>
 						<div>
-							<input value={this.state.password} onChange={(e)=>{this.changePassword(e);}} type='password' placeholder='Password'/>
+							<input value={this.state.password} autoFocus onChange={(e)=>{this.changePassword(e);}} type='password' placeholder='Password'/>
 							<span className="fa-stack">
 								<i className="fa fa-circle fa-stack-2x" style={{fontSize: '1.3em'}}></i>
 								<i className="fa fa-lock fa-inverse fa-stack-1x" style={{'top': '-7px'}}/>
