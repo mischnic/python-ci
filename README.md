@@ -38,13 +38,13 @@ You need the following file hierarchy: (clone your project like `Maths`)
 
 	python-ci
 	 |- build
-	 	|- Maths
-			|- .git
-			|- .ci.json
-			| - Document.tex
-		|- Maths_build
-			|- Document.pdf
-			|- Document.aux
+	   |- Maths
+	      |- .git
+	      |- .ci.json
+	      | - Document.tex
+	   |- Maths_build
+	      |- Document.pdf
+	      |- Document.aux
 	     - ...
 	 |- README.md
 	 |- src

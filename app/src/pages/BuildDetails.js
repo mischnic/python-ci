@@ -29,55 +29,91 @@ class Log extends React.Component{
 		super(props);
 
 		this.state = {
-			expanded: []
+			lines: [],
+			commands: [],
+			expanded: [],
+			styles: logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"]
 		}
 	}
+
+	reload(){
+		const lines = this.props.content
+						.split("\n")
+						.filter((v,i)=> v !== "")
+						.map((v, i, arr) => {
+							const style = this.state.styles.find(e => (
+								typeof e[0] === "object" ?
+									(e[0].test(v)) :
+									(v.indexOf(e[0]) === 0)
+							));
+							return [v, style ? style[1] : null];
+						});
+
+		const commands = lines.reduce((acc, v, i)=>{
+													if((v[1] || "").includes("command"))
+														acc[i]=v;
+													return acc;
+												}, {})
+
+		const expanded = {};
+
+		if(!lines[lines.length-1][1] || !lines[lines.length-1][1].includes("info")){
+			const cmdKeys =Object.keys(commands);
+			expanded[cmdKeys[cmdKeys.length-1]] = true;
+		}
+
+		this.setState({
+			lines,
+			commands,
+			expanded: {...this.state.expanded, ...expanded}
+		});
+	}
+
+	componentDidMount(){
+		this.reload();
+	}
+
+	componentDidUpdate(prevProps, prevState){
+		if(this.props.content !== prevProps.content){
+			this.reload();
+		}
+	}
+
 	
 	render() {
-		const logF = logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"];
 		return	<pre>
 					<code>
 						{(()=>{
 						const showCollapsible = window.matchMedia("(min-width: 660px)").matches;
 						let lastCommandShow = !showCollapsible;
-						return this.props.content
-							.split("\n")
-							.filter((v,i)=> v !== "")
-							.map((v, i, arr) => {
-								const key = logF.findIndex(e => (
-									typeof e[0] === "object" ?
-										(e[0].test(v)) :
-										(v.indexOf(e[0]) === 0) 
-								));
-
-								if(key > -1){
-									const classes = logF[key][1]
-									if(showCollapsible){
-										if(classes === "command"){
-											if(i !== arr.length-1){
-												lastCommandShow = this.state.expanded[i];
-												return <div onClick={(e)=> this.setState(
-													{	
-														expanded: {...this.state.expanded, [i]: !this.state.expanded[i]}
-													})
-												} className={lastCommandShow ? "command-exp" : "command-mini"} key={i}>{v}</div>;
-											} else{
-												return <div className="command" key={i}>{v}</div>;
-											}
+						return this.state.lines.map(([v,style],i, arr)=>{
+							if(style){
+								if(showCollapsible){
+									if(style === "command"){
+										if(i !== arr.length-1){
+											lastCommandShow = this.state.expanded[i];
+											return <div onClick={(e)=> this.setState(
+												{	
+													expanded: {...this.state.expanded, [i]: !this.state.expanded[i]}
+												})
+											} className={lastCommandShow ? "command-exp" : "command-mini"} key={i}>{v}</div>;
 										} else{
-											if(classes.indexOf("info")>-1){
-												return <div className={classes} key={i}>{v.substring(3)}</div>;
-											} else {
-												return lastCommandShow && <div className={classes} key={i}>{v}</div>;
-											}
+											return <div className="command" key={i}>{v}</div>;
 										}
-									} else {
-										return <div className={classes} key={i}>{v}</div>;
+									} else{
+										if(style.indexOf("info")>-1){
+											return <div className={style} key={i}>{v.substring(3)}</div>;
+										} else {
+											return lastCommandShow && <div className={style} key={i}>{v}</div>;
+										}
 									}
 								} else {
-									return lastCommandShow && <div key={i}>{v}</div>;
+									return <div className={style} key={i}>{v}</div>;
 								}
-							})
+							} else {
+								return lastCommandShow && <div key={i}>{v}</div>;
+							}
+						})
 						})()}
 					</code>
 				</pre>
