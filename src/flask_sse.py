@@ -31,6 +31,14 @@ class ServerSentEvent(object):
 
         return "{}\n\n".format("\n".join(lines))
 
+class Comment(object):
+    def __init__(self, msg):
+        self.msg = msg
+        self.event_id = generate_id()
+
+    def encode(self):
+        return ": "+self.msg+"\n\n"
+
 
 class Channel(object):
     def __init__(self, history_size=32):
@@ -73,6 +81,11 @@ class Channel(object):
 
     def publish(self, event, message):
         sse = ServerSentEvent(json.dumps({"event": event, "data": message}), None)
+        self.history.append(sse)
+        gevent.spawn(self.notify, sse)
+
+    def comment(self, msg=""):
+        sse = Comment(msg)
         self.history.append(sse)
         gevent.spawn(self.notify, sse)
 

@@ -3,6 +3,7 @@ from functools import wraps
 from flask import Flask, request, send_file, make_response
 import jwt, datetime, hmac, hashlib, os, json
 from werkzeug.routing import BaseConverter, ValidationError
+from threading import Timer
 
 import flask_sse
 import compile, git
@@ -91,6 +92,12 @@ def nocache(view):
 
 	return no_cache
 
+def SSEPing():    
+	Timer(15.0, SSEPing).start()
+	channel.comment("ping")
+
+SSEPing()
+
 
 #
 # GENERAL
@@ -177,7 +184,7 @@ def mySendFile(path, mimetype, content_disposition=None):
 	if useNginx is None:
 		response = make_response(send_file(path, mimetype=mimetype, add_etags=False))
 		if content_disposition is not None:
-			response.headers['content-disposition'] = 'inline; filename='+proj+'.pdf'
+			response.headers['content-disposition'] = content_disposition
 		return response
 	else:
 		headers = {
