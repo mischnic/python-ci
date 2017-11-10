@@ -80,7 +80,7 @@ class Channel(object):
                 add = True
 
     def publish(self, event, message):
-        sse = ServerSentEvent(json.dumps({"event": event, "data": message}), None)
+        sse = ServerSentEvent(json.dumps(message), event)
         self.history.append(sse)
         gevent.spawn(self.notify, sse)
 

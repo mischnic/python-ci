@@ -20,34 +20,40 @@ export default withFetcher(class BuildInfo extends React.Component {
 		// if(!props.match.url.endsWith("/")){
 		// 	props.history.replace(props.match.url+"/");
 		// }
+		this.handleEvent = this.handleEvent.bind(this);
+	}
+
+	handleEvent(e){
+		const {event, data: build} = JSON.parse(e.data);
+		if(this.state.data && event === "status"){
+			const cond = (v)=>v.build.ref === build.ref;
+			const el = this.state.data.list.find(cond);
+			this.setState({
+				data: {
+					...this.state.data,
+					list: [
+						...this.state.data.list.filter((v)=>!cond(v)),
+						{
+							...el,
+							build: {
+								...build,
+								start: new Date(build.start)
+							}
+						}
+					]
+				}
+			})
+		}
 	}
 
 	componentDidMount(){
 		this.load(true);
 
-		this.props.events.onmessage = (e)=>{
-			const {event, data: build} = JSON.parse(e.data);
-			console.log(this.props.match.params.proj, event);
-			if(this.state.data && this.props.match.params.proj === event){
-				const cond = (v)=>v.build.ref === build.ref;
-				const el = this.state.data.list.find(cond);
-				this.setState({
-					data: {
-						...this.state.data,
-						list: [
-							...this.state.data.list.filter((v)=>!cond(v)),
-							{
-								...el,
-								build: {
-									...build,
-									start: new Date(build.start)
-								}
-							}
-						]
-					}
-				})
-			}
-		};
+		this.props.events.addEventListener(this.props.match.params.proj, this.handleEvent);
+	}
+
+	componentWillUnmount(){
+		this.props.events.removeEventListener(this.props.match.params.proj, this.handleEvent);
 	}
 
 	load(inital){
@@ -93,7 +99,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 			this.state.loading || !this.state.data ? <Loading/> :
 			<Switch>
 				<Route path={"/:proj/"} exact={true} strict={true} render={(props)=> <BuildsList info={pass} {...props}/>}/>
-				<Route path={"/:proj/:hash"} render={(props)=> <BuildDetails info={pass} {...props}/>}/>
+				<Route path={"/:proj/:hash"} render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
 				<Route render={() => (<p>Specify a project in the URL!</p>)}/>
 			</Switch>
 		);

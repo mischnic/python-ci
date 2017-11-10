@@ -49,10 +49,10 @@ def updateStatus(proj, ref, channel, msg, start_duration, errorMsg = None, stats
 		if lang == "latex":
 			main = config.get("main", None)
 			if os.path.isfile(getBuildPath(proj,ref)+"/"+main+".pdf"):
-				artifacts["pdf"] = "PDF"		
+				artifacts["pdf"] = "PDF"
 		elif lang == "npm":
 			if os.path.isfile(getBuildPath(proj,ref)+"/output.zip"):
-				artifacts["output.zip"] = "Output"		
+				artifacts["output.zip"] = "Output"
 
 	data = {
 		"ref": ref,
@@ -64,7 +64,7 @@ def updateStatus(proj, ref, channel, msg, start_duration, errorMsg = None, stats
 		"artifacts": artifacts
 	}
 
-	channel.publish(proj, data)
+	channel.publish(proj, {"event": "status", "data": data})
 
 	with open(getBuildPath(proj, ref)+"/.status.json", "w") as f:
 		f.write(json.dumps(data))
@@ -151,12 +151,14 @@ def doCompile(proj, ref, channel):
 
 		def log(s):
 			logFile.write(s)
+			channel.publish(proj, {"event": "log", "data": s})
 
 		timeStart = time.time()
+
+		updateStatus(proj, ref, channel, "pending", (timeStart, None))
 		print(">> Started: "+time.strftime("%c"))
 		log(">> Started: "+time.strftime("%c") + "\n")
 
-		updateStatus(proj, ref, channel, "pending", (timeStart, None))
 		successful = True
 
 		successfulGit = updateGit(proj, ref, log)
@@ -190,7 +192,7 @@ def doCompile(proj, ref, channel):
 					if success:
 						stats["counts"] = counts
 					else:
-						stats["counts"] = False	
+						stats["counts"] = False
 
 		print(">> Finished "+ref)
 		log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")

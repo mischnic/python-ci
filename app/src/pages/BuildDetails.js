@@ -29,15 +29,37 @@ class Log extends React.Component{
 		super(props);
 
 		this.state = {
+			content: this.props.content,
 			lines: [],
 			commands: [],
 			expanded: [],
 			styles: logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"]
 		}
+
+		this.handleEvent = this.handleEvent.bind(this);
 	}
 
-	reload(){
-		const lines = this.props.content
+	handleEvent(e){
+		const {event, data} = JSON.parse(e.data);
+		if(event === "log"){
+			this.reload("\n"+data)
+		}
+	}
+
+	componentDidMount(){
+		this.reload();
+		this.props.events.addEventListener(this.props.proj, this.handleEvent);
+	}
+
+	componentWillUnmount(){
+		this.props.events.removeEventListener(this.props.proj, this.handleEvent);
+	}
+
+
+	reload(add = ""){
+		const newContent = add === false ? "" : (this.state.content + add);
+
+		const getLines = d => d
 						.split("\n")
 						.filter((v,i)=> v !== "")
 						.map((v, i, arr) => {
@@ -49,42 +71,60 @@ class Log extends React.Component{
 							return [v, style ? style[1] : null];
 						});
 
-		const commands = lines.reduce((acc, v, i)=>{
-													if((v[1] || "").includes("command"))
-														acc[i]=v;
-													return acc;
-												}, {})
+		if(add){
+			this.setState({
+				content: newContent,
+				lines: [...this.state.lines, ...getLines(add)]
+			}, ()=> this.last.scrollIntoView({ behavior: "smooth" }) );
+		} else if(add === false){
+			this.setState({
+				content: "",
+				lines: [],
+				commands: [],
+				expanded: []
+			});
+		} else {
+			const lines = getLines(newContent);
 
-		const expanded = {};
+			const commands = lines.reduce((acc, v, i)=>{
+														if((v[1] || "").includes("command"))
+															acc[i]=v;
+														return acc;
+													}, {})
 
-		if(!lines[lines.length-1][1] || !lines[lines.length-1][1].includes("info")){
-			const cmdKeys =Object.keys(commands);
-			expanded[cmdKeys[cmdKeys.length-1]] = true;
+			const expanded = {};
+
+			if(lines.length > 0 && (!lines[lines.length-1][1] || !lines[lines.length-1][1].includes("info"))){
+				const cmdKeys = Object.keys(commands);
+				expanded[cmdKeys[cmdKeys.length-1]] = true;
+			}
+
+			this.setState({
+				lines,
+				commands,
+				content: newContent,
+				expanded: {...this.state.expanded, ...expanded}
+			});
 		}
-
-		this.setState({
-			lines,
-			commands,
-			expanded: {...this.state.expanded, ...expanded}
-		});
-	}
-
-	componentDidMount(){
-		this.reload();
 	}
 
 	componentDidUpdate(prevProps, prevState){
-		if(this.props.content !== prevProps.content){
+		if(this.props.status !== "pending" && this.props.content !== prevProps.content){
 			this.reload();
+		}
+
+		if(this.props.status === "pending" && prevProps.status !== this.props.status){
+			this.reload(false);
 		}
 	}
 
 	
 	render() {
+		const pending = this.props.status === "pending";
 		return	<pre>
 					<code>
 						{(()=>{
-						const showCollapsible = window.matchMedia("(min-width: 660px)").matches;
+						const showCollapsible = window.matchMedia("(min-width: 660px)").matches && !pending;
 						let lastCommandShow = !showCollapsible;
 						return this.state.lines.map(([v,style],i, arr)=>{
 							if(style){
@@ -115,6 +155,7 @@ class Log extends React.Component{
 							}
 						})
 						})()}
+						<div className="last" ref={(el) => { this.last = el; }}/>
 					</code>
 				</pre>
 	}
@@ -293,9 +334,9 @@ export default withFetcher(class BuildDetails extends React.Component {
 								<div className="window log">
 									{
 										this.state.files["log"] &&
-										(this.state.files["log"].loading || build.status === "pending" ? <Loading opacity={0.5}/> :
+										(this.state.files["log"].loading ? <Loading opacity={0.5}/> :
 											this.state.files["log"].error ? <Errors/> : 
-											<Log lang={this.props.info.data.language} content={this.state.files["log"].content}/>
+											<Log events={this.props.events} proj={proj} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
 										)
 									}
 								</div>
