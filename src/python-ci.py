@@ -172,7 +172,11 @@ def get_diff(proj, ref, ref2):
 @app.route('/subscribe')
 @check_auth
 def subscribe():
-	return channel.subscribe(), {"Access-Control-Allow-Origin": "*"}
+	return channel.subscribe(), {
+		"Access-Control-Allow-Origin": "*",
+		"Cache-Control": "no-cache",
+		"X-Accel-Buffering": "no"
+	}
 
 #
 # FILES
