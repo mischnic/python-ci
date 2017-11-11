@@ -12,20 +12,20 @@ def githubGET(req: str) -> dict:
 	response = s.get(url).text
 	return json.loads(response)
 
-def githubPOST(req: str, data: bytes) -> dict:
+def githubPOST(req: str, data: str) -> dict:
 	url = 'https://api.github.com'+req
-	response = s.post(url, data).text
+	response = s.post(url, data=data.encode("utf-8")).text
 	return json.loads(response)
 
 
-def setStatus(id: str, sha: str, status: str, url: str, desc: str) -> dict:
-	return githubPOST("/repos/{id}/statuses/{sha}".format(id=id, sha=sha),
+def setStatus(proj: str, sha: str, status: str, url: str, desc: str) -> dict:
+	return githubPOST("/repos/{id}/statuses/{sha}".format(id=repos[proj]["github"], sha=sha),
 		json.dumps({
 			"context": "py-ci",
 			"state": status,
 			"target_url": url,
 			"description": desc
-		}).encode("utf-8")
+		})
 	)
 
 
