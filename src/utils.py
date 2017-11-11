@@ -1,9 +1,10 @@
 import os, json, errno, subprocess
+from typing import List, Callable, Dict
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 
 
-def runSubprocess(cmd, out, cwd=None, env=None):
+def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, env: Dict[str, str] = None) -> int:
 	try:
 		process = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		while process.poll() is None:
@@ -23,7 +24,7 @@ def runSubprocess(cmd, out, cwd=None, env=None):
 		out(e.strerror+"\n")
 		return 1
 
-def symlink_force(target, link_name):
+def symlink_force(target: str, link_name: str) -> None:
 	try:
 		os.symlink(target, link_name)
 	except OSError as e:
@@ -33,13 +34,13 @@ def symlink_force(target, link_name):
 		else:
 			raise e
 
-def parseRef(proj, ref):
+def parseRef(proj: str, ref: str) -> str:
 	if ref == "latest":
 		return os.path.basename(os.path.realpath(proj+OUTPUT_SUFFIX+"/"+ref))
 	else:
 		return ref
 
-def loadJSON(fileName):
+def loadJSON(fileName: str) -> dict:
 	data = None
 	try:
 		f = open(fileName, "r")
@@ -54,15 +55,15 @@ def loadJSON(fileName):
 
 	return data
 
-def getConfig(proj, ref=None):
+def getConfig(proj: str, ref: str = None):
 	if ref is not None:
 		if os.path.exists(getBuildPath(proj, ref)+"/.ci.json"):
 			return loadJSON(getBuildPath(proj, ref)+"/.ci.json")
 
 	return loadJSON(getProjPath(proj)+"/.ci.json")
 
-def getProjPath(proj):
+def getProjPath(proj: str) -> str:
 	return "../build/"+proj
 
-def getBuildPath(proj, ref = None):
+def getBuildPath(proj: str, ref: str = None) -> str:
 	return "../build/"+proj+OUTPUT_SUFFIX + ("" if ref is None else ("/"+ ref))

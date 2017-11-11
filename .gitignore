@@ -2,4 +2,5 @@ start.sh
 TeXcount_*
 
 __pycache__
+.mypy_cache
 build/*

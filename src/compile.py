@@ -1,7 +1,9 @@
 import time, os, json, shutil
 from threading import Thread
 import latex, git
+from flask_sse import Channel
 from utils import symlink_force, getBuildPath, getProjPath, getConfig, loadJSON, runSubprocess
+from typing import Tuple, Callable, Union, Dict, Any; assert Dict, Any
 
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
@@ -12,7 +14,8 @@ compileThread = None
 # STATUS
 #
 
-def updateStatus(proj, ref, channel, msg, start_duration, errorMsg = None, stats = {}):
+def updateStatus(proj: str, ref: str, channel: Channel, msg: str, start_duration: Tuple[float, float],
+					errorMsg: str = None, stats: dict = {}) -> None:
 	(start, duration) = start_duration
 	if msg == "success":
 		color = "#4c1"
@@ -77,14 +80,14 @@ def updateStatus(proj, ref, channel, msg, start_duration, errorMsg = None, stats
 # COMPILE
 #
 
-def getStatus(proj, ref, raw=False):
+def getStatus(proj: str, ref: str, raw: bool=False) -> Union[dict, str]:
 	if raw:
 		return getBuildPath(proj, ref)+"/.status.json"
 
 	return loadJSON(getBuildPath(proj, ref)+"/.status.json")
 
 
-def updateGit(proj, ref, log):
+def updateGit(proj: str, ref: str, log: Callable[[str], None]):
 	successful = True
 	log(">>> git pull origin master && git reset --hard "+ref+"\n")
 	try:
@@ -103,7 +106,7 @@ def updateGit(proj, ref, log):
 
 	return successful
 
-def npm(proj, buildPath, cfg, log):
+def npm(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> bool:
 	successful = True
 
 	output = cfg.get("output", None)
@@ -139,11 +142,11 @@ def npm(proj, buildPath, cfg, log):
 
 compileLang = dict(
 	latex = latex.doCompile,
-	git = lambda a,b,c,d: (True, ""),
+	git = lambda a,b,c,d: True,
 	npm = npm
-)
+) #type: Dict[str, Callable[[str, str, dict, Callable[[str], None]], bool]]
 
-def doCompile(proj, ref, channel):
+def doCompile(proj: str, ref: str, channel: Channel) -> None:
 	if not os.path.exists(getBuildPath(proj, ref)):
 			os.makedirs(getBuildPath(proj, ref))
 
@@ -184,7 +187,7 @@ def doCompile(proj, ref, channel):
 			else:
 				log("not compiling" + "\n")
 
-		stats = {}
+		stats = {} #type: Dict[str, Union[str, Any]]
 		if successful:
 			if "stats" in cfg:
 				if cfg["language"] == "latex" and "counts" in cfg["stats"]:
@@ -205,9 +208,8 @@ def doCompile(proj, ref, channel):
 	symlink_force(ref, getBuildPath(proj, "latest"))
 
 
-def startCompile(proj, ref, channel):
+def startCompile(proj: str, ref: str, channel: Channel) -> Tuple[str, int]:
 	global compileThread
-	# pylint: disable=no-member
 	if compileThread and compileThread.isAlive():
 		return "Currently compiling", 503
 	else:

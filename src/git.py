@@ -1,4 +1,5 @@
 import pygit2, re, json, requests, os
+from typing import Dict, Any, List; assert Dict, Any
 
 
 TOKEN = os.environ.get('TOKEN', "")
@@ -6,30 +7,30 @@ TOKEN = os.environ.get('TOKEN', "")
 s = requests.Session()
 s.headers.update({"Authorization": "token "+TOKEN})
 
-def githubGET(req):
+def githubGET(req: str) -> dict:
 	url = 'https://api.github.com'+req
 	response = s.get(url).text
 	return json.loads(response)
 
-def githubPOST(req, data):
+def githubPOST(req: str, data: bytes) -> dict:
 	url = 'https://api.github.com'+req
 	response = s.post(url, data).text
 	return json.loads(response)
 
 
-def setStatus(id, sha, status, url, desc):
+def setStatus(id: str, sha: str, status: str, url: str, desc: str) -> dict:
 	return githubPOST("/repos/{id}/statuses/{sha}".format(id=id, sha=sha),
 		json.dumps({
 			"context": "py-ci",
 			"state": status,
 			"target_url": url,
 			"description": desc
-		})
+		}).encode("utf-8")
 	)
 
 
-repos = dict()
-def getRepo(name, dir=None):
+repos = dict() #type: Dict[str, Dict[str, Any]]
+def getRepo(name: str, dir: str = None) -> pygit2.Repository:
 	if not name in repos:
 		repo = pygit2.Repository(dir if dir is not None else name)
 		repos[name] = {
@@ -45,7 +46,7 @@ def getRepo(name, dir=None):
 # 	return avatar_urls[name]
 
 
-def getCommitDetails(repo, sha):
+def getCommitDetails(repo: str, sha: str) -> Dict[str, Any]:
 	if isinstance(sha, str):
 		commit = getRepo(repo).revparse_single(sha)
 	else:
@@ -61,7 +62,7 @@ def getCommitDetails(repo, sha):
 		"parents": [c.hex for c in commit.parents]
 	}
 
-def getCommits(repo_name, start=None, end=None):
+def getCommits(repo_name, start=None, end=None) -> List[pygit2.Commit]:
 	repo = getRepo(repo_name)
 
 	if start:

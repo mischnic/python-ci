@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import re, subprocess, os
+from typing import Callable, Tuple, Union, cast, Dict, Any
 
 from utils import getProjPath, runSubprocess
 
 TEXCOUNT_PATH = "../TeXcount_3_1/texcount.pl"
-ENCODING = "utf-8"
 
-def parseOutput(data, regex):
+def parseOutput(data: str, regex: str) -> Dict[str, Any]:
 	s, s2 = None, None
 	if "Subcounts:" in data:
 		s, s2 = data.split("Subcounts:\n")
@@ -15,7 +15,8 @@ def parseOutput(data, regex):
 
 	res = {
 		"chapters": []
-	}
+	} #type: dict
+	
 	for l in re.findall(regex, s, re.U):
 		# (sumc, text, headers, outside, headersN, floatsN, mathsI, mathsD) = l
 		res["total"] = l
@@ -27,7 +28,7 @@ def parseOutput(data, regex):
 
 	return res
 
-def correctLetters(letters, words):
+def correctLetters(letters: dict, words: dict) -> None:
 	for k, v in letters.items():
 		if k in words:
 			if k == "chapters":
@@ -40,7 +41,7 @@ def correctLetters(letters, words):
 lettersR = r"Sum count: ([0-9]+)\nLetters in text: ([0-9]+)\nLetters in headers: ([0-9]+)\nLetters in captions: ([0-9]+)\nNumber of headers: ([0-9]+)\nNumber of floats/tables/figures: ([0-9]+)\nNumber of math inlines: ([0-9]+)\nNumber of math displayed: ([0-9]+)"
 wordsR = r"Sum count: ([0-9]+)\nWords in text: ([0-9]+)\nWords in headers: ([0-9]+)\nWords outside text \(captions, etc\.\): ([0-9]+)\nNumber of headers: ([0-9]+)\nNumber of floats\/tables\/figures: ([0-9]+)\nNumber of math inlines: ([0-9]+)\nNumber of math displayed: ([0-9]+)"
 
-def count(path, buildPath, fileName):
+def count(path: str, buildPath: str, fileName: str) -> Tuple[bool, Union[dict, str]]:
 	if not os.path.isfile(path+"/"+fileName):
 		return (False, "File not found: '"+path+"/"+fileName+"'")
 	cmd = [
@@ -49,18 +50,18 @@ def count(path, buildPath, fileName):
 		]
 
 	try:
-		wordsOut = subprocess.check_output(cmd).decode(ENCODING)
+		wordsOut = subprocess.check_output(cmd).decode("utf-8")
 		if "File not found" in wordsOut:
 			raise subprocess.CalledProcessError(1, cmd, wordsOut)
 		words = parseOutput(wordsOut, wordsR)
-		lettersOut = subprocess.check_output(cmd + ["-chars"]).decode(ENCODING)
+		lettersOut = subprocess.check_output(cmd + ["-chars"]).decode("utf-8")
 		letters = parseOutput(lettersOut, lettersR)
 		correctLetters(letters, words)
 	except (subprocess.CalledProcessError, OSError, ValueError) as exc:
 		if type(exc).__name__ == "OSError":
 			return (False, str(exc))
 		else:
-			return (False, exc.output)
+			return (False, cast(subprocess.CalledProcessError, exc).output)
 	else:
 		return (True,{
 				"words": words,
@@ -69,7 +70,7 @@ def count(path, buildPath, fileName):
 
 
 
-def copyFolderStructure(src, target):
+def copyFolderStructure(src: str, target: str) -> None:
 	for root, subFolders, _ in os.walk(src):
 		subFolders[:] = [d for d in subFolders if not d[0] == '.']
 		f = "."+root[len(src):]
@@ -79,7 +80,7 @@ def copyFolderStructure(src, target):
 			pass
 
 
-def doCompile(proj, buildPath, cfg, log):
+def doCompile(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> bool:
 	successful = True
 	copyFolderStructure(getProjPath(proj), buildPath)
 	
