@@ -58,7 +58,6 @@ class Channel(object):
         self.subscriptions.append(q)
         try:
             while True:
-                # send comment to prevent timeout?
                 yield q.get()
         except GeneratorExit:
             self.subscriptions.remove(q)
@@ -72,7 +71,7 @@ class Channel(object):
             mimetype="text/event-stream")
 
     def _add_history(self, q, last_id):
-        add = False
+        add = False # last_id is None
         for sse in self.history:
             if add:
                 q.put(sse)

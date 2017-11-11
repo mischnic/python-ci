@@ -104,6 +104,7 @@ SSEPing()
 #
 
 @app.route('/login', methods=["POST"])
+@error_handler
 def login():
 	json_d = request.get_json()
 	username = json_d["username"]
@@ -119,11 +120,13 @@ def login():
 
 @app.route('/')
 @check_auth
+@error_handler
 def list_projects():
 	return json.dumps(PROJECTS), 200, {'Content-Type': 'application/json'}
 
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
+@error_handler
 def get_builds(proj):
 	if not os.path.isfile(getProjPath(proj)+"/.ci.json"):
 		return "Not found", 404
@@ -155,12 +158,14 @@ def get_builds(proj):
 @app.route('/<proj>/<ref>/status')
 @check_auth
 @nocache
+@error_handler
 def get_build_details(proj, ref):
 	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype="application/json")
 
 @app.route('/<proj>/<ref>/diff/<ref2>')
 @check_auth
 @nocache
+@error_handler
 def get_diff(proj, ref, ref2):
 	return json.dumps(
 		{
@@ -171,6 +176,7 @@ def get_diff(proj, ref, ref2):
 
 @app.route('/subscribe')
 @check_auth
+@error_handler
 def subscribe():
 	return channel.subscribe(), {
 		"Access-Control-Allow-Origin": "*",
