@@ -1,0 +1,6 @@
+gevent==1.2.2
+Flask==0.12.2
+pygit2==0.26.0
+gunicorn==19.7.1
+requests==2.18.4
+pygit2==0.26.0

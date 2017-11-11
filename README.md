@@ -12,8 +12,8 @@ A lightweight CI-server written in python, originally developed for a Raspberry 
 
 ## Setup
 
-- Python 3
-- required libs: `pip3 install flask gunicorn gevent requests pygit2`
+- tested with Python 3.5 and 3.6
+- install required libs: `pip3 install -r requirements.txt`
 
 Clone your source folder next to the script (see below), copy `start.sh.in` to `start.sh` and make `start.sh` executable. Enviroment variables in `start.sh` for the python script serve as configuration:
 
