@@ -111,13 +111,13 @@ def npm(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> boo
 
 	output = cfg.get("output", None)
 	env = cfg.get("env", {})
-	cwd = getProjPath(proj)+"/"+cfg.get("source", "")
+	cwd = getProjPath(proj)
 	env["PATH"] = "/usr/local/bin"
 
 	if output:
 		try:
 			log(">>> yarn install\n")
-			rv = runSubprocess(["yarn", "install", "--non-interactive"], log, cwd=cwd, env=env)
+			rv = runSubprocess(["yarn", "install"], log, cwd=cwd, env=env)
 			if rv != 0:
 				successful = False
 				raise Exception(rv)
@@ -129,7 +129,7 @@ def npm(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> boo
 				raise Exception(rv)
 
 			log(">>> creating output archive...\n")
-			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd, base_dir="./"+output)
+			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd+"/"+cfg.get("folder", ""), base_dir="./"+output)
 
 		except Exception as e:
 			log("yarn failed: "+str(e) + "\n")

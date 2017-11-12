@@ -6,6 +6,8 @@ import "./Build.css";
 import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher, strToColor} from "../utils.js";
 import {getJWT} from "../auth.js";
 
+import ansiToHTML from "../ANSI-Escape.js"
+
 const logFormatting = {
 	all: [
 		[">>> ", "command"],
@@ -24,17 +26,22 @@ const logFormatting = {
 };
 
 
+function cleanupHTML(s){
+	return s.replace(/<[^>]+>/g, "");
+}
+
+
 class Log extends React.Component{
 	constructor(props){
 		super(props);
 
 		this.state = {
-			content: this.props.content,
+			content: ansiToHTML(this.props.content, "white"),
 			lines: [],
 			commands: [],
 			expanded: [],
 			styles: logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"]
-		}
+		};
 
 		this.handleEvent = this.handleEvent.bind(this);
 	}
@@ -61,14 +68,14 @@ class Log extends React.Component{
 
 		const getLines = d => d
 						.split("\n")
-						.filter((v,i)=> v !== "")
 						.map((v, i, arr) => {
-							const style = this.state.styles.find(e => (
-								typeof e[0] === "object" ?
-									(e[0].test(v)) :
-									(v.indexOf(e[0]) === 0)
-							));
-							return [v, style ? style[1] : null];
+							const text = cleanupHTML(v);
+							const style = this.state.styles.find(e => {
+								return typeof e[0] === "object" ?
+									(e[0].test(text)) :
+									(text.indexOf(e[0]) === 0)
+							});
+							return [text ? v : " ", style ? style[1] : null];
 						});
 
 		if(add){
@@ -127,6 +134,7 @@ class Log extends React.Component{
 						const showCollapsible = window.matchMedia("(min-width: 660px)").matches && !pending;
 						let lastCommandShow = !showCollapsible;
 						return this.state.lines.map(([v,style],i, arr)=>{
+							const text = {dangerouslySetInnerHTML: {__html: v}}
 							if(style){
 								if(showCollapsible){
 									if(style === "command"){
@@ -136,22 +144,22 @@ class Log extends React.Component{
 												{	
 													expanded: {...this.state.expanded, [i]: !this.state.expanded[i]}
 												})
-											} className={lastCommandShow ? "command-exp" : "command-mini"} key={i}>{v}</div>;
+											} className={lastCommandShow ? "command-exp" : "command-mini"} key={i} {...text}/>;
 										} else{
-											return <div className="command" key={i}>{v}</div>;
+											return <div className="command" key={i} {...text}/>;
 										}
 									} else{
 										if(style.indexOf("info")>-1){
-											return <div className={style} key={i}>{v.substring(3)}</div>;
+											return <div className={style} key={i} {...text}/>;
 										} else {
-											return lastCommandShow && <div className={style} key={i}>{v}</div>;
+											return lastCommandShow && <div className={style} key={i} {...text}/>;
 										}
 									}
 								} else {
-									return <div className={style} key={i}>{v}</div>;
+									return <div className={style} key={i} {...text}/>;
 								}
 							} else {
-								return lastCommandShow && <div key={i}>{v}</div>;
+								return lastCommandShow && <div key={i} {...text}/>;
 							}
 						})
 						})()}

@@ -4,9 +4,14 @@ from typing import List, Callable, Dict
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 
 
-def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, env: Dict[str, str] = None) -> int:
+def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, env: Dict[str, str] = {}) -> int:
 	try:
-		process = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		process = subprocess.Popen(["/usr/bin/script", "-q", "/dev/null"] + cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		env["CLICOLOR"] = "1"
+		env["TERM"] = "xterm-256color"
+		if not "PATH" in env:
+			env["PATH"] = "/usr/local/bin:/usr/bin:/bin"
+
 		while process.poll() is None:
 			line = process.stdout.readline()
 			if not line: break

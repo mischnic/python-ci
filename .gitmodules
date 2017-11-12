@@ -1,0 +1,3 @@
+[submodule "app/src/ANSI-Escape.js"]
+	path = app/src/ANSI-Escape.js
+	url = https://github.com/mischnic/ANSI-Escape.js

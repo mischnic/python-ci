@@ -72,6 +72,7 @@ var EventSource = function (url) {
 							eventType = line.replace(/event:?\s*/, '');
 						} else if (line.indexOf('retry') === 0) {
 							console.log(line.replace(/retry:?\s*/, ''))
+							// eslint-disable-next-line
 							var retry = parseInt(line.replace(/retry:?\s*/, ''));
 							if(!isNaN(retry)) { interval = retry; }
 						} else if (line.indexOf('data') === 0) {
