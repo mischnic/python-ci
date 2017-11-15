@@ -85,7 +85,7 @@ input {
 }
 
 .loading {
-	font-size: 4em;
+	font-size: 5rem;
 }
 
 .loading:before {
@@ -95,6 +95,8 @@ input {
 }
 
 .loading, .jumping {
+	position: relative;
+	top: -0.27em;
 	animation: jumping 1.3s infinite cubic-bezier(0.2, 0.95, 0.95, 0.99);
 	animation-direction: alternate;
 }
