@@ -1,16 +1,17 @@
-import os, json, errno, subprocess
+import os, json, errno, subprocess, pwd
 from typing import List, Callable, Dict
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
+CI_PATH = os.environ.get('CI_PATH', None)
 
 
 def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, env: Dict[str, str] = {}) -> int:
 	try:
-		process = subprocess.Popen(["/usr/bin/script", "-q", "/dev/null"] + cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		env["CLICOLOR"] = "1"
 		env["TERM"] = "xterm-256color"
-		if not "PATH" in env:
-			env["PATH"] = "/usr/local/bin:/usr/bin:/bin"
+		env["PATH"] = (CI_PATH+":" if CI_PATH else "") + "/usr/local/bin:/usr/bin:/bin" + (env["PATH"] if "PATH" in env else "")
+		env["USER"] = pwd.getpwuid(os.getuid()).pw_name
+		process = subprocess.Popen(["/usr/bin/script", "-q", "/dev/null"] + cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 		while process.poll() is None:
 			line = process.stdout.readline()

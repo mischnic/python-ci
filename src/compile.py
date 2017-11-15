@@ -112,7 +112,6 @@ def npm(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> boo
 	output = cfg.get("output", None)
 	env = cfg.get("env", {})
 	cwd = getProjPath(proj)
-	env["PATH"] = "/usr/local/bin"
 
 	if output:
 		try:

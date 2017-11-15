@@ -19,6 +19,8 @@
 #	PROJECTS="Maths,Other" \
 #	PASSWORD="password" \
 #	NGINX_ACCEL="yes" \
+#	CI_PATH="/Library/TeX/texbin" \
+#	 ...
 #
 # example:
 #	PASSWORD="password" gunicorn python-ci:app --chdir src -k gevent

@@ -23,6 +23,7 @@ Clone your source folder next to the script (see below), copy `start.sh.in` to `
 - `PASSWORD`: the password (username is hardcoded: `user`)
 - `PROJECT`: comma-seperated string of your projects (e.g. `Maths` or `Maths,Name`)
 - `NGINX_ACCEL`: set to any value to use nginx's `X-Accel-Redirect` for build files
+- `CI_PATH`: additional `PATH` entries to set when executing commands
 - Needed to set commit statuses, otherwise optional:
 	- `TOKEN`: a GitHub personal access token
 	- `URL`: the URL under which the server is accessible (including `http[s]://`)
