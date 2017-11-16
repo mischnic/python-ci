@@ -49,7 +49,7 @@ class Log extends React.Component{
 	handleEvent(e){
 		const {event, data} = JSON.parse(e.data);
 		if(event === "log"){
-			this.reload("\n"+data)
+			this.reload(data);
 		}
 	}
 
@@ -64,18 +64,20 @@ class Log extends React.Component{
 
 
 	reload(add = ""){
+		if(add)	add = ansiToHTML(add);
+
 		const newContent = add === false ? "" : (this.state.content + add);
 
 		const getLines = d => d
-						.split("\n")
+						.split("<br/>")
 						.map((v, i, arr) => {
-							const text = cleanupHTML(v);
+							const text = cleanupHTML(v)
 							const style = this.state.styles.find(e => {
 								return typeof e[0] === "object" ?
 									(e[0].test(text)) :
 									(text.indexOf(e[0]) === 0)
 							});
-							return [text ? v : " ", style ? style[1] : null];
+							return [v, style ? style[1] : null];
 						});
 
 		if(add){
