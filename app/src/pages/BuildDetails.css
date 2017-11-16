@@ -129,6 +129,10 @@
 	color: yellow;
 }
 
+.log code > div > span:empty:before {
+	content: "\200b";
+}
+
 @media (max-width: 730px) {
 	.buildDetails > .files {
 		flex-direction: column;
