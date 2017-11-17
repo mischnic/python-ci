@@ -22,13 +22,18 @@
 }
 
 .avatar {
+	display: flex;
+	align-items: center;
+	height: 1em;
+}
+
+.avatar > :first-child {
 	height: 1em;
 	width: 1em;
 	margin-right: 4px;
+	display: inline-block;
 }
 
-@media (max-width: 440px) {
-	.fa-external-link{
-		font-size: 80%;
-	}
+.avatar > span {
+	margin-top: 0.17em;
 }

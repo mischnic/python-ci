@@ -1,9 +1,10 @@
 import React from "react";
 import {Link} from "react-router-dom";
 import "./BuildDetails.css";
-import "./Build.css";
+import "./BuildCommon.css";
 
-import {Loading, Errors, formatDate, formatTime, humanDate, withFetcher, strToColor} from "../utils.js";
+import {Loading, Errors, formatTime, withFetcher, RelDate} from "../utils.js";
+import {GitUser} from "./BuildCommon.js";
 import {getJWT} from "../auth.js";
 
 import ansiToHTML from "../ANSI-Escape.js"
@@ -268,12 +269,12 @@ export default withFetcher(class BuildDetails extends React.Component {
 							<div className="details">
 								<div className={`window build buildStatus ${build.status}`}>
 									<div>
-										<img className="avatar" alt="" style={!commit.author_avatar ? {backgroundColor: "#"+strToColor(commit.author_name)} : null} src={commit.author_avatar || null}/>{commit.author_name}<br/>
+										<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
 										{commit.msg}<br/>
-										<a title="Open on Github" href={commit.url} target="_blank">{commit.ref}</a> ({humanDate(commit.date)})<br/>
+										<a title="Open on Github" href={commit.url} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
 									</div>
 									<div>
-										<span title={formatDate(build.start)}>started {humanDate(build.start)} </span><br/>
+										<span>started <RelDate date={build.start}/> </span><br/>
 										{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
 									</div>
 									<div>

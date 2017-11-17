@@ -1,4 +1,6 @@
 import React from "react";
+import PropTypes from "prop-types";
+
 import {withRouter, Route, Redirect} from 'react-router-dom'
 import {getJWT, logout, isLoggedIn} from "./auth.js";
 
@@ -43,6 +45,33 @@ const withFetcher = (Component) => withRouter(
 	}
 );
 
+class RelDate extends React.Component {
+	static propTypes = { date: PropTypes.instanceOf(Date) };
+
+	constructor(props){
+		super(props);
+		this.state = {
+			text: humanDate(this.props.date)
+		}
+	}
+
+	componentDidMount(){
+		this.updateID = setInterval(()=>{
+			const newText = humanDate(this.props.date);
+			if(newText !== this.state.text){
+				this.setState({text: newText});
+			}
+		}, 30*1000);
+	}
+
+	componentWillUnmount(){
+		clearInterval(this.updateID);
+	}
+
+	render(){
+		return <span title={formatDate(this.props.date)}>{this.state.text}</span>;
+	}
+}
 
 
 function PrivateRoute({component: Component, render, authed = isLoggedIn, ...rest}) {
@@ -55,6 +84,12 @@ function PrivateRoute({component: Component, render, authed = isLoggedIn, ...res
 		/>
 	);
 }
+
+PrivateRoute.propTypes = {
+	component: PropTypes.element,
+	render: PropTypes.func,
+	auth: PropTypes.func
+};
 
 const StopPromise = {
 	then: (v,e) => StopPromise,
@@ -102,7 +137,7 @@ function humanDate(date){
 		if(diffHours > 24){
 			return formatDate(date);
 		} else {
-			return `${diffHours} hours ago`;
+			return `${diffHours} ${diffHours === 1 ? "hour" : "hours"} ago`;
 		}
 	} else {
 		if(diffMinutes === 0){
@@ -131,8 +166,8 @@ const api = (comp, url, settings={}, type = "json") => {
 };
 
 
-function hash(str) {
-	let hash = 5361,
+function hash(str, start=5361) {
+	let hash = start,
 	i = str.length;
 
 	while(i) {
@@ -142,8 +177,8 @@ function hash(str) {
 	return hash >>> 0;
 }
 
-function strToColor(str){
-	return Math.round(hash(str)).toString(16).substring(0,6);
+function strToColor(str, start=5361){
+	return Math.round(hash(str, start)).toString(16).substring(0,6);
 }
 
 // const api = (comp, url, settings={}, type = "json") => {
@@ -198,7 +233,12 @@ const Loading = (props) =>
 		</div>
 	</div>;
 
-const Errors = (props) =>
+Loading.propTypes = {
+	opacity: PropTypes.number,
+	size: PropTypes.string
+}
+
+const Errors = () =>
 	<div style={{display:"flex",justifyContent:"center",alignItems:"center", color: "white", height: "100%"}}>
 		An error occured
 	</div>;
@@ -211,4 +251,4 @@ const Errors = (props) =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher, strToColor, PrivateRoute};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher, strToColor, PrivateRoute, RelDate};

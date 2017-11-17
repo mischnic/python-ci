@@ -6,6 +6,11 @@ A lightweight CI-server written in python, originally developed for a Raspberry 
 - Can be set up as a GitHub webhook
 - Can display the build status next to the commit on GitHub
 
+Drawbacks:
+
+- Builds aren't fully isolated, the same cloned repo is `reset` to the corresponding commit and then used for building.
+- For `npm`: `npm build` is run and then the specified build folder is `zip`ped up.
+
 ![List view](docs/example_web1.png)
 
 ![Details view](docs/example_web2.png)
@@ -21,9 +26,9 @@ Clone your source folder next to the script (see below), copy `start.sh.in` to `
 - `SECRET`: the secret from the GitHub webhook configuration; optional
 - `JWT_SECRET`: the secret for creating a JWT token
 - `PASSWORD`: the password (username is hardcoded: `user`)
-- `PROJECT`: comma-seperated string of your projects (e.g. `Maths` or `Maths,Name`)
+- `PROJECT`: comma-seperated string of your projects (project folders) (e.g. `Maths` or `Maths,Name`)
 - `NGINX_ACCEL`: set to any value to use nginx's `X-Accel-Redirect` for build files
-- `CI_PATH`: additional `PATH` entries to set when executing commands
+- `CI_PATH`: additional `PATH` entries to set when executing commands (e.g `/Library/TeX/texbin` on macOS)
 - Needed to set commit statuses, otherwise optional:
 	- `TOKEN`: a GitHub personal access token
 	- `URL`: the URL under which the server is accessible (including `http[s]://`)
