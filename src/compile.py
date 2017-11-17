@@ -89,12 +89,13 @@ def getStatus(proj: str, ref: str, raw: bool=False) -> Union[dict, str]:
 
 def updateGit(proj: str, ref: str, log: Callable[[str], None]):
 	successful = True
-	log(">>> git pull origin master && git reset --hard "+ref+"\n")
 	try:
-		rv = runSubprocess(["git", "pull", "origin", "master"], log, cwd=getProjPath(proj))
+		log(">>> git fetch --all\n")
+		rv = runSubprocess(["git", "fetch", "--all"], log, cwd=getProjPath(proj))
 		if rv != 0:
 			raise Exception(rv)
 
+		log(">>> git reset --hard "+ref+"\n")
 		rv = runSubprocess(["git", "reset", "--hard", ref], log, cwd=getProjPath(proj))
 		if rv != 0:
 			raise Exception(rv)

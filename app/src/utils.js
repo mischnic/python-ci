@@ -193,7 +193,7 @@ function strToColor(str){
 const Loading = (props) =>
 	<div style={{width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}>
 		<div style={{display: "flex", justifyContent: "center", alignItems: "center", fontSmoothing: "none",
-						opacity: props.opacity ? props.opacity : "0.07", fontSize: props.size ? props.size : null}}>
+						opacity: props.opacity ? props.opacity : "0.4", fontSize: props.size ? props.size : null}}>
 			<span className="loading"/>
 		</div>
 	</div>;

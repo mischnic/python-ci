@@ -64,7 +64,9 @@ class Log extends React.Component{
 
 
 	reload(add = ""){
-		if(add)	add = ansiToHTML(add);
+		if(add)	{
+			add = ansiToHTML(add.trim());
+		}
 
 		const newContent = add === false ? "" : (this.state.content + add);
 
@@ -344,7 +346,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 								<div className="window log">
 									{
 										this.state.files["log"] &&
-										(this.state.files["log"].loading ? <Loading opacity={0.5}/> :
+										(this.state.files["log"].loading ? <Loading/> :
 											this.state.files["log"].error ? <Errors/> : 
 											<Log events={this.props.events} proj={proj} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
 										)
