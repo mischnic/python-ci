@@ -35,7 +35,6 @@ function cleanupHTML(s){
 class Log extends React.Component{
 	constructor(props){
 		super(props);
-
 		this.state = {
 			content: ansiToHTML(this.props.content, "white"),
 			lines: [],
@@ -75,12 +74,18 @@ class Log extends React.Component{
 						.split("<br/>")
 						.map((v, i, arr) => {
 							const text = cleanupHTML(v)
-							const style = this.state.styles.find(e => {
+							let style = this.state.styles.find(e => {
 								return typeof e[0] === "object" ?
 									(e[0].test(text)) :
 									(text.indexOf(e[0]) === 0)
 							});
 							return [v, style ? style[1] : null];
+						}).map(([v,style],i,arr)=>{
+							const next = arr[i+1] || [];
+							if(style && style === "command"){
+								style = (next[1] === "info" || next[1] === "command") ? "command" : "command-exp"
+							}
+							return [v,style];
 						});
 
 		if(add){
@@ -99,21 +104,26 @@ class Log extends React.Component{
 			const lines = getLines(newContent);
 
 			const commands = lines.reduce((acc, v, i)=>{
-														if((v[1] || "").includes("command"))
-															acc[i]=v;
+														if((v[1] || "").includes("command")){
+															acc[i] = v;
+														}
 														return acc;
 													}, {})
 
 			const expanded = {};
-
-			if(lines.length > 0 && (!lines[lines.length-1][1] || !lines[lines.length-1][1].includes("info"))){
-				const cmdKeys = Object.keys(commands);
-				expanded[cmdKeys[cmdKeys.length-1]] = true;
+			const cmdKeys = Object.keys(commands);
+			if(cmdKeys.length > 0){
+				for(let i = cmdKeys.length; i--; i !== 0){
+					if(commands[cmdKeys[i]][1] === "command-exp"){
+						expanded[cmdKeys[i]] = true;
+						break;
+					}
+				}
 			}
 
 			this.setState({
 				lines,
-				commands,
+				// commands,
 				content: newContent,
 				expanded: {...this.state.expanded, ...expanded}
 			});
@@ -142,8 +152,8 @@ class Log extends React.Component{
 							const text = {dangerouslySetInnerHTML: {__html: v}}
 							if(style){
 								if(showCollapsible){
-									if(style === "command"){
-										if(i !== arr.length-1){
+									if(style.includes("command")){
+										if(style === "command-exp"){
 											lastCommandShow = this.state.expanded[i];
 											return <div onClick={(e)=> this.setState(
 												{	

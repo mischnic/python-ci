@@ -133,6 +133,10 @@
 	content: "\200b";
 }
 
+.log code > div {
+	line-height: 1.3em;
+}
+
 @media (max-width: 730px) {
 	.buildDetails > .files {
 		flex-direction: column;

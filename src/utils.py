@@ -32,9 +32,11 @@ def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, e
 		# 		print(output.decode("utf-8"))
 		# 		out(output.decode("utf-8"))
 		process.wait()
+		out("[0m")
 		return process.returncode
 	except OSError as e:
 		out(e.strerror+"\n")
+		out("[0m")
 		return 1
 
 def symlink_force(target: str, link_name: str) -> None:
