@@ -28,7 +28,7 @@ Clone your source folder next to the script (see below), copy `start.sh.in` to `
 	- `TOKEN`: a GitHub personal access token
 	- `URL`: the URL under which the server is accessible (including `http[s]://`)
 
-If you get the error `Permission denied (publickey)` during build, uncomment the corresponding section in `start.sh`
+If you get the error `Permission denied (publickey)` during build, and a line for your private key in `~/.ssh/config`: `IdentityFile ~/.ssh/your_key_name` and uncomment the corresponding section in `start.sh`
 
 To install python-ci as a systemd service, run `./install-service.sh`, this will configure the service and enable it. Then you can use commands like:
 
@@ -76,7 +76,7 @@ The `counts` stats options needs [TeXcount](http://app.uio.no/ifi/texcount/downl
 
 ## Usage
 
-To run `python-ci.py` in the background and not have it exit when closing the ssh-session, run `nohup ./start.sh &`.
+To run `python-ci.py` in the background (have it exit when closing the terminal) without using systemd: `nohup ./start.sh &`.
 
 python-ci delivers the following pages: (they accept **only long** commit-hashes)
 

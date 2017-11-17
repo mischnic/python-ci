@@ -93,15 +93,14 @@ def updateGit(proj: str, ref: str, log: Callable[[str], None]):
 	try:
 		rv = runSubprocess(["git", "pull", "origin", "master"], log, cwd=getProjPath(proj))
 		if rv != 0:
-			successful = False
 			raise Exception(rv)
 
 		rv = runSubprocess(["git", "reset", "--hard", ref], log, cwd=getProjPath(proj))
 		if rv != 0:
-			successful = False
 			raise Exception(rv)
 
 	except Exception as e:
+		successful = False
 		log("git operations failed: "+str(e) + "\n")
 
 	return successful
@@ -118,21 +117,19 @@ def npm(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> boo
 			log(">>> yarn install\n")
 			rv = runSubprocess(["yarn", "install"], log, cwd=cwd, env=env)
 			if rv != 0:
-				successful = False
 				raise Exception(rv)
 
 			log(">>> yarn build\n")
 			rv = runSubprocess(["yarn", "build"], log, cwd=cwd, env=env)
 			if rv != 0:
-				successful = False
 				raise Exception(rv)
 
 			log(">>> creating output archive...\n")
 			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd+"/"+cfg.get("folder", ""), base_dir="./"+output)
 
 		except Exception as e:
-			log("yarn failed: "+str(e) + "\n")
 			successful = False
+			log("yarn failed: "+str(e) + "\n")
 	else:
 		successful = False
 		log("Missing 'output' in config")

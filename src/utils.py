@@ -1,8 +1,14 @@
-import os, json, errno, subprocess, pwd
+import os, json, errno, subprocess, pwd, platform
 from typing import List, Callable, Dict
 
 OUTPUT_SUFFIX = os.environ.get('OUTPUT_SUFFIX', "_build")
 CI_PATH = os.environ.get('CI_PATH', None)
+
+def getCmd(cmd: List[str]) -> List[str]:
+	if platform.system() == "Darwin":
+		return ["/usr/bin/script", "-q", "/dev/null"] + cmd
+	else:
+		return ["script", "-qec", " ".join(cmd), "/dev/null"]
 
 
 def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, env: Dict[str, str] = {}) -> int:
@@ -11,7 +17,8 @@ def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, e
 		env["TERM"] = "xterm-256color"
 		env["PATH"] = (CI_PATH+":" if CI_PATH else "") + "/usr/local/bin:/usr/bin:/bin" + (env["PATH"] if "PATH" in env else "")
 		env["USER"] = pwd.getpwuid(os.getuid()).pw_name
-		process = subprocess.Popen(["/usr/bin/script", "-q", "/dev/null"] + cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+		process = subprocess.Popen(getCmd(cmd), cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 		while process.poll() is None:
 			line = process.stdout.readline()
