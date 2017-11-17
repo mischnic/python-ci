@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./BuildCommon.css";
 
-import {Loading, Errors, formatTime, withFetcher, RelDate} from "../utils.js";
+import {Loading, Errors, formatTime, withFetcher, RelDate, Settings} from "../utils.js";
 import {GitUser} from "./BuildCommon.js";
 import {getJWT} from "../auth.js";
 
@@ -136,7 +136,7 @@ class Log extends React.Component{
 		return	<pre>
 					<code>
 						{(()=>{
-						const showCollapsible = window.matchMedia("(min-width: 660px)").matches && !pending;
+						const showCollapsible = Settings.get("expanded") && window.matchMedia("(min-width: 660px)").matches && !pending;
 						let lastCommandShow = !showCollapsible;
 						return this.state.lines.map(([v,style],i, arr)=>{
 							const text = {dangerouslySetInnerHTML: {__html: v}}

@@ -4,6 +4,37 @@ import PropTypes from "prop-types";
 import {withRouter, Route, Redirect} from 'react-router-dom'
 import {getJWT, logout, isLoggedIn} from "./auth.js";
 
+const Settings = {
+	get(key){
+		const data = JSON.parse(localStorage.getItem("settings")) || {
+			expanded: true
+		};
+
+		if(data){
+			if(key){
+				if(key in data){
+					return data[key];
+				}
+			} else {
+				return data;
+			}
+		}
+		return null;
+	},
+	set(key, value){
+		if(typeof value === "undefined"){
+			localStorage.setItem("settings", key)
+		} else {
+			localStorage.setItem("settings", JSON.stringify({
+				...Settings.get(),
+				[key]: value
+			}));
+		}
+	}
+};
+
+window.Settings = Settings;
+
 const withFetcher = (Component) => withRouter(
 	class Fetcher extends React.Component {
 		constructor(props){
@@ -251,4 +282,4 @@ const Errors = () =>
 // }).then((r)=>r.json()).then(console.log)
 
 
-export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher, strToColor, PrivateRoute, RelDate};
+export {api, formatDate, formatTime, humanDate, pad, makeCancelable, StopPromise, Loading, Errors, withFetcher, strToColor, PrivateRoute, RelDate, Settings};

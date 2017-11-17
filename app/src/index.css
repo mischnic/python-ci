@@ -24,10 +24,10 @@ h1 {
 	margin-bottom: 0;
 }
 
-input {
+/*input {
 	-webkit-appearance: none;
 }
-
+*/
 .button {
 	background-color: #eee;
 	padding: 0.3em 0.5em;
@@ -69,6 +69,7 @@ input {
 
 }
 
+
 #app > .header > .title {
 	font-size: xx-large;
 	font-family: monospace;
@@ -78,10 +79,15 @@ input {
     text-decoration: none;
 }
 
-#app > .header > .account {
+#app > .header > :not(:first-child) {
 	float: right;
 	line-height: 33px;
+	margin-left: 10px;
 	cursor: pointer;
+}
+
+#app > .header > .account {
+	user-select: none;
 }
 
 .loading {
