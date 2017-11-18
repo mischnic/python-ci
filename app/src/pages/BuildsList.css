@@ -50,7 +50,7 @@
 		padding-left: 0px;
 	}
 
-	.buildsList > li > .commitInfo > div:first-child > span {
+	.buildsList > li > .commitInfo .avatar > span {
 		display: none;
 	}
 
