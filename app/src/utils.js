@@ -7,7 +7,8 @@ import {getJWT, logout, isLoggedIn} from "./auth.js";
 const Settings = {
 	get(key){
 		const data = JSON.parse(localStorage.getItem("settings")) || {
-			enableLogExpansion: window.matchMedia("(min-width: 660px)").matches
+			enableLogExpansion: window.matchMedia("(min-width: 660px)").matches,
+			autoScroll: window.matchMedia("(min-width: 660px)").matches
 		};
 
 		if(data){

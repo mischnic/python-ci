@@ -43,8 +43,10 @@ class Log extends React.Component{
 			styles: logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"]
 		};
 
-		window.reload = ()=>this.reload();
+		this.autoScroll = Settings.get("autoScroll");
+
 		this.handleEvent = this.handleEvent.bind(this);
+		this.scrolled = this.scrolled.bind(this);
 	}
 
 	handleEvent(e){
@@ -54,13 +56,23 @@ class Log extends React.Component{
 		}
 	}
 
+	scrolled(e){
+		this.autoScroll = false;
+	}
+
 	componentDidMount(){
 		this.parse();
 		this.props.events.addEventListener(this.props.proj, this.handleEvent);
+
+		this.log.addEventListener("wheel", this.scrolled);
+		this.log.addEventListener("touchmove", this.scrolled);
 	}
 
 	componentWillUnmount(){
 		this.props.events.removeEventListener(this.props.proj, this.handleEvent);
+
+		this.log.removeEventListener("wheel", this.scrolled);
+		this.log.removeEventListener("touchmove", this.scrolled);
 	}
 
 
@@ -84,6 +96,7 @@ class Log extends React.Component{
 	}
 
 	parse(content = this.state.content){
+		content = content.replace(/<br\/>$/, "");
 		const lines = this.getLines(content);
 
 		const commands = lines.reduce((acc, v, i)=>{
@@ -115,14 +128,14 @@ class Log extends React.Component{
 
 	logAdd(add = ""){
 		add = ansiToHTML(add.replace(/\s+$/, ''));
-
-		const newContent = this.state.content + add;
-		
-		this.setState({
-			content: newContent,
-			lines: [...this.state.lines, ...this.getLines(add)]
-		}, ()=> this.last.scrollIntoView({ behavior: "smooth" }) );
-
+		if(add){
+			const newContent = this.state.content + add;
+			
+			this.setState({
+				content: newContent,
+				lines: [...this.state.lines, ...this.getLines(add)]
+			}, ()=> {if(this.autoScroll) this.last.scrollIntoView({ behavior: "smooth" }); } );
+		}
 	}
 
 	componentDidUpdate(prevProps, prevState){
@@ -175,7 +188,7 @@ class Log extends React.Component{
 							}
 						});
 		
-		return	<pre>
+		return	<pre ref={(el) => {if(el) this.log = el.parentElement}}>
 					<code>
 						{content}
 						<div className="last" ref={(el) => { this.last = el; }}/>

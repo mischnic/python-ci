@@ -81,7 +81,7 @@
 	padding-bottom: 7px;
 }
 
-.log code > div:empty {
+.log code > div:empty:not(.last) {
 	height: 9px;
 }
 
@@ -131,10 +131,6 @@
 
 .log .warning {
 	color: yellow;
-}
-
-.log code > div > span:empty:before {
-	content: "\200b";
 }
 
 .log code > div {
