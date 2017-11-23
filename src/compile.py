@@ -100,6 +100,11 @@ def updateGit(proj: str, ref: str, log: Callable[[str], None]):
 		if rv != 0:
 			raise Exception(rv)
 
+		log(">>> git diff --stat "+ref+"~1 "+ref+"\n")
+		rv = runSubprocess(["git", "diff", "--stat=100", ref+"~1", ref], log, cwd=getProjPath(proj))
+		if rv != 0:
+			raise Exception(rv)
+
 	except Exception as e:
 		successful = False
 		log("git operations failed: "+str(e) + "\n")

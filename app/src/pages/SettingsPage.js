@@ -1,9 +1,9 @@
 import React from "react";
-import {Link} from "react-router-dom";
+import {Link, withRouter} from "react-router-dom";
 
 import {Settings} from "../utils.js";
 
-export default class SettingsPage extends React.Component {
+export default withRouter(class SettingsPage extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = Settings.get();
@@ -24,13 +24,14 @@ export default class SettingsPage extends React.Component {
 	render(){
 		return (
 			<div>
-				<h1><Link to="..">Projects</Link> > Settings</h1>
+				<h1>
+					<a onClick={()=>this.props.history.goBack()}>{"<"}</a>  <Link to="..">Projects</Link> > Settings</h1>
 				<div className="settings">
 					<h2>Log</h2>
-					<label>Show expanded: <input name="expanded" type="checkbox" checked={this.state.expanded} onChange={this.handleInputChange}/></label>
+					<label>Enable collapsible log commands <input name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/></label>
 				</div>
 			</div>
 		)
 	}
 
-};
+});

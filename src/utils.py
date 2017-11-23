@@ -22,8 +22,14 @@ def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, e
 
 		while process.poll() is None:
 			line = process.stdout.readline()
-			if not line: break
+			# if not line: break
 			out(line.decode("utf-8"))
+
+		while line:
+			line = process.stdout.readline()
+			if line:
+				out(line.decode("utf-8"))
+			
 		# while True:
 		# 	output = process.stdout.readline()
 		# 	if output == '' and process.poll() is not None:
@@ -32,11 +38,9 @@ def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, e
 		# 		print(output.decode("utf-8"))
 		# 		out(output.decode("utf-8"))
 		process.wait()
-		out("[0m")
 		return process.returncode
 	except OSError as e:
 		out(e.strerror+"\n")
-		out("[0m")
 		return 1
 
 def symlink_force(target: str, link_name: str) -> None:

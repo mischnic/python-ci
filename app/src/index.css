@@ -52,8 +52,10 @@ h1 {
 	padding: 10px;
 }
 
-.main a{
+.main a:not(.button){
 	color: black;
+	text-decoration: underline;
+	cursor: pointer;
 }
 
 

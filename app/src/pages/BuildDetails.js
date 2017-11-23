@@ -36,25 +36,26 @@ class Log extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			content: ansiToHTML(this.props.content, "white"),
+			content: ansiToHTML(this.props.content),
 			lines: [],
 			commands: [],
 			expanded: [],
 			styles: logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"]
 		};
 
+		window.reload = ()=>this.reload();
 		this.handleEvent = this.handleEvent.bind(this);
 	}
 
 	handleEvent(e){
 		const {event, data} = JSON.parse(e.data);
 		if(event === "log"){
-			this.reload(data);
+			this.logAdd(data);
 		}
 	}
 
 	componentDidMount(){
-		this.reload();
+		this.parse();
 		this.props.events.addEventListener(this.props.proj, this.handleEvent);
 	}
 
@@ -63,80 +64,79 @@ class Log extends React.Component{
 	}
 
 
-	reload(add = ""){
-		if(add)	{
-			add = ansiToHTML(add.trim());
+	getLines(d){
+		return d.split("<br/>")
+				.map((v, i, arr) => {
+					const text = cleanupHTML(v)
+					let style = this.state.styles.find(e => {
+						return typeof e[0] === "object" ?
+							(e[0].test(text)) :
+							(text.indexOf(e[0]) === 0)
+					});
+					return [v, style ? style[1] : null];
+				}).map(([v,style],i,arr)=>{
+					const next = arr[i+1] || [];
+					if(style && style === "command"){
+						style = (next[1] === "info" || next[1] === "command") ? "command" : "command-exp"
+					}
+					return [v,style];
+				});
+	}
+
+	parse(content = this.state.content){
+		const lines = this.getLines(content);
+
+		const commands = lines.reduce((acc, v, i)=>{
+													if((v[1] || "").includes("command")){
+														acc[i] = v;
+													}
+													return acc;
+												}, {})
+
+		const expanded = {};
+		const cmdKeys = Object.keys(commands);
+		if(cmdKeys.length > 0){
+			for(let i = cmdKeys.length; i--; i !== 0){
+				if(commands[cmdKeys[i]][1] === "command-exp"){
+					expanded[cmdKeys[i]] = true;
+					break;
+				}
+			}
 		}
 
-		const newContent = add === false ? "" : (this.state.content + add);
+		this.setState({
+			lines,
+			// commands,
+			content: content,
+			expanded: {...this.state.expanded, ...expanded}
+		});
+	}
 
-		const getLines = d => d
-						.split("<br/>")
-						.map((v, i, arr) => {
-							const text = cleanupHTML(v)
-							let style = this.state.styles.find(e => {
-								return typeof e[0] === "object" ?
-									(e[0].test(text)) :
-									(text.indexOf(e[0]) === 0)
-							});
-							return [v, style ? style[1] : null];
-						}).map(([v,style],i,arr)=>{
-							const next = arr[i+1] || [];
-							if(style && style === "command"){
-								style = (next[1] === "info" || next[1] === "command") ? "command" : "command-exp"
-							}
-							return [v,style];
-						});
 
-		if(add){
-			this.setState({
-				content: newContent,
-				lines: [...this.state.lines, ...getLines(add)]
-			}, ()=> this.last.scrollIntoView({ behavior: "smooth" }) );
-		} else if(add === false){
+	logAdd(add = ""){
+		add = ansiToHTML(add.replace(/\s+$/, ''));
+
+		const newContent = this.state.content + add;
+		
+		this.setState({
+			content: newContent,
+			lines: [...this.state.lines, ...this.getLines(add)]
+		}, ()=> this.last.scrollIntoView({ behavior: "smooth" }) );
+
+	}
+
+	componentDidUpdate(prevProps, prevState){
+		if(this.props.content !== prevProps.content && this.props.content){
+			this.parse(ansiToHTML(this.props.content));
+		}
+
+		if(this.props.status === "pending" && prevProps.status !== this.props.status){
 			this.setState({
 				content: "",
 				lines: [],
 				commands: [],
 				expanded: []
 			});
-		} else {
-			const lines = getLines(newContent);
-
-			const commands = lines.reduce((acc, v, i)=>{
-														if((v[1] || "").includes("command")){
-															acc[i] = v;
-														}
-														return acc;
-													}, {})
-
-			const expanded = {};
-			const cmdKeys = Object.keys(commands);
-			if(cmdKeys.length > 0){
-				for(let i = cmdKeys.length; i--; i !== 0){
-					if(commands[cmdKeys[i]][1] === "command-exp"){
-						expanded[cmdKeys[i]] = true;
-						break;
-					}
-				}
-			}
-
-			this.setState({
-				lines,
-				// commands,
-				content: newContent,
-				expanded: {...this.state.expanded, ...expanded}
-			});
-		}
-	}
-
-	componentDidUpdate(prevProps, prevState){
-		if(this.props.status !== "pending" && this.props.content !== prevProps.content){
-			this.reload();
-		}
-
-		if(this.props.status === "pending" && prevProps.status !== this.props.status){
-			this.reload(false);
 		}
 	}
 
@@ -146,7 +146,7 @@ class Log extends React.Component{
 		return	<pre>
 					<code>
 						{(()=>{
-						const showCollapsible = Settings.get("expanded") && window.matchMedia("(min-width: 660px)").matches && !pending;
+						const showCollapsible = Settings.get("enableLogExpansion") && window.matchMedia("(min-width: 660px)").matches && !pending;
 						let lastCommandShow = !showCollapsible;
 						return this.state.lines.map(([v,style],i, arr)=>{
 							const text = {dangerouslySetInnerHTML: {__html: v}}
@@ -357,7 +357,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 								<div className="window log">
 									{
 										this.state.files["log"] &&
-										(this.state.files["log"].loading ? <Loading/> :
+										((!this.state.files["log"] && this.state.files["log"].loading) ? <Loading/> :
 											this.state.files["log"].error ? <Errors/> : 
 											<Log events={this.props.events} proj={proj} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
 										)

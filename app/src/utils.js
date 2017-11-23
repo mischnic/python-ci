@@ -7,7 +7,7 @@ import {getJWT, logout, isLoggedIn} from "./auth.js";
 const Settings = {
 	get(key){
 		const data = JSON.parse(localStorage.getItem("settings")) || {
-			expanded: true
+			enableLogExpansion: true
 		};
 
 		if(data){
