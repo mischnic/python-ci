@@ -59,13 +59,13 @@ export default withFetcher(class BuildInfo extends React.Component {
 	load(inital){
 		if(inital)
 			this.setState({loading: true});
-		
 
 		this.props.fetch(`/api/${this.props.match.params.proj}/`)
 			.then(res => res.json())
 			.then(({list, ...r}) => this.setState(
 				{
 					loading: false,
+					error: false,
 					data: {
 						list: list.map(
 								({commit: {date, ...rCommit}, build: {start, ...rBuild} }) => (

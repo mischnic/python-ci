@@ -257,10 +257,9 @@ function strToColor(str, start=5361){
 // };
 
 const Loading = (props) =>
-	<div style={{width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}>
-		<div style={{display: "flex", justifyContent: "center", alignItems: "center", fontSmoothing: "none",
-						opacity: props.opacity ? props.opacity : "0.4", fontSize: props.size ? props.size : null}}>
-			<span className="loading"/>
+	<div className="loading">
+		<div style={{opacity: props.opacity ? props.opacity : "0.4", fontSize: props.size ? props.size : null}}>
+			<span/>
 		</div>
 	</div>;
 
@@ -270,10 +269,13 @@ Loading.propTypes = {
 }
 
 const Errors = (props) =>
-	<div style={{display:"flex", justifyContent:"center", alignItems:"center", color: props.color || "black", height: "100%"}}>
+	<div className="errors" style={{color: props.color || "black"}}>
 		{props.children || "An error occured"}
 	</div>;
 
+Errors.propTypes = {
+	color: PropTypes.string
+}
 
 // fetch("/api/files/rename", {
 //     method: "POST",

@@ -92,17 +92,33 @@ h1 {
 	user-select: none;
 }
 
+
 .loading {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.loading > div {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-smoothing: none;
+}
+
+.loading > div > span{
 	font-size: 5rem;
 }
 
-.loading:before {
+.loading > div > span:before {
 	content: "\25A1"; /* "\2610" */
 	animation: rotating 2.6s infinite linear;
 	display: block;
 }
 
-.loading, .jumping {
+.loading > div > span, .jumping {
 	position: relative;
 	top: -0.27em;
 	animation: jumping 1.3s infinite cubic-bezier(0.2, 0.95, 0.95, 0.99);
@@ -125,4 +141,11 @@ h1 {
 	100% {
 		transform: rotate(180deg);
 	}
+}
+
+.errors {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
 }
