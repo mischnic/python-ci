@@ -143,12 +143,9 @@ class Log extends React.Component{
 	
 	render() {
 		const pending = this.props.status === "pending";
-		return	<pre>
-					<code>
-						{(()=>{
-						const showCollapsible = Settings.get("enableLogExpansion") && window.matchMedia("(min-width: 660px)").matches && !pending;
-						let lastCommandShow = !showCollapsible;
-						return this.state.lines.map(([v,style],i, arr)=>{
+		const showCollapsible = Settings.get("enableLogExpansion") && window.matchMedia("(min-width: 660px)").matches && !pending;
+		let lastCommandShow = !showCollapsible;
+		const content = this.state.lines.map(([v,style],i, arr)=>{
 							const text = {dangerouslySetInnerHTML: {__html: v}}
 							if(style){
 								if(showCollapsible){
@@ -171,16 +168,19 @@ class Log extends React.Component{
 										}
 									}
 								} else {
-									return <div className={style} key={i} {...text}/>;
+									return <div className={style.replace("command-exp", "command")} key={i} {...text}/>;
 								}
 							} else {
 								return lastCommandShow && <div key={i} {...text}/>;
 							}
-						})
-						})()}
+						});
+		
+		return	<pre>
+					<code>
+						{content}
 						<div className="last" ref={(el) => { this.last = el; }}/>
 					</code>
-				</pre>
+				</pre>;
 	}
 }
 

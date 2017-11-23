@@ -28,7 +28,7 @@ export default withRouter(class SettingsPage extends React.Component {
 					<a onClick={()=>this.props.history.goBack()}>{"<"}</a>  <Link to="..">Projects</Link> > Settings</h1>
 				<div className="settings">
 					<h2>Log</h2>
-					<label>Enable collapsible log commands <input name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/></label>
+					<label>Enable collapsible log commands <input disabled={!window.matchMedia("(min-width: 660px)").matches} name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/></label>
 				</div>
 			</div>
 		)
