@@ -55,7 +55,7 @@ def updateStatus(proj: str, ref: str, channel: Channel, msg: str, start_duration
 				artifacts["pdf"] = "PDF"
 		elif lang == "npm":
 			if os.path.isfile(getBuildPath(proj,ref)+"/output.zip"):
-				artifacts["output.zip"] = "Output"
+				artifacts["output.zip"] = "ZIP"
 
 	data = {
 		"ref": ref,

@@ -61,6 +61,10 @@
 	margin-bottom: 0;
 }
 
+.window.artifacts ol li a img{
+	max-width: 32px;
+}
+
 .window.artifacts > div:not(:last-child) {
 	margin-bottom: 1em;
 }

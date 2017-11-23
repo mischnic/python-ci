@@ -86,13 +86,24 @@ class RelDate extends React.Component {
 		}
 	}
 
+	update(){
+		const newText = humanDate(this.props.date);
+		if(newText !== this.state.text){
+			this.setState({text: newText});
+		}
+	}
+
 	componentDidMount(){
 		this.updateID = setInterval(()=>{
-			const newText = humanDate(this.props.date);
-			if(newText !== this.state.text){
-				this.setState({text: newText});
-			}
+			this.update();
 		}, 30*1000);
+	}
+
+	componentDidUpdate(){
+		const newText = humanDate(this.props.date);
+		if(newText !== this.state.text){
+			this.setState({text: newText});
+		}
 	}
 
 	componentWillUnmount(){
@@ -161,6 +172,7 @@ function formatTime(sec){
 
 function humanDate(date){
 	let diff = (new Date() - date);
+	let diffSeconds = Math.round(diff / 1000);
 	let diffMinutes = Math.round(diff / 1000 / 60);
 	let diffHours = Math.floor(diff / 1000 / 60 / 60);
 
@@ -172,7 +184,10 @@ function humanDate(date){
 		}
 	} else {
 		if(diffMinutes === 0){
-			return `less than a minute ago`;
+			if(diffSeconds < 30){
+				return "just now";
+			}
+			return "less than a minute ago";
 		} else {
 			return `${diffMinutes} ${diffMinutes === 1 ? "minute" : "minutes"} ago`;
 		}

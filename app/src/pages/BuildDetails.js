@@ -299,16 +299,25 @@ export default withFetcher(class BuildDetails extends React.Component {
 							<div className="files">
 								<div className="window artifacts">
 									{
-										build.artifacts && 	Object.keys(build.artifacts).length > 0 &&
+										build.artifacts && Object.keys(build.artifacts).length > 0 &&
 										<div>
 											Artifacts: <br/>
 											<ol>
 												{
-													Object.keys(build.artifacts).map(v=>(
-														<li key={v}><a target="_blank" href={this.getURL(v, true)}>
-															{build.artifacts[v]}
-														</a></li>
-													))
+													Object.keys(build.artifacts).map(v=>{
+														let content = build.artifacts[v];
+														if(content === "PDF"){
+															content = <img alt="PDF" src="/pdf.png"/>;
+														} else if(content === "ZIP"){
+															content = <img alt="ZIP" src="/Orion_zip-file.png"/>;
+														}
+														return (
+														<li key={v}>
+															<a target="_blank" title={build.artifacts[v] !== content && build.artifacts[v]} href={this.getURL(v, true)}>
+																{content}
+															</a>
+														</li>);
+													})
 												}
 											</ol>
 										</div>
