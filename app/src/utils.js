@@ -269,9 +269,9 @@ Loading.propTypes = {
 	size: PropTypes.string
 }
 
-const Errors = () =>
-	<div style={{display:"flex",justifyContent:"center",alignItems:"center", color: "white", height: "100%"}}>
-		An error occured
+const Errors = (props) =>
+	<div style={{display:"flex", justifyContent:"center", alignItems:"center", color: props.color || "black", height: "100%"}}>
+		{props.children || "An error occured"}
 	</div>;
 
 

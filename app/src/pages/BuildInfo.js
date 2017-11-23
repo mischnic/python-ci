@@ -5,7 +5,7 @@ import BuildDetails from "./BuildDetails.js";
 
 import {Route, Switch} from "react-router-dom";
 
-import {Loading, withFetcher} from "../utils.js";
+import {Loading, Errors, withFetcher} from "../utils.js";
 
 export default withFetcher(class BuildInfo extends React.Component {
 	constructor(props){
@@ -95,7 +95,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 			reload: () => this.load()
 		};
 		return (
-			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>click to retry</a></span> :
+			this.state.error ? <Errors>Couldn't connect to server,&nbsp;<a onClick={()=>this.load(true)}>click to retry</a></Errors> :
 			this.state.loading || !this.state.data ? <Loading/> :
 			<Switch>
 				<Route path={"/:proj/"} exact={true} strict={true} render={(props)=> <BuildsList info={pass} {...props}/>}/>
