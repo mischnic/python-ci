@@ -55,7 +55,7 @@ def symlink_force(target: str, link_name: str) -> None:
 
 def parseRef(proj: str, ref: str) -> str:
 	if ref == "latest":
-		return os.path.basename(os.path.realpath(proj+OUTPUT_SUFFIX+"/"+ref))
+		return os.path.basename(os.path.realpath(getBuildPath(proj, ref)))
 	else:
 		return ref
 

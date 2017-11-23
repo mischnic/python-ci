@@ -198,18 +198,20 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 	componentDidMount(){
 		if(this.props.info.data){
-			this.hash = this.props.match.params.hash;
-			this.commit = this.props.info.data.list.find((v)=> v.commit.ref === this.hash);
-
-			this.load("log");
-
 			let {hash} = this.props.match.params;
 			if(hash === "latest"){
 				hash = this.props.info.data.latest;
 			}
-			const c = this.props.info.data.list.findIndex((v)=> v.commit.ref === hash);
-			if(this.props.info.data.list[c+1]){
-				this.load(`diff/${this.props.info.data.list[c+1].commit.ref}`, res=>res.json(), "diff");
+
+			this.hash = hash;
+			this.commit = this.props.info.data.list.find((v)=> v.commit.ref === this.hash);
+
+
+			this.load("log");
+
+			const commitIndex = this.props.info.data.list.indexOf(this.commit);
+			if(this.props.info.data.list[commitIndex+1]){
+				this.load(`diff/${this.props.info.data.list[commitIndex+1].commit.ref}`, res=>res.json(), "diff");
 			}
 		}
 	}
