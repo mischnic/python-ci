@@ -1,4 +1,15 @@
-.settings label{
+.settings > div > *:not(:first-child){
+	padding-left: 2em;
+}
+
+.settings label {
 	display: block;
-	margin-bottom: 1em;
+}
+
+.settings label:not(:last-child){
+	margin-bottom: 0.5em;
+}
+
+.settings label > input{
+	margin-left: 1em;
 }

@@ -26,20 +26,26 @@ export default withRouter(class SettingsPage extends React.Component {
 		return (
 			<div>
 				<h1>
-					<a onClick={()=>this.props.history.goBack()}>{"<"}</a>  <Link to="..">Projects</Link> > Settings</h1>
+					<a onClick={()=>this.props.history.goBack()}>{"<"}</a>  <Link to="..">Projects</Link> > Settings
+				</h1>
 				<div className="settings">
-					<h2>Log</h2>
-					<label>
-						Enable collapsible log commands
-						<input disabled={!window.matchMedia("(min-width: 660px)").matches} name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/>
-					</label>
-					<label>
-						Autoscroll during build
-						<input name="autoScroll" type="checkbox" checked={this.state.autoScroll} onChange={this.handleInputChange}/>
-					</label>
-				</div>
+					<div>
+						<h2>Log</h2>
+						<label>
+							Enable collapsible log commands
+							<input disabled={!window.matchMedia("(min-width: 660px)").matches} name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/>
+						</label>
+						<label>
+							Autoexpand last command
+							<input name="expandLast" type="checkbox" checked={this.state.expandLast} onChange={this.handleInputChange}/>
+						</label>
+						<label>
+							Autoscroll during build
+							<input disabled name="autoScroll" type="checkbox" checked={this.state.autoScroll} onChange={this.handleInputChange}/>
+						</label>
+					</div>
+				</div>			
 			</div>
 		)
 	}
-
 });

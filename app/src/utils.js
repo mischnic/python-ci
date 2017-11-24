@@ -8,7 +8,8 @@ const Settings = {
 	get(key){
 		const data = JSON.parse(localStorage.getItem("settings")) || {
 			enableLogExpansion: window.matchMedia("(min-width: 660px)").matches,
-			autoScroll: window.matchMedia("(min-width: 660px)").matches
+			expandLast: false,
+			autoScroll: false //window.matchMedia("(min-width: 660px)").matches
 		};
 
 		if(data){

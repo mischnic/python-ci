@@ -28,21 +28,25 @@ export default withFetcher(class BuildInfo extends React.Component {
 		if(this.state.data && event === "status"){
 			const cond = (v)=>v.build.ref === build.ref;
 			const el = this.state.data.list.find(cond);
-			this.setState({
-				data: {
-					...this.state.data,
-					list: [
-						...this.state.data.list.filter((v)=>!cond(v)),
-						{
-							...el,
-							build: {
-								...build,
-								start: new Date(build.start)
+			if(!el) {
+				this.load();
+			} else {
+				this.setState({
+					data: {
+						...this.state.data,
+						list: [
+							...this.state.data.list.filter((v)=>!cond(v)),
+							{
+								...el,
+								build: {
+									...build,
+									start: new Date(build.start)
+								}
 							}
-						}
-					]
-				}
-			})
+						]
+					}
+				});
+			}
 		}
 	}
 

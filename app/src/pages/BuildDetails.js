@@ -2,6 +2,8 @@ import React from "react";
 import {Link} from "react-router-dom";
 import "./BuildDetails.css";
 import "./BuildCommon.css";
+import pdf_img from "../assets/pdf.png";
+import zip_img from "../assets/Orion_zip-file.png";
 
 import {Loading, Errors, formatTime, withFetcher, RelDate, Settings} from "../utils.js";
 import {GitUser} from "./BuildCommon.js";
@@ -107,12 +109,14 @@ class Log extends React.Component{
 												}, {})
 
 		const expanded = {};
-		const cmdKeys = Object.keys(commands);
-		if(cmdKeys.length > 0){
-			for(let i = cmdKeys.length; i--; i !== 0){
-				if(commands[cmdKeys[i]][1] === "command-exp"){
-					expanded[cmdKeys[i]] = true;
-					break;
+		if(Settings.get("expandLast")){
+			const cmdKeys = Object.keys(commands);
+			if(cmdKeys.length > 0){
+				for(let i = cmdKeys.length; i--; i !== 0){
+					if(commands[cmdKeys[i]][1] === "command-exp"){
+						expanded[cmdKeys[i]] = true;
+						break;
+					}
 				}
 			}
 		}
@@ -316,9 +320,9 @@ export default withFetcher(class BuildDetails extends React.Component {
 												Object.keys(build.artifacts).map(v=>{
 													let content = build.artifacts[v];
 													if(content === "PDF"){
-														content = <img alt="PDF" src="/pdf.png"/>;
+														content = <img alt="PDF" src={pdf_img}/>;
 													} else if(content === "ZIP"){
-														content = <img alt="ZIP" src="/Orion_zip-file.png"/>;
+														content = <img alt="ZIP" src={zip_img}/>;
 													}
 													return (
 													<li key={v}>
