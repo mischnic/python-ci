@@ -114,9 +114,10 @@ def updateGit(proj: str, ref: str, log: Callable[[str], None]):
 def npm(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> bool:
 	successful = True
 
-	output = cfg.get("output", None)
+	root = cfg.get("root", "")
+	output = cfg.get("output", "")
 	env = cfg.get("env", {})
-	cwd = getProjPath(proj)
+	cwd = getProjPath(proj)+"/"+root
 
 	if output:
 		try:
@@ -131,7 +132,7 @@ def npm(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) -> boo
 				raise Exception(rv)
 
 			log(">>> creating output archive...\n")
-			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd+"/"+cfg.get("folder", ""), base_dir="./"+output)
+			shutil.make_archive(buildPath+"/output", "zip", root_dir=cwd, base_dir="./"+output)
 
 		except Exception as e:
 			successful = False

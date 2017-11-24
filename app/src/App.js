@@ -2,7 +2,7 @@ import React from "react";
 import {Route, Redirect, Switch, Link} from "react-router-dom";
 
 import {isLoggedIn, logout, getJWT} from "./auth.js";
-import {PrivateRoute} from "./utils.js";
+import {PrivateRoute, Errors} from "./utils.js";
 import CustomLink from "./CustomLink.js";
 import CustomNavLink from "./CustomNavLink.js";
 
@@ -75,11 +75,20 @@ class App extends React.Component {
 				<div className="main">
 					<Switch>
 						<Route path="/login" render={() => <Login afterLogin={()=>this.login()}/> } />
+
 						<PrivateRoute path="/" strict exact render={(props)=><ProjectList {...props}/>} />
 						<PrivateRoute path="/settings" strict render={(props)=><SettingsPage/>} />
+
+						<PrivateRoute path="/:proj" exact strict render={(props)=><Redirect to={props.match.url+"/"}/>}/>
 						<PrivateRoute path="/:proj/" strict render={(props)=><BuildInfo {...props} events={this.events}/>} />
+
 						<Redirect from="/index.html" to="/"/>
-						<Route render={()=><span>Not found</span>}/>
+						<Route render={()=><Errors>
+							<div style={{marginTop: "-5rem", textAlign: "center"}}>
+								<div style={{fontSize: "13rem", marginBottom: "-1rem"}}>&#8253;</div>
+								<big>404 - Not found</big>
+							</div>
+							</Errors>}/>
 					</Switch>
 				</div>
 			</div>)

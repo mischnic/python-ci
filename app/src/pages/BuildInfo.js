@@ -86,10 +86,10 @@ export default withFetcher(class BuildInfo extends React.Component {
 								)).sort((a,b) => b.commit.date - a.commit.date),
 						...r
 					}
-				}),() => this.setState(
+				}),(res) => this.setState(
 				{
 					loading: false,
-					error: true
+					error: res.status
 				}));
 	}
 
@@ -99,12 +99,16 @@ export default withFetcher(class BuildInfo extends React.Component {
 			reload: () => this.load()
 		};
 		return (
-			this.state.error ? <Errors>Couldn't connect to server,&nbsp;<a onClick={()=>this.load(true)}>click to retry</a></Errors> :
+			this.state.error ? (
+				this.state.error === 404 ?
+					<Errors>There is no project called&nbsp;<i>{this.props.match.params.proj}</i></Errors> :
+					<Errors>Couldn't connect to server,&nbsp;<a onClick={()=>this.load(true)}>click to retry</a></Errors>
+			) :
 			this.state.loading || !this.state.data ? <Loading/> :
 			<Switch>
-				<Route path={"/:proj/"} exact={true} strict={true} render={(props)=> <BuildsList info={pass} {...props}/>}/>
-				<Route path={"/:proj/:hash"} render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
-				<Route render={() => (<p>Specify a project in the URL!</p>)}/>
+				<Route path={"/:proj/"} exact strict render={(props)=> <BuildsList info={pass} {...props}/>}/>
+				<Route path={"/:proj/:hash"} exact render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
+				<Route render={() => (<Errors>Specify a project in the URL!</Errors>)}/>
 			</Switch>
 		);
 	}

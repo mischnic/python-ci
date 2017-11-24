@@ -267,9 +267,17 @@ def github_build(proj):
 			if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
 				return "Forbidden", 403
 
-	if request.headers["X-GitHub-Event"] == "push" and request.headers["content-type"] == "application/json":
-		data = request.get_json()
-		print("Webhook "+data['head_commit']['id']+": "+data['head_commit']['message'].split("\n")[0])
-		return compile.startCompile(proj, data['head_commit']['id'], channel)
+	if request.headers["content-type"] == "application/json":
+		event = request.headers["X-GitHub-Event"]
+		if event == "push":
+			data = request.get_json()
+			print("Webhook "+data['head_commit']['id']+": "+data['head_commit']['message'].split("\n")[0])
+			return compile.startCompile(proj, data['head_commit']['id'], channel)
+		elif event == "ping":
+			return "pong"
+		else:
+			return "Not found", 404
+	else:
+		return "Bad Request", 400
 
-	return "Not found", 404
+	return "Internal Server Error", 400
