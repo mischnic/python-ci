@@ -62,14 +62,17 @@ def getCommitDetails(repo: str, sha: str) -> Dict[str, Any]:
 		"parents": [c.hex for c in commit.parents]
 	}
 
-def getCommits(repo_name, start=None, end=None) -> List[pygit2.Commit]:
+def getCommits(repo_name: str, start: str, end: str = None) -> List[pygit2.Commit]:
 	repo = getRepo(repo_name)
 
-	if start:
-		start = repo.revparse_single(start+"~1").oid
+	# if start:
+	# 	start = repo.revparse_single(start+"~1").oid
 
 	commits = list()
-	for commit in repo.walk(start if start else repo.head.target, pygit2.GIT_SORT_TIME):
+	for commit in repo.walk(start, pygit2.GIT_SORT_TIME | pygit2.GIT_SORT_TOPOLOGICAL):
+		if start == commit.hex:
+			continue
+
 		if end is not None and end == commit.hex:
 			break
 		commits.append(getCommitDetails(repo_name, commit))
