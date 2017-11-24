@@ -3,12 +3,12 @@ import PropTypes from "prop-types";
 
 import {strToColor} from "../utils.js";
 
-const GitUser = (props) => 
+const GitUser = (props) =>
 			<div className="avatar">
 				{
 				props.avatar ?
-				 <img alt="" 
-					style={!props.avatar ? {backgroundColor: "#"+strToColor(props.name, 250)} : null} 
+				 <img alt=""
+					style={!props.avatar ? {backgroundColor: "#"+strToColor(props.name, 250)} : null}
 					src={props.avatar || null}/> :
 				<div className="avatar" style={{backgroundColor: "#"+strToColor(props.name, 250)}}/>
 				}

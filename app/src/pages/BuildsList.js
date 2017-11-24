@@ -12,7 +12,7 @@ const BuildsList = (props) =>
 		<h1><Link to="..">Projects</Link> > {props.match.params.proj}</h1>
 		<ul className="buildsList">
 			{
-				props.info.data.list.map( ({commit, build}) => 
+				props.info.data.list.map( ({commit, build}) =>
 					<CustomLink type="li" to={commit.ref} key={commit.ref} className={`window buildStatus ${build.status}`}>
 						<div className="commitInfo">
 							<div>

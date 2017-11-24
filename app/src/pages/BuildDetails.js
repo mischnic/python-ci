@@ -206,21 +206,18 @@ export default withFetcher(class BuildDetails extends React.Component {
 			files: {}
 		};
 
-		this.rebuildInterval = null;
+		this.hash = this.props.match.params.hash;
+		if(this.props.info.data){
+			if(this.hash === "latest"){
+				this.hash = this.props.info.data.latest;
+			}
+			this.commit = this.props.info.data.list.find((v)=> v.commit.ref === this.hash);
+		}
 	}
 
 	componentDidMount(){
 		if(this.props.info.data){
-			let {hash} = this.props.match.params;
-			if(hash === "latest"){
-				hash = this.props.info.data.latest;
-			}
-
-			this.hash = hash;
-			this.commit = this.props.info.data.list.find((v)=> v.commit.ref === this.hash);
-
-
-			this.load("log");
+			if(this.commit) this.load("log");
 
 			const commitIndex = this.props.info.data.list.indexOf(this.commit);
 			if(this.props.info.data.list[commitIndex+1]){
@@ -230,17 +227,17 @@ export default withFetcher(class BuildDetails extends React.Component {
 	}
 
 	componentWillReceiveProps(nextProps){
+		if(nextProps.info.data && nextProps.match.params.hash !== this.hash){
+			this.hash = nextProps.match.params.hash;
+			if(this.hash === "latest"){
+				this.hash = nextProps.info.data.latest;
+			}
+		}
 		this.commit = nextProps.info.data.list.find((v)=> v.commit.ref === this.hash);
+
 
 		if(nextProps.info.data.list.find((v)=> v.commit.ref === this.hash).build.status === "success"){
 			this.load("log");
-		}
-	}
-
-	componentWillUnmount(){
-		if(this.rebuildInterval !== null){
-			clearInterval(this.rebuildInterval);
-			this.rebuildInterval = null;
 		}
 	}
 
@@ -260,6 +257,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 						[as]: {
 							content: res,
 							loading: false,
+							error: false,
 						}
 					}
 				}))
@@ -279,121 +277,118 @@ export default withFetcher(class BuildDetails extends React.Component {
 	}
 
 	render(){
-		let {proj, hash} = this.props.match.params;
-		if(this.props.info.data.list){
-			if(hash === "latest"){
-				hash = this.props.info.data.latest;
-			}
-
-			if(this.commit){
-				const {build, commit} = this.commit;
-				return (
-					<div>
-						<h1><Link to="." title="Go Back to List">{proj}</Link> &gt; {hash.substring(0,7)}</h1>
-						<div className="buildDetails">
-							<div className="details">
-								<div className={`window build buildStatus ${build.status}`}>
-									<div>
-										<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
-										{commit.msg}<br/>
-										<a title="Open on Github" href={commit.url} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
-									</div>
-									<div>
-										<span>started <RelDate date={build.start}/> </span><br/>
-										{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
-									</div>
-									<div>
-										<a className="button" onClick={() => this.rebuild()} style={build.status === "pending" ? {pointerEvents: "none", opacity: 0.5} : null}>
-											<i className={`fa fa-refresh ${build.status === "pending" ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>{build.status === "pending" ? "Building" : "Rebuild"}
-										</a>
-									</div>
+		const {proj} = this.props.match.params;
+		const {build, commit} = this.commit || {};
+		if(!this.hash) return <Errors>An error occured</Errors>;
+		return (
+			<div>
+				<h1><Link to="." title="Go Back to List">{proj}</Link> &gt; {this.hash.substring(0,7)}</h1>
+				<div className="buildDetails">
+					{
+					!this.commit ? <Errors>Build could not be found</Errors>:
+					[
+						<div className="details" key="details">
+							<div className={`window build buildStatus ${build.status}`}>
+								<div>
+									<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
+									{commit.msg}<br/>
+									<a title="Open on Github" href={commit.url} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
+								</div>
+								<div>
+									<span>started <RelDate date={build.start}/> </span><br/>
+									{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
+								</div>
+								<div>
+									<a className="button" onClick={() => this.rebuild()} style={build.status === "pending" ? {pointerEvents: "none", opacity: 0.5} : null}>
+										<i className={`fa fa-refresh ${build.status === "pending" ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>{build.status === "pending" ? "Building" : "Rebuild"}
+									</a>
 								</div>
 							</div>
-							<div className="files">
-								<div className="window artifacts">
-									{
-										build.artifacts && Object.keys(build.artifacts).length > 0 &&
+						</div>,
+						<div className="files" key="files">
+							<div className="window artifacts">
+								{
+									build.artifacts && Object.keys(build.artifacts).length > 0 &&
+									<div>
+										Artifacts: <br/>
+										<ol>
+											{
+												Object.keys(build.artifacts).map(v=>{
+													let content = build.artifacts[v];
+													if(content === "PDF"){
+														content = <img alt="PDF" src="/pdf.png"/>;
+													} else if(content === "ZIP"){
+														content = <img alt="ZIP" src="/Orion_zip-file.png"/>;
+													}
+													return (
+													<li key={v}>
+														<a target="_blank" title={build.artifacts[v] !== content && build.artifacts[v]} href={this.getURL(v, true)}>
+															{content}
+														</a>
+													</li>);
+												})
+											}
+										</ol>
+									</div>
+								}
+								{
+									build.stats && build.stats.counts ?
+									(
+									(()=>{
+										const letters = build.stats.counts.letters;
+										const [sumc/*, text, headers, outside, headersN, floatsN, mathsI, mathsD*/] = letters.total;
+
+										return (
 										<div>
-											Artifacts: <br/>
+											<span>Total letters: {sumc}</span>
+											<ol>
+											{
+												letters.chapters.map((v)=>{
+													let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
+													const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
+													return <li key={name} style={style}>{name}: {text}</li>;
+												})
+											}
+											</ol>
+										</div>);
+									})()
+									) : null
+								}
+								{
+									this.state.files["diff"] && this.state.files["diff"].content && (
+										this.state.files["diff"].content.commits.length > 0 ?
+										(<div>
+											<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Commits</a> between last build:
 											<ol>
 												{
-													Object.keys(build.artifacts).map(v=>{
-														let content = build.artifacts[v];
-														if(content === "PDF"){
-															content = <img alt="PDF" src="/pdf.png"/>;
-														} else if(content === "ZIP"){
-															content = <img alt="ZIP" src="/Orion_zip-file.png"/>;
-														}
-														return (
-														<li key={v}>
-															<a target="_blank" title={build.artifacts[v] !== content && build.artifacts[v]} href={this.getURL(v, true)}>
-																{content}
-															</a>
-														</li>);
-													})
+													this.state.files["diff"].content.commits.map(v=>(
+														<li key={v.ref}>{v.msg.split("\n")[0]} <a title="Open on Github" href={v.url} target="_blank">({v.ref.substring(0,7)})</a></li>
+													))
 												}
 											</ol>
-										</div>
-									}
-									{
-										build.stats && build.stats.counts ? 
-										( 
-										(()=>{
-											const letters = build.stats.counts.letters;
-											const [sumc/*, text, headers, outside, headersN, floatsN, mathsI, mathsD*/] = letters.total;
-
-											return (
-											<div>
-												<span>Total letters: {sumc}</span>
-												<ol>
-												{
-													letters.chapters.map((v)=>{
-														let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
-														const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
-														return <li key={name} style={style}>{name}: {text}</li>;
-													})
-												}
-												</ol>
-											</div>);
-										})()
-										) : null
-									}
-									{
-										this.state.files["diff"] && this.state.files["diff"].content && (
-											this.state.files["diff"].content.commits.length > 0 ?
-											(<div>
-												<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Commits</a> between last build:
-												<ol>
-													{
-														this.state.files["diff"].content.commits.map(v=>(
-															<li key={v.ref}>{v.msg.split("\n")[0]} <a title="Open on Github" href={v.url} target="_blank">({v.ref.substring(0,7)})</a></li>
-														))
-													}
-												</ol>
-											</div>)
-											:
-											(<div>
-												<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Compare to last build's commit</a>
-											</div>)
-										)
-									}
-								</div>
-								<div className="window log">
-									{
-										this.state.files["log"] &&
-										((!this.state.files["log"] && this.state.files["log"].loading) ? <Loading/> :
-											this.state.files["log"].error ? <Errors color="white"/> : 
-											<Log events={this.props.events} proj={proj} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
-										)
-									}
-								</div>
+										</div>)
+										:
+										(<div>
+											<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Compare to last build's commit</a>
+										</div>)
+									)
+								}
+							</div>
+							<div className="window log">
+								{
+									this.state.files["log"] &&
+									((!this.state.files["log"] && this.state.files["log"].loading) ? <Loading/> :
+										this.state.files["log"].error ? <Errors color="white"/> :
+										<Log events={this.props.events} proj={proj} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
+									)
+								}
 							</div>
 						</div>
-					</div>
-				);
-			}
-		}
-		return null;
+						]
+					}
+				</div>
+			</div>
+		);
 	}
 
 });

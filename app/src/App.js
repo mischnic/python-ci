@@ -17,7 +17,7 @@ class App extends React.Component {
 
 	subscribe(){
 		this.events = new EventSource(
-			(process.env.NODE_ENV === "development" ? 
+			(process.env.NODE_ENV === "development" ?
 			`${window.location.protocol}//${window.location.hostname}:5000/subscribe` :
 			`${window.location.origin}/api/subscribe`) + `?token=${getJWT()}`
 		);

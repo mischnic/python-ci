@@ -1,6 +1,6 @@
 import React from "react";
 
-import {Loading, withFetcher, strToColor} from "../utils.js";
+import {Loading, Errors, withFetcher, strToColor} from "../utils.js";
 import CustomLink from "../CustomLink.js"
 
 import "./ProjectList.css"
@@ -30,6 +30,7 @@ export default withFetcher(class ProjectList extends React.Component {
 			.then((d) => this.setState(
 				{
 					loading: false,
+					error: false,
 					data: d
 				}),() => this.setState(
 				{
@@ -40,7 +41,7 @@ export default withFetcher(class ProjectList extends React.Component {
 
 	render(){
 		return (
-			this.state.error ? <span>Error loading commits, <a onClick={()=>this.load(true)}>click to retry</a></span> :
+			this.state.error ? <Errors>Couldn't connect to server,&nbsp;<a onClick={()=>this.load(true)}>click to retry</a></Errors> :
 			this.state.loading || !this.state.data ? <Loading/> :
 			<div>
 				<h1>Projects</h1>
