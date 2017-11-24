@@ -314,7 +314,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 								{
 									build.artifacts && Object.keys(build.artifacts).length > 0 &&
 									<div>
-										Artifacts: <br/>
+										Artifacts:<br/>
 										<ol>
 											{
 												Object.keys(build.artifacts).map(v=>{

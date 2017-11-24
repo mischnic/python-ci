@@ -28,7 +28,6 @@ def setStatus(proj: str, sha: str, status: str, url: str, desc: str) -> dict:
 		})
 	)
 
-
 repos = dict() #type: Dict[str, Dict[str, Any]]
 def getRepo(name: str, dir: str = None) -> pygit2.Repository:
 	if not name in repos:
@@ -44,7 +43,6 @@ def getRepo(name: str, dir: str = None) -> pygit2.Repository:
 # 	if not name in avatar_urls:
 # 		avatar_urls[name] = githubGET("/users/"+name)["avatar_url"]
 # 	return avatar_urls[name]
-
 
 def getCommitDetails(repo: str, sha: str) -> Dict[str, Any]:
 	if isinstance(sha, str):
@@ -63,6 +61,7 @@ def getCommitDetails(repo: str, sha: str) -> Dict[str, Any]:
 	}
 
 def getCommits(repo_name: str, start: str, end: str = None) -> List[pygit2.Commit]:
+	'''Go through the log breadth- and timefirst, doesn't contain start and end'''
 	repo = getRepo(repo_name)
 
 	# if start:

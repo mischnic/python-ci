@@ -45,27 +45,26 @@ def updateStatus(proj: str, ref: str, channel: Channel, msg: str, start_duration
 	with open(getBuildPath(proj, ref)+"/.status.svg", "w") as f:
 		f.write(svg)
 
-	artifacts = {}
+	data = {
+		"ref": ref,
+		"status": msg,
+		"errorMsg": errorMsg,
+		"start": round(start*1000),
+		"artifacts": {},
+		"duration": duration,
+		"stats": stats
+	}
+
 	if msg == "success":
 		config = getConfig(proj, ref)
 		lang = config.get("language", None)
 		if lang == "latex":
 			main = config.get("main", None)
 			if os.path.isfile(getBuildPath(proj,ref)+"/"+main+".pdf"):
-				artifacts["pdf"] = "PDF"
+				data["artifacts"]["pdf"] = "PDF"
 		elif lang == "npm":
 			if os.path.isfile(getBuildPath(proj,ref)+"/output.zip"):
-				artifacts["output.zip"] = "ZIP"
-
-	data = {
-		"ref": ref,
-		"status": msg,
-		"errorMsg": errorMsg,
-		"start": round(start*1000),
-		"duration": duration,
-		"stats": stats,
-		"artifacts": artifacts
-	}
+				data["artifacts"]["output.zip"] = "ZIP"
 
 	channel.publish(proj, {"event": "status", "data": data})
 
