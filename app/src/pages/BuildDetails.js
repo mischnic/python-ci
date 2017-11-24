@@ -1,5 +1,7 @@
 import React from "react";
 import {Link} from "react-router-dom";
+import reactStringReplace from 'react-string-replace';
+
 import "./BuildDetails.css";
 import "./BuildCommon.css";
 import pdf_img from "../assets/pdf.png";
@@ -310,7 +312,9 @@ export default withFetcher(class BuildDetails extends React.Component {
 							<div className={`window build buildStatus ${build.status}`}>
 								<div>
 									<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
-									{commit.msg}<br/>
+									{
+										reactStringReplace(commit.msg, /#([0-9]+)/g, (p)=> <a target="_blank" href={`https://github.com/${this.props.info.data.id}/issues/${p}`}>#{p}</a>)
+									}<br/>
 									<a title="Open on Github" href={commitURL(this.props.info.data.id, commit.ref)} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
 								</div>
 								<div>
