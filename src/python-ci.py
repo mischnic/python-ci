@@ -145,12 +145,13 @@ def get_builds(proj):
 		return json.dumps({
 				"list" : data,
 				"language" : getConfig(proj).get("language", None),
+				"id": git.repos[proj]["github"],
 				"latest": parseRef(proj, "latest")
 			}), {"Content-Type": "application/json"}
 	else:
 		return json.dumps({
 				"list" : [],
-				"language" : getConfig(proj).get("language", None),
+				"language" : None,
 				"latest": ""
 			}), {"Content-Type": "application/json"}
 
@@ -167,12 +168,7 @@ def get_build_details(proj, ref):
 @nocache
 @error_handler
 def get_diff(proj, ref, ref2):
-	return json.dumps(
-		{
-			"diff": "https://github.com/{id}/compare/{r1}...{r2}".format(id=git.repos[proj]["github"], r1=ref2, r2=ref),
-			"commits": git.getCommits(proj, ref, ref2)
-		}
-		), {"Content-Type": "application/json"}
+	return json.dumps(git.getCommits(proj, ref, ref2)), {"Content-Type": "application/json"}
 
 @app.route('/subscribe')
 @check_auth

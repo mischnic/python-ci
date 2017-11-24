@@ -56,7 +56,6 @@ def getCommitDetails(repo: str, sha: str) -> Dict[str, Any]:
 		"ref": commit.hex,
 		"msg": commit.message,
 		"date": commit.author.time*1000,
-		"url": "https://github.com/{id}/commit/{sha}".format(id=repos[repo]["github"], sha=commit.hex),
 		"parents": [c.hex for c in commit.parents]
 	}
 

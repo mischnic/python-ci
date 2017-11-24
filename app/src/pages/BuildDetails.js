@@ -33,6 +33,10 @@ function cleanupHTML(s){
 	return s.replace(/<[^>]+>/g, "");
 }
 
+function commitURL(id, sha){
+	return `https://github.com/${id}/commit/${sha}`;
+}
+
 
 class Log extends React.Component{
 	constructor(props){
@@ -134,7 +138,7 @@ class Log extends React.Component{
 		add = ansiToHTML(add.replace(/\s+$/, ''));
 		if(add){
 			const newContent = this.state.content + add;
-			
+
 			this.setState({
 				content: newContent,
 				lines: [...this.state.lines, ...this.getLines(add)]
@@ -157,7 +161,6 @@ class Log extends React.Component{
 		}
 	}
 
-	
 	render() {
 		const pending = this.props.status === "pending";
 		const showCollapsible = Settings.get("enableLogExpansion") && !pending;
@@ -191,7 +194,7 @@ class Log extends React.Component{
 								return lastCommandShow && <div key={i} {...text}/>;
 							}
 						});
-		
+
 		return	<pre ref={(el) => {if(el) this.log = el.parentElement}}>
 					<code>
 						{content}
@@ -216,6 +219,11 @@ export default withFetcher(class BuildDetails extends React.Component {
 				this.hash = this.props.info.data.latest;
 			}
 			this.commit = this.props.info.data.list.find((v)=> v.commit.ref === this.hash);
+
+			const commitIndex = this.props.info.data.list.indexOf(this.commit);
+			if(this.props.info.data.list[commitIndex+1]){
+				this.prevHash = this.props.info.data.list[commitIndex+1].commit.ref;
+			}
 		}
 	}
 
@@ -236,8 +244,15 @@ export default withFetcher(class BuildDetails extends React.Component {
 			if(this.hash === "latest"){
 				this.hash = nextProps.info.data.latest;
 			}
+
+			this.commit = nextProps.info.data.list.find((v)=> v.commit.ref === this.hash);
+			const commitIndex = this.props.info.data.list.indexOf(this.commit);
+			if(this.props.info.data.list[commitIndex+1]){
+				this.prevHash = this.props.info.data.list[commitIndex+1].commit.ref;
+			}
+		} else{
+			this.commit = nextProps.info.data.list.find((v)=> v.commit.ref === this.hash);
 		}
-		this.commit = nextProps.info.data.list.find((v)=> v.commit.ref === this.hash);
 
 
 		if(nextProps.info.data.list.find((v)=> v.commit.ref === this.hash).build.status === "success"){
@@ -296,7 +311,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 								<div>
 									<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
 									{commit.msg}<br/>
-									<a title="Open on Github" href={commit.url} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
+									<a title="Open on Github" href={commitURL(this.props.info.data.id, commit.ref)} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
 								</div>
 								<div>
 									<span>started <RelDate date={build.start}/> </span><br/>
@@ -360,20 +375,20 @@ export default withFetcher(class BuildDetails extends React.Component {
 								}
 								{
 									this.state.files["diff"] && this.state.files["diff"].content && (
-										this.state.files["diff"].content.commits.length > 0 ?
+										this.state.files["diff"].content.length > 0 || console.log(this.state.files["diff"].content)?
 										(<div>
-											<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Commits</a> between last build:
+											<a title="Compare on Github" href={`https://github.com/${this.props.info.data.id}/compare/${this.prevHash}...${this.hash}`} target="_blank">Additional commits</a> since last build:
 											<ol>
 												{
-													this.state.files["diff"].content.commits.map(v=>(
-														<li key={v.ref}>{v.msg.split("\n")[0]} <a title="Open on Github" href={v.url} target="_blank">({v.ref.substring(0,7)})</a></li>
+													this.state.files["diff"].content.map(v=>(
+														<li key={v.ref}>{v.msg.split("\n")[0]} <a title="Open on Github" href={commitURL(this.props.info.data.id, v.ref)} target="_blank">({v.ref.substring(0,7)})</a></li>
 													))
 												}
 											</ol>
 										</div>)
 										:
 										(<div>
-											<a title="Compare on Github" href={this.state.files["diff"].content.diff} target="_blank">Compare to last build's commit</a>
+											<a title="Compare on Github" href={`https://github.com/${this.props.info.data.id}/compare/${this.prevHash}...${this.hash}`} target="_blank">Compare to last build's commit</a>
 										</div>)
 									)
 								}
