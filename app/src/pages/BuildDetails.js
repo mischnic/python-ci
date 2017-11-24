@@ -160,7 +160,7 @@ class Log extends React.Component{
 	
 	render() {
 		const pending = this.props.status === "pending";
-		const showCollapsible = Settings.get("enableLogExpansion") && window.matchMedia("(min-width: 660px)").matches && !pending;
+		const showCollapsible = Settings.get("enableLogExpansion") && !pending;
 		let lastCommandShow = !showCollapsible;
 		const content = this.state.lines.map(([v,style],i, arr)=>{
 							const text = {dangerouslySetInnerHTML: {__html: v}}

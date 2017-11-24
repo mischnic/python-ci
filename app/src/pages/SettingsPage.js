@@ -33,7 +33,7 @@ export default withRouter(class SettingsPage extends React.Component {
 						<h2>Log</h2>
 						<label>
 							Enable collapsible log commands
-							<input disabled={!window.matchMedia("(min-width: 660px)").matches} name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/>
+							<input name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/>
 						</label>
 						<label>
 							Autoexpand last command

@@ -4,6 +4,7 @@ import {Route, Redirect, Switch, Link} from "react-router-dom";
 import {isLoggedIn, logout, getJWT} from "./auth.js";
 import {PrivateRoute} from "./utils.js";
 import CustomLink from "./CustomLink.js";
+import CustomNavLink from "./CustomNavLink.js";
 
 import BuildInfo from "./pages/BuildInfo.js";
 import ProjectList from "./pages/ProjectList.js";
@@ -69,7 +70,7 @@ class App extends React.Component {
 							<CustomLink type="span" to="/login">Login</CustomLink>
 						</span>
 					}
-					{ isLoggedIn() && <CustomLink type="span" to="/settings" className="fa fa-cog" style={{fontSize: "1.4em"}}/> }
+					{ isLoggedIn() && <CustomNavLink activeStyle={{display: "none"}} type="span" to="/settings" className="fa fa-cog" style={{fontSize: "1.4em"}}/> }
 				</div>
 				<div className="main">
 					<Switch>

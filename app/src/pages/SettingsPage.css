@@ -1,3 +1,7 @@
+.settings h2 {
+	margin-bottom: 0.4em;
+}
+
 .settings > div > *:not(:first-child){
 	padding-left: 2em;
 }
