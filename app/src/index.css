@@ -28,21 +28,21 @@ h1 {
 	-webkit-appearance: none;
 }
 */
-.button {
+button {
 	background-color: #eee;
 	padding: 0.3em 0.5em;
 	border-radius: 5px;
 	border: 1px solid #dfdfdf;
 	cursor: pointer;
-	display: inline-block;
-	user-select: none;
+	font-size: 1rem;
+	font-family: inherit;
 }
 
-.button:hover {
+button:hover {
 	background-color: #ddd;
 }
 
-.button:active {
+button:active {
 	background-color: #ccc;
 	border-color: #ccc;
 }

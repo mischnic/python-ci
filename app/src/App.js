@@ -74,6 +74,7 @@ class App extends React.Component {
 				</div>
 				<div className="main">
 					<Switch>
+						<Redirect from="/index.html" to="/"/>
 						<Route path="/login" render={() => <Login afterLogin={()=>this.login()}/> } />
 
 						<PrivateRoute path="/" strict exact render={(props)=><ProjectList {...props}/>} />
@@ -82,7 +83,6 @@ class App extends React.Component {
 						<PrivateRoute path="/:proj" exact strict render={(props)=><Redirect to={props.match.url+"/"}/>}/>
 						<PrivateRoute path="/:proj/" strict render={(props)=><BuildInfo {...props} events={this.events}/>} />
 
-						<Redirect from="/index.html" to="/"/>
 						<Route render={()=><Errors>
 							<div style={{marginTop: "-5rem", textAlign: "center"}}>
 								<div style={{fontSize: "13rem", marginBottom: "-1rem"}}>&#8253;</div>
