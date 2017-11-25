@@ -1,10 +1,27 @@
 import React from "react";
 import {Link, withRouter} from "react-router-dom";
+import PropTypes from 'prop-types';
 
 import {Settings} from "../utils.js";
 import "./SettingsPage.css";
 
+
+const Option = (props, context) =>
+	<label>
+		<span style={{userSelect: "none"}}>{props.children}</span>
+		<input name={props.name} type={props.type} disabled={props.disabled} onChange={props.onChange}
+				 {...{[props.type==="checkbox" ? "checked" : "value"]: context.state[props.name]}}/>
+	</label>
+
+
+Option.contextTypes = {state: PropTypes.object};
+
+
 export default withRouter(class SettingsPage extends React.Component {
+	static childContextTypes = {
+		state: PropTypes.object.isRequired
+	};
+
 	constructor(props){
 		super(props);
 		this.state = Settings.get();
@@ -22,6 +39,12 @@ export default withRouter(class SettingsPage extends React.Component {
 		}, () => Settings.set(name, value));
 	}
 
+	getChildContext() {
+		return {
+			state: this.state
+		};
+	}
+
 	render(){
 		return (
 			<div>
@@ -31,18 +54,15 @@ export default withRouter(class SettingsPage extends React.Component {
 				<div className="settings">
 					<div>
 						<h2>Log</h2>
-						<label>
+						<Option name="enableLogExpansion" type="checkbox" onChange={this.handleInputChange}>
 							Enable collapsible log commands
-							<input name="enableLogExpansion" type="checkbox" checked={this.state.enableLogExpansion} onChange={this.handleInputChange}/>
-						</label>
-						<label>
+						</Option>
+						<Option name="expandLast" type="checkbox" disabled={!this.state.enableLogExpansion} onChange={this.handleInputChange}>
 							Autoexpand last command
-							<input name="expandLast" type="checkbox" checked={this.state.expandLast} onChange={this.handleInputChange}/>
-						</label>
-						<label>
+						</Option>
+						<Option name="autoScroll" type="checkbox" disabled onChange={this.handleInputChange}>
 							Autoscroll during build
-							<input disabled name="autoScroll" type="checkbox" checked={this.state.autoScroll} onChange={this.handleInputChange}/>
-						</label>
+						</Option>
 					</div>
 				</div>			
 			</div>
