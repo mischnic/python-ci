@@ -313,7 +313,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 								<div>
 									<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
 									{
-										reactStringReplace(commit.msg, /#([0-9]+)/g, (p)=> <a target="_blank" href={`https://github.com/${this.props.info.data.id}/issues/${p}`}>#{p}</a>)
+										reactStringReplace(commit.msg, /#([0-9]+)/g, (p, i)=> <a key={i} target="_blank" href={`https://github.com/${this.props.info.data.id}/issues/${p}`}>#{p}</a>)
 									}<br/>
 									<a title="Open on Github" href={commitURL(this.props.info.data.id, commit.ref)} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
 								</div>
@@ -379,7 +379,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 								}
 								{
 									this.state.files["diff"] && this.state.files["diff"].content && (
-										this.state.files["diff"].content.length > 0 || console.log(this.state.files["diff"].content)?
+										this.state.files["diff"].content.length > 0 ?
 										(<div>
 											<a title="Compare on Github" href={`https://github.com/${this.props.info.data.id}/compare/${this.prevHash}...${this.hash}`} target="_blank">Additional commits</a> since last build:
 											<ol>

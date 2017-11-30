@@ -262,6 +262,8 @@ def github_build(proj):
 			mac = hmac.new(SECRET, msg=request.data, digestmod=hashlib.sha1)
 			if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
 				return "Forbidden", 403
+		else:
+			return "Forbidden", 403
 
 	if request.headers["content-type"] == "application/json":
 		event = request.headers["X-GitHub-Event"]
@@ -276,4 +278,4 @@ def github_build(proj):
 	else:
 		return "Bad Request", 400
 
-	return "Internal Server Error", 400
+	return "Internal Server Error", 500

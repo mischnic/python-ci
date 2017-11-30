@@ -5,14 +5,12 @@ import PropTypes from 'prop-types';
 import {Settings} from "../utils.js";
 import "./SettingsPage.css";
 
-
 const Option = (props, context) =>
 	<label>
 		<span style={{userSelect: "none"}}>{props.children}</span>
 		<input name={props.name} type={props.type} disabled={props.disabled} onChange={props.onChange}
-				 {...{[props.type==="checkbox" ? "checked" : "value"]: context.state[props.name]}}/>
+				 {...{ [props.type==="checkbox" ? "checked" : "value"]: context.state[props.name] }}/>
 	</label>
-
 
 Option.contextTypes = {state: PropTypes.object};
 
