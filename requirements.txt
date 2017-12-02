@@ -1,5 +1,6 @@
 gevent==1.2.2
 Flask==0.12.2
-pygit2==0.26.1
+pygit2==0.26.2
 gunicorn==19.7.1
 requests==2.18.4
+PyJWT==1.5.3
