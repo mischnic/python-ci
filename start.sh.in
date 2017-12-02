@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # uncomment if there are errors like
 # 	Permission denied (publickey)
