@@ -5,6 +5,8 @@
 }
 
 .projectList > .project {
+	display: block;
+
 	margin: 10px;
 	min-width: 150px;
 	height: 150px;
@@ -14,6 +16,7 @@
 	text-align: center;
 	vertical-align: middle;
 	line-height: 150px;
+	text-decoration: none;
 
 	cursor: pointer;
 

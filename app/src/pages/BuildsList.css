@@ -25,6 +25,10 @@
 	flex: 0 0 40%;
 }
 
+.buildsList > li > .commitInfo > div:nth-child(2) > a {
+	text-decoration: none;
+}
+
 .buildsList > li > .commitData {
 	flex: 0 0 17%;
 	display: flex;

@@ -1,10 +1,8 @@
 import React from "react";
-import {Route, Redirect, Switch, Link} from "react-router-dom";
+import {Route, Redirect, Switch, Link, NavLink, withRouter} from "react-router-dom";
 
 import {isLoggedIn, logout, getJWT} from "./auth.js";
 import {PrivateRoute, Errors} from "./utils.js";
-import CustomLink from "./CustomLink.js";
-import CustomNavLink from "./CustomNavLink.js";
 
 import BuildInfo from "./pages/BuildInfo.js";
 import ProjectList from "./pages/ProjectList.js";
@@ -13,8 +11,12 @@ import SettingsPage from "./pages/SettingsPage.js";
 
 import "./index.css";
 
-
 class App extends React.Component {
+
+	constructor(props){
+		super(props);
+		this.key = this.key.bind(this);
+	}
 
 	subscribe(){
 		this.events = new EventSource(
@@ -22,6 +24,20 @@ class App extends React.Component {
 			`${window.location.protocol}//${window.location.hostname}:5000/subscribe` :
 			`${window.location.origin}/api/subscribe`) + `?token=${getJWT()}`
 		);
+	}
+
+	key(e){
+		if(e.key === "Backspace"){
+			if(!e.shiftKey){
+				this.props.history.goBack();
+			} else {
+				this.props.history.goForward();
+			}
+		}
+	}
+
+	componentDidMount(){
+		document.querySelector("body").addEventListener("keydown", this.key);
 	}
 
 	componentWillMount(){
@@ -40,6 +56,7 @@ class App extends React.Component {
 		if(this.events){
 			this.events.close();
 		}
+		document.querySelector("body").removeEventListener("keydown", this.key);
 	}
 
 	login(){
@@ -59,18 +76,20 @@ class App extends React.Component {
 		return (
 			<div id="app">
 				<div className="header">
-					<Link className="title" to="/">Python-CI</Link>
+					<Link className="title" to="/" tabIndex="-1">Python-CI</Link>
 					{
 						isLoggedIn() ?
-						<span className="account" onClick={()=>logout() || this.logout()}>
-							<CustomLink type="span" to="/login">Logout</CustomLink>
-						</span>
+						<React.Fragment>
+							<span className="account" onClick={()=>logout() || this.logout()}>
+								<Link tabIndex="100" to="/login">Logout</Link>
+							</span>
+							<NavLink tabIndex="90" activeStyle={{display: "none"}} to="/settings" className="fa fa-cog" style={{fontSize: "1.4em"}}/>
+						</React.Fragment>
 						:
 						<span className="account">
-							<CustomLink type="span" to="/login">Login</CustomLink>
+							<Link to="/login">Login</Link>
 						</span>
 					}
-					{ isLoggedIn() && <CustomNavLink activeStyle={{display: "none"}} type="span" to="/settings" className="fa fa-cog" style={{fontSize: "1.4em"}}/> }
 				</div>
 				<div className="main">
 					<Switch>
@@ -95,4 +114,4 @@ class App extends React.Component {
 	}
 }
 
-export default App;
+export default withRouter(App);

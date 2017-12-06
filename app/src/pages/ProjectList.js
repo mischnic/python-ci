@@ -1,7 +1,7 @@
 import React from "react";
+import {Link} from "react-router-dom";
 
 import {Loading, Errors, withFetcher, strToColor} from "../utils.js";
-import CustomLink from "../CustomLink.js"
 
 import "./ProjectList.css"
 
@@ -48,9 +48,9 @@ export default withFetcher(class ProjectList extends React.Component {
 				<div className="projectList">
 					{
 						this.state.data.map(proj=>(
-							<CustomLink type="div" to={proj+"/"} className="project" key={proj} style={{
+							<Link to={proj+"/"} className="project" key={proj} style={{
 								backgroundColor: `#${strToColor(proj)}`
-							}}>{proj}</CustomLink>
+							}}>{proj}</Link>
 						))
 					}
 				</div>

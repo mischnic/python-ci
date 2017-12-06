@@ -18,7 +18,9 @@ const BuildsList = (props) =>
 							<div>
 								<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
 							</div>
-							<div>{commit.msg.split("\n")[0]}</div>
+							<div>
+								<Link tabIndex="0" to={commit.ref}>{commit.msg.split("\n")[0]}</Link>
+							</div>
 						</div>
 						<div className="commitData">
 							<div>

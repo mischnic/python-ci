@@ -38,21 +38,20 @@ button {
 	font-family: inherit;
 }
 
-button:hover {
+button:not(:disabled):hover {
 	background-color: #ddd;
 }
 
-button:active {
+button:not(:disabled):active {
 	background-color: #ccc;
 	border-color: #ccc;
 }
-
 
 .main {
 	padding: 10px;
 }
 
-.main a:not(.button){
+.main a{
 	color: black;
 	text-decoration: underline;
 	cursor: pointer;
@@ -81,7 +80,7 @@ button:active {
     text-decoration: none;
 }
 
-#app > .header > :not(:first-child) {
+#app > .header > :not(.title) {
 	float: right;
 	line-height: 33px;
 	margin-left: 10px;
@@ -90,6 +89,18 @@ button:active {
 
 #app > .header > .account {
 	user-select: none;
+}
+
+#app > .header a,
+#app > .header a:visited,
+#app > .header a:hover,
+#app > .header a:active  {
+	text-decoration: none;
+	color: currentColor;
+}
+
+{
+  color: inherit;
 }
 
 
