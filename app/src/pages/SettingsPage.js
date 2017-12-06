@@ -58,7 +58,7 @@ export default withRouter(class SettingsPage extends React.Component {
 						<Option name="expandLast" type="checkbox" disabled={!this.state.enableLogExpansion} onChange={this.handleInputChange}>
 							Autoexpand last command
 						</Option>
-						<Option name="autoScroll" type="checkbox" disabled onChange={this.handleInputChange}>
+						<Option name="autoScroll" type="checkbox" onChange={this.handleInputChange}>
 							Autoscroll during build
 						</Option>
 					</div>

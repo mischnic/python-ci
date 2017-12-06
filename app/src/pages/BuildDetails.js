@@ -20,13 +20,17 @@ const logFormatting = {
 		[">! ", "info error"]
 	],
 	latex:[
+		["Running 'pdflatex ", "command"],
 		[/Package [a-zA-z0-9]+ Warning:/, "warning"],
 		[/^\(([a-zA-z0-9]+)\)/, "warning"],
 		[/LaTeX (?:[a-zA-z]+ )?Warning:/, "warning"],
 		["Overfull \\hbox", "warning"],
 		["Underfull \\hbox", "warning"],
 		["Latexmk: List of undefined refs and citations:", "warning"],
-		[/ {2}Label `[^']+' multiply defined/, "warning"]
+		["Latexmk: Summary of warnings:", "warning"],
+		[/ {2}Latex failed to resolve [0-9]+ (?:reference|citation)\(s\)/, "warning"],
+		[/ {2}Label `[^']+' multiply defined/, "warning"],
+		[/ {2}(?:Reference|Citation) ['`][^']+' on page [0-9]+ undefined on input line [0-9]+/, "warning"]
 	]
 };
 

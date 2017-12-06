@@ -93,8 +93,14 @@ def doCompile(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) 
 					"-outdir=../"+buildPath,
 					"-pdf", main+".tex" ]
 
+		env = {
+			"max_print_line": "100",
+			"error_line": "254",
+			"half_error_line": "238"
+		}
+
 		log(">>> " + (" ".join(cmd)) + "\n")
-		rv = runSubprocess(cmd, log, cwd=getProjPath(proj))
+		rv = runSubprocess(cmd, log, cwd=getProjPath(proj), env=env)
 		if rv != 0:
 			log("latexmk failed: "+str(rv) + "\n")
 			successful = False
