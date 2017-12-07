@@ -66,6 +66,10 @@ export default class Log extends React.Component{
 
 		this.log.addEventListener("wheel", this.scrolled, { passive: true });
 		this.log.addEventListener("touchmove", this.scrolled, { passive: true });
+
+		if(this.commit.build.status === "pending"){
+			this.last.scrollIntoView({ behavior: "instant" });
+		}
 	}
 
 	componentWillUnmount(){

@@ -22,13 +22,19 @@ export default class BuildStatistics extends React.Component {
 		let diagram = null;
 		if(language === "latex"){
 			const data = list.map((v)=>{
-									return {
-										date: `${String(v.commit.date.getFullYear()).slice(-2)}/${v.commit.date.getMonth()+1}/${v.commit.date.getDate()} ${v.commit.ref.slice(0,7)}`,
-										// ref: v.commit.ref,
-										words: +v.build.stats.counts.words.total[0],
-										letters: +v.build.stats.counts.letters.total[0],
-										buildTime: Math.round(v.build.duration)
-									}
+										if(v.build.status === "success" && v.build.stats.counts){
+											return {
+												date: `${String(v.commit.date.getFullYear()).slice(-2)}/${v.commit.date.getMonth()+1}/${v.commit.date.getDate()} ${v.commit.ref.slice(0,7)}`,
+												// ref: v.commit.ref,
+												words: +v.build.stats.counts.words.total[0],
+												letters: +v.build.stats.counts.letters.total[0],
+												buildTime: Math.round(v.build.duration)
+											}
+										} else {
+											return {
+												date: `${String(v.commit.date.getFullYear()).slice(-2)}/${v.commit.date.getMonth()+1}/${v.commit.date.getDate()} ${v.commit.ref.slice(0,7)}`,
+											}
+										}
 									}).reverse();
 			diagram = <LineChart data={data}>
 							<XAxis dataKey="date"/>
@@ -52,7 +58,7 @@ export default class BuildStatistics extends React.Component {
 				<div className="window">
 					{
 						diagram ? 
-						<ResponsiveContainer width="100%" height="100%">
+						<ResponsiveContainer minHeight={400} width="100%" height="100%">
    							{diagram}
    						</ResponsiveContainer>
 							:
