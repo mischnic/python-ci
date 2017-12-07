@@ -58,7 +58,7 @@ export default class BuildStatistics extends React.Component {
 							<YAxis label={{ value: 'Count', angle: -90, position: 'left', offset: -5 }} 
 									orientation="left"
 									yAxisId="counts"/>
-							<YAxis label={{ value: 'Build Time (sec)', angle: -90, position: 'insideRight', offset: 20 }}
+							<YAxis label={{ value: 'Build Time (sec)', angle: -90, position: 'insideRight', offset: 10 }}
 									orientation="right"
 									yAxisId="time"/>
 							<Tooltip/>

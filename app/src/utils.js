@@ -30,7 +30,7 @@ const Settings = {
 	get(key){
 		let data = null;
 		try {
-			data = JSON.parse(localStorage.getItem("settings"));
+			data = JSON.parse(localStorage.getItem("settings") || "---");
 		} catch(e) {
 			data = {
 				log: {
