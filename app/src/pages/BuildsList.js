@@ -8,7 +8,7 @@ import CustomLink from "../CustomLink.js";
 
 const BuildsList = (props) =>
 	<div>
-		<h1><Link to="..">Projects</Link> > {props.match.params.proj}</h1>
+		<h1><Link to="..">Projects</Link> > {props.match.params.proj} <Link className="stats" to="stats">Statistics</Link></h1>
 		<ul className="buildsList">
 			{
 				props.info.data.list.map( ({commit, build}) =>

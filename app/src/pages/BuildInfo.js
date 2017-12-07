@@ -3,6 +3,7 @@ import {Route, Switch} from "react-router-dom";
 
 import BuildsList from "./BuildsList.js";
 import BuildDetails from "./BuildDetails.js";
+import BuildStatistics from "./BuildStatistics.js";
 
 import "./BuildCommon.css";
 
@@ -109,6 +110,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 			this.state.loading || !this.state.data ? <Loading/> :
 			<Switch>
 				<Route path={"/:proj/"} exact strict render={(props)=> <BuildsList info={pass} {...props}/>}/>
+				<Route path={"/:proj/stats"} exact strict render={(props)=> <BuildStatistics info={pass} {...props}/>}/>
 				<Route path={"/:proj/:hash"} exact render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
 				<Route render={() => (<Errors>Specify a project in the URL!</Errors>)}/>
 			</Switch>

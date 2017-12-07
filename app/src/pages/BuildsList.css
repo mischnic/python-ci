@@ -1,3 +1,11 @@
+a.stats {
+	float: right;
+	font-size: 1rem;
+	height: 2rem;
+	line-height: 2.5rem;
+	vertical-align: middle;
+}
+
 .buildsList {
 	padding-left: 30px;
 }

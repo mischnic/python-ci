@@ -64,15 +64,15 @@ export default class Log extends React.Component{
 		this.parse();
 		this.props.events.addEventListener(this.props.proj, this.handleEvent);
 
-		this.log.addEventListener("wheel", this.scrolled);
-		this.log.addEventListener("touchmove", this.scrolled);
+		this.log.addEventListener("wheel", this.scrolled, { passive: true });
+		this.log.addEventListener("touchmove", this.scrolled, { passive: true });
 	}
 
 	componentWillUnmount(){
 		this.props.events.removeEventListener(this.props.proj, this.handleEvent);
 
-		this.log.removeEventListener("wheel", this.scrolled);
-		this.log.removeEventListener("touchmove", this.scrolled);
+		this.log.removeEventListener("wheel", this.scrolled, { passive: true });
+		this.log.removeEventListener("touchmove", this.scrolled, { passive: true });
 	}
 
 

@@ -1,0 +1,9 @@
+.buildStatistics {
+	padding-top: 0.7em;
+	height: calc(100% - 2.1em);
+}
+
+.buildStatistics > div {
+	height: 100%;
+	min-height: 400px;
+}
