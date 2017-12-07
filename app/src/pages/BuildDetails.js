@@ -115,8 +115,17 @@ export default withFetcher(class BuildDetails extends React.Component {
 				<h1><Link to="." title="Go Back to List">{proj}</Link> &gt; {this.hash.substring(0,7)}</h1>
 				<div className="buildDetails">
 					{
-					!this.commit ? <Errors>Build could not be found</Errors>:
-					[
+					!this.commit ?
+					<Errors>
+						<div style={{textAlign: "center"}}>
+							Build could not be found<br/><br/>
+							<button onClick={() => this.rebuild()}>
+								<i className={"fa fa-refresh"} style={{marginRight: "4px"}}/>Build
+							</button>
+						</div>
+					</Errors>
+						:
+					<React.Fragment>
 						<div className="details" key="details">
 							<div className={`window build buildStatus ${build.status}`}>
 								<div>
@@ -136,7 +145,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 									</button>
 								</div>
 							</div>
-						</div>,
+						</div>
 						<div className="files" key="files">
 							<div className="window artifacts">
 								{
@@ -173,7 +182,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 											return (
 											<div>
-												<span>Total words: {sumc} <a tabIndex="0" onClick={()=>this.setState({showWords: false})} style={{opacity: 0.2}}>Show Letters</a></span>
+												<span>Total words: {sumc} <a tabIndex="0" onClick={()=>this.setState({showWords: false})} style={{opacity: 0.3}}>Show Letters</a></span>
 												<ol>
 												{
 													words.chapters.map((v)=>{
@@ -190,7 +199,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 											return (
 											<div>
-												<span>Total letters: {sumc} <a tabIndex="0" onClick={()=>this.setState({showWords: true})} style={{opacity: 0.2}}>Show Words</a></span>
+												<span>Total letters: {sumc} <a tabIndex="0" onClick={()=>this.setState({showWords: true})} style={{opacity: 0.3}}>Show Words</a></span>
 												<ol>
 												{
 													letters.chapters.map((v)=>{
@@ -235,7 +244,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 								}
 							</div>
 						</div>
-						]
+					</React.Fragment>
 					}
 				</div>
 			</div>

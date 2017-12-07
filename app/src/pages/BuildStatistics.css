@@ -1,6 +1,7 @@
 .buildStatistics {
 	padding-top: 0.7em;
 	height: calc(100% - 2.1em);
+	min-height: calc(400px + 15px + 0.7em);
 }
 
 .buildStatistics > div {

@@ -20,9 +20,6 @@ export default withFetcher(class BuildInfo extends React.Component {
 			error: false
 		};
 
-		// if(!props.match.url.endsWith("/")){
-		// 	props.history.replace(props.match.url+"/");
-		// }
 		this.handleEvent = this.handleEvent.bind(this);
 	}
 
@@ -46,7 +43,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 									start: new Date(build.start)
 								}
 							}
-						]
+						].sort((a,b) => b.commit.date - a.commit.date)
 					}
 				});
 			}

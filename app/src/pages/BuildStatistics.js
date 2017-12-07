@@ -26,9 +26,9 @@ export default class BuildStatistics extends React.Component {
 											return {
 												date: `${String(v.commit.date.getFullYear()).slice(-2)}/${v.commit.date.getMonth()+1}/${v.commit.date.getDate()} ${v.commit.ref.slice(0,7)}`,
 												// ref: v.commit.ref,
-												words: +v.build.stats.counts.words.total[0],
-												letters: +v.build.stats.counts.letters.total[0],
-												buildTime: Math.round(v.build.duration)
+												Words: +v.build.stats.counts.words.total[0],
+												Letters: +v.build.stats.counts.letters.total[0],
+												"Build Time": Math.round(v.build.duration)
 											}
 										} else {
 											return {
@@ -46,9 +46,9 @@ export default class BuildStatistics extends React.Component {
 									yAxisId="time"/>
 							<Tooltip/>
 							<Legend onClick={(e)=>this.setState({hide: {...this.state.hide, [e.dataKey]: !e.inactive}})}/>
-							<Line hide={this.state.hide["words"]}     dataKey="words"     type="monotone" stroke="#8884d8" yAxisId="counts" animationDuration={200}/>
-							<Line hide={this.state.hide["letters"]}   dataKey="letters"   type="monotone" stroke="#82ca9d" yAxisId="counts" animationDuration={200}/>
-							<Line hide={this.state.hide["buildTime"]} dataKey="buildTime" type="monotone" stroke="#ff7f0e" yAxisId="time"   animationDuration={200}/>
+							<Line hide={this.state.hide["Words"]}     dataKey="Words"     type="monotone" stroke="#8884d8" yAxisId="counts" animationDuration={200}/>
+							<Line hide={this.state.hide["Letters"]}   dataKey="Letters"   type="monotone" stroke="#82ca9d" yAxisId="counts" animationDuration={200}/>
+							<Line hide={this.state.hide["Build Time"]} dataKey="Build Time" type="monotone" stroke="#ff7f0e" yAxisId="time"   animationDuration={200}/>
 						</LineChart>
 		}
 		return (
