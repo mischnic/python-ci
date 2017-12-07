@@ -1,11 +1,13 @@
 import React from "react";
+import {Route, Switch} from "react-router-dom";
 
 import BuildsList from "./BuildsList.js";
 import BuildDetails from "./BuildDetails.js";
 
-import {Route, Switch} from "react-router-dom";
+import "./BuildCommon.css";
 
 import {Loading, Errors, withFetcher} from "../utils.js";
+
 
 export default withFetcher(class BuildInfo extends React.Component {
 	constructor(props){

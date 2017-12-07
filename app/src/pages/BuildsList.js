@@ -1,7 +1,6 @@
 import React from "react";
 import {Link} from "react-router-dom";
 import "./BuildsList.css";
-import "./BuildCommon.css";
 
 import {formatTime, RelDate} from "../utils.js";
 import {GitUser} from "./BuildCommon.js";
