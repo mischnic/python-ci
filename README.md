@@ -9,7 +9,8 @@ A lightweight CI-server written in python, originally developed for a Raspberry 
 Drawbacks:
 
 - Builds aren't fully isolated, the same cloned repo is `reset` to the corresponding commit and then used for building.
-- For `npm`: `npm build` is run and then the specified build folder is `zip`ped up.
+- For an `npm` build, `npm build` is run and then the specified build folder is `zip`ped up.
+
 
 ![List view](docs/example_web1.png)
 
@@ -63,7 +64,7 @@ You need the following file hierarchy: (clone your project like `Maths`)
 	{
 		"language": "latex",
 		"main": "Document",
-		"stats": ["counts"] <- optional
+		"stats": ["counts"] // optional
 	}
 
 Currently implemented languages:
@@ -88,32 +89,25 @@ python-ci delivers the following pages: (they accept **only long** commit-hashes
 
 ### Web Interface
 
-The main interface is served unter http://ci.example.com/Maths/
+With the configuration below, the web interface is served at `ci.example.com`.
 
 ### API
 
 (The following links are only correct, if you use a dedicated webserver as a proxy to python-ci with a configuration as seen below. The python-ci server itself responds to requests like `/Maths/1f2a23..`, without `/api`.)
 
-All API requests except for the latest svg badge need a JWT token either specified as a GET parameter (`...?token=eyJhbGciOiJIUz...`) or as a  header: `Authentification: Bearer eyJhbGciOiJIUz...`.
+- All API requests except for the last listed here need a JWT token either specified as a GET parameter (`...?token=eyJhbGciOiJIUz...`) or as a  header: `Authentification: Bearer eyJhbGciOiJIUz...`.
+- The commit-hashes in URLs can generally be replaced by `latest`
 
-`http://ci.example.com/api/login`
+| Desc | URL | Request data | Response data | 
+| ---- | --- | ------------ | ------------- |
+| Login| `POST /api/login` | json: `{username: "user", password: "pass"}` | text: `jwt token...` |
+| Build| `GET /api/<proj>/<sha:not"latest">/build` | - | status code: 200 OK, 503 Busy |
+| List projects| `GET /api/` | - | json: `["Maths", "test"]` |
+| PDF build artifact| `GET /api/<proj>/<ref>/pdf` | - | `main.pdf` |
+| Compile log | `GET /api/<proj>/<ref>/log` | - | `.log` |
+| Badge | `GET /api/<proj>/<ref>/svg` | - | ![badge](docs/example_badge.svg) |
+| Badge | `GET /api/<proj>/latest/svg` | - (no auth. needed) |  |
 
-GET request alternative to a GitHub webhook:
-`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/build`
-
-Get the list of projects (set via `PROJECTS`, see above):
-`http://ci.example.com/api/`
-
-The commit-hashes in the following URLs can be replaced by `latest`:
-
-Would correspond to the file `Maths_build/Document.pdf`:
-`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/pdf`
-
-Returns the compile-log which was saved as `Maths_build/.log`:
-`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/log`
-
-Returns a svg-badge indicating the commit-hash of the last build and the build status (successful, error, currently running):
-`http://ci.example.com/api/Maths/1f31488cca82ad562eb9ef7e3e85041ddd29a8ff/svg` ![badge example](docs/example_badge.svg)
 
 Example for a badge which links to the log file:
 
@@ -121,9 +115,9 @@ Example for a badge which links to the log file:
 
 ## As a GitHub webhook
 
-As the payload url use: `https://ci.example.com/api/Maths`.
+Payload URL: `https://ci.example.com/api/Maths`.
 
-When adding the webhook, be sure to set the "Content type" to `application/json`.
+When adding the webhook, be sure to set the "Content type" to `application/json`. Only the `push` (and `ping` event) event is handled.
 
 ## Server configuration
 
@@ -147,6 +141,11 @@ By default, python-ci listens on `localhost:8000`, meaning that it will only acc
 		location /api {
 			rewrite ^/api(.*) $1 break;
 			proxy_pass http://localhost:8000;
+			
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
 		}
 	}
 
@@ -156,7 +155,7 @@ To use nginx to send your build files add the following inside the `server` bloc
 
 	location /data/ {
 		internal;
-		alias /set/to/path/to/python-ci/;
+		alias /path/to/python-ci/;
 	}
 
 If you only want the api and webhook without the web interface, then you don't need a seperate webserver. In that case, change `'localhost'` in [this](https://github.com/mischnic/python-ci/blob/b5d7e55e94ac528c41a8e30fe6297d768cb244d9/python-ci.py#L323) line to `''`, so the server will be reachable not only from localhost. (i.e. via `192.168.0.4:8000/Maths/svg`)
