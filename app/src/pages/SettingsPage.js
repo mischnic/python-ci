@@ -22,7 +22,7 @@ export default withRouter(class SettingsPage extends React.Component {
 
 	constructor(props){
 		super(props);
-		this.state = Settings.get();
+		this.state = Settings.getFlat();
 
 		this.handleInputChange = this.handleInputChange.bind(this);
 	}
@@ -52,13 +52,13 @@ export default withRouter(class SettingsPage extends React.Component {
 				<div className="settings">
 					<div>
 						<h2>Log</h2>
-						<Option name="enableLogExpansion" type="checkbox" onChange={this.handleInputChange}>
+						<Option name="log.enableLogExpansion" type="checkbox" onChange={this.handleInputChange}>
 							Enable collapsible log commands
 						</Option>
-						<Option name="expandLast" type="checkbox" disabled={!this.state.enableLogExpansion} onChange={this.handleInputChange}>
+						<Option name="log.expandLast" type="checkbox" disabled={!this.state["log.enableLogExpansion"]} onChange={this.handleInputChange}>
 							Autoexpand last command
 						</Option>
-						<Option name="autoScroll" type="checkbox" onChange={this.handleInputChange}>
+						<Option name="log.autoScroll" type="checkbox" onChange={this.handleInputChange}>
 							Autoscroll during build
 						</Option>
 					</div>

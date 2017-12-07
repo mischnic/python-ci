@@ -43,7 +43,7 @@ export default class Log extends React.Component{
 			styles: logFormatting[this.props.lang] ? [...logFormatting["all"], ...logFormatting[this.props.lang]] : logFormatting["all"]
 		};
 
-		this.autoScroll = Settings.get("autoScroll");
+		this.autoScroll = Settings.get("log.autoScroll");
 
 		this.handleEvent = this.handleEvent.bind(this);
 		this.scrolled = this.scrolled.bind(this);
@@ -108,7 +108,7 @@ export default class Log extends React.Component{
 												}, {})
 
 		const expanded = {};
-		if(Settings.get("expandLast")){
+		if(Settings.get("log.expandLast")){
 			const cmdKeys = Object.keys(commands);
 			if(cmdKeys.length > 0){
 				for(let i = cmdKeys.length; i--; i !== 0){
@@ -158,7 +158,7 @@ export default class Log extends React.Component{
 
 	render() {
 		const pending = this.props.status === "pending";
-		const showCollapsible = Settings.get("enableLogExpansion") && !pending;
+		const showCollapsible = Settings.get("log.enableLogExpansion") && !pending;
 		let lastCommandShow = !showCollapsible;
 		const content = this.state.lines.map(([v,style],i, arr)=>{
 							const text = {dangerouslySetInnerHTML: {__html: v}}

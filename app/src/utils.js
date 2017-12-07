@@ -4,33 +4,89 @@ import PropTypes from "prop-types";
 import {withRouter, Route, Redirect} from 'react-router-dom'
 import {getJWT, logout, isLoggedIn} from "./auth.js";
 
+
+function isObject(item) {
+	return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
+function mergeDeep(target, source) {
+	let output = Object.assign({}, target);
+	if (isObject(target) && isObject(source)) {
+		Object.keys(source).forEach(key => {
+			if (isObject(source[key])) {
+				if (!(key in target))
+					Object.assign(output, { [key]: source[key] });
+				else
+					output[key] = mergeDeep(target[key], source[key]);
+			} else {
+				Object.assign(output, { [key]: source[key] });
+			}
+		});
+	}
+	return output;
+}
+
 const Settings = {
 	get(key){
-		const data = JSON.parse(localStorage.getItem("settings")) || {
-			enableLogExpansion: window.matchMedia("(min-width: 660px)").matches,
-			expandLast: false,
-			autoScroll: false //window.matchMedia("(min-width: 660px)").matches
-		};
-
-		if(data){
-			if(key){
-				if(key in data){
-					return data[key];
+		let data = null;
+		try {
+			data = JSON.parse(localStorage.getItem("settings"));
+		} catch(e) {
+			data = {
+				log: {
+					enableLogExpansion: window.matchMedia("(min-width: 660px)").matches,
+					expandLast: false,
+					autoScroll: false //window.matchMedia("(min-width: 660px)").matches
+				},
+				stats: {
+					hide: {
+						// proj: {
+						//   line: false
+						// }
+					}
 				}
-			} else {
-				return data;
+			};
+		}
+
+		if(key){
+			key = key.split(".");
+			let d = data;
+			for(const k of key){
+				if(k in d){
+					d = d[k];
+				} else {
+					return null;
+				}
+			}
+
+			return d;
+		} else {
+			return data;
+		}
+	},
+	getFlat(){
+		const data = Settings.get();
+		const acc = {};
+		for(const key1 of ["log", "stats"]){
+			for(const key2 in data[key1]){
+				acc[`${key1}.${key2}`] = data[key1][key2];
 			}
 		}
-		return null;
+		return acc;
 	},
 	set(key, value){
+		console.log(key, value)
 		if(typeof value === "undefined"){
 			localStorage.setItem("settings", key)
 		} else {
-			localStorage.setItem("settings", JSON.stringify({
-				...Settings.get(),
-				[key]: value
-			}));
+			key = key.split(".").reverse();
+			let v = key.reduce((acc,v, i) => {return {[v]: acc};}, value)
+
+			localStorage.setItem("settings", 
+				JSON.stringify(
+					mergeDeep(Settings.get(), v)
+				)
+			);
 		}
 	}
 };

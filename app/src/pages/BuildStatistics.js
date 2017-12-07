@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 
 import {ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend} from 'recharts';
 
-import {Errors} from "../utils.js";
+import {Errors, Settings} from "../utils.js";
 
 import "./BuildStatistics.css";
 
@@ -12,13 +12,30 @@ export default class BuildStatistics extends React.Component {
 		super(props);
 
 		this.state = {
-			hide: {}
+			hide: Settings.get("stats.hide")
 		};
+
+		this.legendClick = this.legendClick.bind(this);
+	}
+
+	legendClick(e){
+		const proj = this.props.match.params.proj.replace(/ /g, "-");
+		const v = {
+			hide: {
+				...this.state.hide,
+				[proj]: {
+					...this.state.hide[proj],
+					[e.dataKey.replace(/ /g, "-")]: !e.inactive
+				}
+			}
+		};
+		this.setState(v, Settings.set(`stats.hide`, v.hide))
 	}
 
 	render(){
 		const {proj} = this.props.match.params;
 		const {language, list} = this.props.info.data;
+		const hide = this.state.hide[proj] || {};
 		let diagram = null;
 		if(language === "latex"){
 			const data = list.map((v)=>{
@@ -45,10 +62,10 @@ export default class BuildStatistics extends React.Component {
 									orientation="right"
 									yAxisId="time"/>
 							<Tooltip/>
-							<Legend onClick={(e)=>this.setState({hide: {...this.state.hide, [e.dataKey]: !e.inactive}})}/>
-							<Line hide={this.state.hide["Words"]}     dataKey="Words"     type="monotone" stroke="#8884d8" yAxisId="counts" animationDuration={200}/>
-							<Line hide={this.state.hide["Letters"]}   dataKey="Letters"   type="monotone" stroke="#82ca9d" yAxisId="counts" animationDuration={200}/>
-							<Line hide={this.state.hide["Build Time"]} dataKey="Build Time" type="monotone" stroke="#ff7f0e" yAxisId="time"   animationDuration={200}/>
+							<Legend onClick={this.legendClick}/>
+							<Line hide={hide["Words"]}      dataKey="Words"      type="monotone" strokeWidth="2" stroke="#8884d8" yAxisId="counts" animationDuration={200}/>
+							<Line hide={hide["Letters"]}    dataKey="Letters"    type="monotone" strokeWidth="2" stroke="#82ca9d" yAxisId="counts" animationDuration={200}/>
+							<Line hide={hide["Build-Time"]} dataKey="Build Time" type="monotone" strokeWidth="2" stroke="#ff7f0e" yAxisId="time"   animationDuration={200}/>
 						</LineChart>
 		}
 		return (
