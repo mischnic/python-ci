@@ -21,7 +21,7 @@ export default withFetcher(class ProjectList extends React.Component {
 		this.load(true);
 	}
 
-	load(inital){
+	load(inital = false){
 		if(inital)
 			this.setState({loading: true});
 		

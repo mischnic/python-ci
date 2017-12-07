@@ -196,8 +196,17 @@ function humanDate(date){
 	}
 }
 
-const api = (comp, url, settings={}, type = "json") => {
-	return fetch(url, { headers: {"Authorization": "Bearer "+getJWT(), method: (settings.body ? "POST" : "GET"),  ...settings.headers, } })
+const api = (comp, url, settings={}) => {
+	return fetch(url,
+		{
+			...settings,
+			headers: {
+				"Authorization": "Bearer "+getJWT(),
+				...settings.headers
+			},
+			method: (settings.body ? "POST" : "GET"),
+			body: typeof settings.body === "object" ? JSON.stringify(settings.body) : settings.body
+		})
 		.then(function(res) {
 			if(res.ok) {
 				return res;
