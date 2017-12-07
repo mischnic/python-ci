@@ -20,7 +20,8 @@ export default withFetcher(class BuildDetails extends React.Component {
 		super(props);
 
 		this.state = {
-			files: {}
+			files: {},
+			showWords: false
 		};
 
 		this.hash = this.props.match.params.hash;
@@ -166,22 +167,41 @@ export default withFetcher(class BuildDetails extends React.Component {
 									build.stats && build.stats.counts ?
 									(
 									(()=>{
-										const letters = build.stats.counts.letters;
-										const [sumc/*, text, headers, outside, headersN, floatsN, mathsI, mathsD*/] = letters.total;
+										if(this.state.showWords){
+											const words = build.stats.counts.words;
+											const [sumc/*, text, headers, outside, headersN, floatsN, mathsI, mathsD*/] = words.total;
 
-										return (
-										<div>
-											<span>Total letters: {sumc}</span>
-											<ol>
-											{
-												letters.chapters.map((v)=>{
-													let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
-													const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
-													return <li key={name} style={style}>{name}: {text}</li>;
-												})
-											}
-											</ol>
-										</div>);
+											return (
+											<div>
+												<span>Total words: {sumc} <a tabIndex="0" onClick={()=>this.setState({showWords: false})} style={{opacity: 0.2}}>Show Letters</a></span>
+												<ol>
+												{
+													words.chapters.map((v)=>{
+														let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
+														const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
+														return <li key={name} style={style}>{name}: {text}</li>;
+													})
+												}
+												</ol>
+											</div>);
+										} else {
+											const letters = build.stats.counts.letters;
+											const [sumc/*, text, headers, outside, headersN, floatsN, mathsI, mathsD*/] = letters.total;
+
+											return (
+											<div>
+												<span>Total letters: {sumc} <a tabIndex="0" onClick={()=>this.setState({showWords: true})} style={{opacity: 0.2}}>Show Words</a></span>
+												<ol>
+												{
+													letters.chapters.map((v)=>{
+														let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
+														const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
+														return <li key={name} style={style}>{name}: {text}</li>;
+													})
+												}
+												</ol>
+											</div>);
+										}
 									})()
 									) : null
 								}

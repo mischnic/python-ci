@@ -33,6 +33,8 @@ class App extends React.Component {
 			} else {
 				this.props.history.goForward();
 			}
+		} else if(e.key === "Enter"){
+			e.target.click();
 		}
 	}
 
