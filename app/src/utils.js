@@ -43,7 +43,8 @@ const Settings = {
 						// proj: {
 						//   line: false
 						// }
-					}
+					},
+					xType: "commits"
 				}
 			};
 		}

@@ -1,9 +1,15 @@
-.buildStatistics {
+.buildStatistics > .content{
 	padding-top: 0.7em;
 	height: calc(100% - 2.1em);
 	min-height: calc(400px + 15px + 0.7em);
 }
 
-.buildStatistics > div {
+.buildStatistics h1 select {
+	font-size: 1rem;
+	height: 2rem;
+	vertical-align: middle;
+}
+
+.buildStatistics > .content > .window {
 	height: 100%;
 }
