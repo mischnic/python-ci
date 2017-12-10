@@ -3,13 +3,17 @@
 A lightweight CI-server written in python, originally developed for a Raspberry Pi because other existing solutions were to resource-intensive (Jenkins) or cumbersome to use.
 
 - Has a *React*-ive web interface
-- Can be set up as a GitHub webhook
-- Can display the build status next to the commit on GitHub
+	+ Count letters and words in LaTeX documents
+	+ Show statistics about your build
+- GitHub integration
+	+ GitHub webhook
+	+ Display the build status next to the commit on GitHub
 
 Drawbacks:
 
-- Builds aren't fully isolated, the same cloned repo is `reset` to the corresponding commit and then used for building.
-- For an `npm` build, `npm build` is run and then the specified build folder is `zip`ped up.
+- Builds aren't fully isolated, the same cloned repository is `git reset --hard` to the corresponding commit and then used for building.
+	+ LaTeX: the git repo should remain untouched, as `latexmk` save the build files elsewhere
+	+ npm: `npm build` is run and then the specified build folder is `zip`ped up.
 
 
 ![List view](docs/example_web1.png)
@@ -103,13 +107,71 @@ With the configuration below, the web interface is served at `ci.example.com`.
 | Login| `POST /api/login` | json: `{username: "user", password: "pass"}` | text: `jwt token...` |
 | Build| `GET /api/<proj>/<sha:not"latest">/build` | - | status code: 200 OK, 503 Busy |
 | List projects| `GET /api/` | - | json: `["Maths", "test"]` |
+| List builds| `GET /api/<proj>/` | - | json: see below *|
 | PDF build artifact| `GET /api/<proj>/<ref>/pdf` | - | `main.pdf` |
 | Compile log | `GET /api/<proj>/<ref>/log` | - | `.log` |
 | Badge | `GET /api/<proj>/<ref>/svg` | - | ![badge](docs/example_badge.svg) |
 | Badge | `GET /api/<proj>/latest/svg` | - (no auth. needed) |  |
 
+`/api/<proj>/`:
 
-Example for a badge which links to the log file:
+	{
+	  "id": "user/Maths",
+	  "language": "latex",
+	  "latest": "947ddfc29b39ab40619e51172bc80036938ab3",
+	  "list": [
+	    {
+	      "build": {
+	        "artifacts": {
+	          // request name: Display name
+	          "pdf": "PDF"
+	        },
+	        "duration": 203.98801684379578,
+	        "errorMsg": null,
+	        "ref": "bf3b039261811a106dae03c90341d904378d16dc",
+	        "start": 1512610571115,
+	        "stats": {
+	          "counts": {
+	            "letters": {}, //...
+	            "words": {} //...
+	          }
+	        },
+	        "status": "success"
+	      },
+	      "commit": {
+	        "author_name": "John Doe",
+	        "date": 1512611571115,
+	        "msg": "Changed something\n",
+	        "parents": [
+	          "0e899e95396a25ea61ed9130e93ec9220b406cd7"
+	        ],
+	        "ref": "bf3b039261811a106dae03c90341d904378d16dc"
+	      }
+	    }
+	  ]
+	}
+
+
+There is also a SSE endpoint at `/api/subscribe` (needs to be authenticated):
+
+	...
+
+	id: 12ab8
+	event: ....
+	data: {...}
+
+	...
+
+
+| `event` | `data` | Description |
+| ----- | ------ | ----------- |
+| - | - | comment every 15 sec to prevent timeout |
+| `<proj name>` | `{"event": "status", "data": data}` | `data` is the `build` object from above |
+| `<proj name>` | `{"event": "log", "data": s}` | `s` is to append to the log |
+
+<br/>
+
+Example for a badge which links the corresponding build page:
 
 `[![build status](http://ci.example.com/api/Maths/latest/svg)](http://ci.example.com/Maths/latest)`
 
@@ -149,8 +211,6 @@ By default, python-ci listens on `localhost:8000`, meaning that it will only acc
 		}
 	}
 
-If your router doesn't support [NAT loopback](https://en.wikipedia.org/wiki/NAT_loopback) alias [Hairpinning](https://en.wikipedia.org/wiki/Hairpinning) (meaning that trying to access `ci.example.com` in the same network as the server causes a `ERR_CONNECTION_REFUSED`) then you have to add `ci.example.com*` to the `server_name` directive. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server in your local network.
-
 To use nginx to send your build files add the following inside the `server` block and set `NGINX_ACCEL` to any value in your `start.sh` file:
 
 	location /data/ {
@@ -158,5 +218,10 @@ To use nginx to send your build files add the following inside the `server` bloc
 		alias /path/to/python-ci/;
 	}
 
-If you only want the api and webhook without the web interface, then you don't need a seperate webserver. In that case, change `'localhost'` in [this](https://github.com/mischnic/python-ci/blob/b5d7e55e94ac528c41a8e30fe6297d768cb244d9/python-ci.py#L323) line to `''`, so the server will be reachable not only from localhost. (i.e. via `192.168.0.4:8000/Maths/svg`)
+If you only want the api and webhook without the web interface, then you don't need a seperate webserver. In that case, change `'localhost'` in [this](https://github.com/mischnic/python-ci/blob/b5d7e55e94ac528c41a8e30fe6297d768cb244d9/python-ci.py#L323) line to `''`, so that the server will be reachable not only from localhost.
+
+
+If the server is in your local network and your router doesn't support [NAT loopback](https://en.wikipedia.org/wiki/NAT_loopback) alias [Hairpinning](https://en.wikipedia.org/wiki/Hairpinning) (meaning that trying to access `ci.example.com` in the same network as the server causes a `ERR_CONNECTION_REFUSED`) then you have to add `ci.example.com*` to the `server_name` directive. This enables you to access the server under `ci.example.com.192.168.0.2.nip.io` with `192.168.0.2` being the IP of the server.
+
+As an alternative (more elegant but more difficult to set up) you could set up an DNS server in your local network on computer, which is always running, and make it respond to `ci.example.com` with the local IP adress of your server.
 
