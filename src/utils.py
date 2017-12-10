@@ -23,20 +23,20 @@ def runSubprocess(cmd: List[str], out: Callable[[str], None], cwd: str = None, e
 		while process.poll() is None:
 			line = process.stdout.readline()
 			# if not line: break
-			out(line.decode("utf-8"))
+			out(line.decode("utf-8", errors="ignore"))
 
 		while line:
 			line = process.stdout.readline()
 			if line:
-				out(line.decode("utf-8"))
+				out(line.decode("utf-8", errors="ignore"))
 			
 		# while True:
 		# 	output = process.stdout.readline()
 		# 	if output == '' and process.poll() is not None:
 		# 		break
 		# 	if output:
-		# 		print(output.decode("utf-8"))
-		# 		out(output.decode("utf-8"))
+		# 		print(output.decode("utf-8", errors="ignore"))
+		# 		out(output.decode("utf-8", errors="ignore"))
 		process.wait()
 		return process.returncode
 	except OSError as e:

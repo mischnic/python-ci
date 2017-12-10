@@ -50,11 +50,11 @@ def count(path: str, buildPath: str, fileName: str) -> Tuple[bool, Union[dict, s
 		]
 
 	try:
-		wordsOut = subprocess.check_output(cmd).decode("utf-8")
+		wordsOut = subprocess.check_output(cmd).decode("utf-8", errors="ignore")
 		if "File not found" in wordsOut:
 			raise subprocess.CalledProcessError(1, cmd, wordsOut)
 		words = parseOutput(wordsOut, wordsR)
-		lettersOut = subprocess.check_output(cmd + ["-chars"]).decode("utf-8")
+		lettersOut = subprocess.check_output(cmd + ["-chars"]).decode("utf-8", errors="ignore")
 		letters = parseOutput(lettersOut, lettersR)
 		correctLetters(letters, words)
 	except (subprocess.CalledProcessError, OSError, ValueError) as exc:
