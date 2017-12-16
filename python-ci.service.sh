@@ -13,7 +13,7 @@ echo  "This script will need to ask for your password to install the systemd ser
 echo "${yellow}systemctl stop python-ci${reset}"
 sudo systemctl stop python-ci > /dev/null 2>&1
 
-sed -e "s#?DIR?#${PWD}#g; s#?USER?#$(whoami)#g" python-ci.service.in > python-ci.service
+sed -e "s#?DIR?#${PWD}#g; s#?USER?#$(whoami)#g" server/python-ci.service.in > python-ci.service
 
 echo "${yellow}mv python-ci.service /etc/systemd/system/python-ci.service${reset}"
 sudo mv python-ci.service /etc/systemd/system/python-ci.service

@@ -25,4 +25,4 @@
 # example:
 #	PASSWORD="password" gunicorn python-ci:app --chdir src -k gevent
 
-gunicorn python-ci:app --chdir src -k gevent
+gunicorn python-ci:app --chdir server/src -k gevent
