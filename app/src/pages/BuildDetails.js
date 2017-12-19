@@ -115,7 +115,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 				<h1><Link to="." title="Go Back to List">{proj}</Link> &gt; {this.hash.substring(0,7)}</h1>
 				<div className="buildDetails">
 					{
-					(!this.commit || !this.build) ?
+					(!this.commit || !this.commit.build) ?
 					<Errors>
 						<div style={{textAlign: "center"}}>
 							Build could not be found<br/><br/>

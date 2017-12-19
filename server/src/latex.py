@@ -90,7 +90,7 @@ def doCompile(proj: str, buildPath: str, cfg: dict, log: Callable[[str], None]) 
 					"-interaction=nonstopmode",
 					# "-gg",
 					"-file-line-error",
-					"-outdir=../"+buildPath,
+					"-outdir="+buildPath,
 					"-pdf", main+".tex" ]
 
 		env = {

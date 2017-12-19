@@ -12,7 +12,7 @@ const logFormatting = {
 		[">! ", "info error"]
 	],
 	latex:[
-		["Running 'pdflatex ", "command"],
+		[/^Run number [0-9]+ of rule/, "command"],
 		[/Package [a-zA-z0-9]+ Warning:/, "warning"],
 		[/^\(([a-zA-z0-9]+)\)/, "warning"],
 		[/LaTeX (?:[a-zA-z]+ )?Warning:/, "warning"],
