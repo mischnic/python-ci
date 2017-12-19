@@ -4,11 +4,16 @@ import latex, git
 from flask_sse import Channel
 from utils import symlink_force, getBuildPath, getProjPath, getConfig, loadJSON, runSubprocess
 from typing import Tuple, Callable, Union, Dict, Any; assert Dict, Any
+import docker
 
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
+DOCKER = os.environ.get('USE_DOCKER', False) == "1"
 
 compileThread = None
+
+if DOCKER:
+	client = docker.from_env()
 
 #
 # STATUS
@@ -84,6 +89,25 @@ def getStatus(proj: str, ref: str, raw: bool=False) -> Union[dict, str]:
 		return getBuildPath(proj, ref)+"/.status.json"
 
 	return loadJSON(getBuildPath(proj, ref)+"/.status.json")
+
+def runDocker(image, command, log, volumes = {
+										os.path.realpath("../../runner/latex.priv"): "/root/.ssh/id_rsa",
+										os.path.realpath("../../build"): "/build"
+									}):
+
+	try:
+		container = client.containers.create(image, command=command, auto_remove=True, volumes=volumes)
+	except requests.exceptions.ConnectionError as e:
+		return -1
+
+	container.start()
+	log_stream = container.logs(stream=True)
+
+	for line in log_stream:
+		log(line.decode())
+
+	return container.wait(timeout=10)
+
 
 
 def updateGit(proj: str, ref: str, log: Callable[[str], None]):
@@ -161,51 +185,86 @@ def doCompile(proj: str, ref: str, channel: Channel) -> None:
 		timeStart = time.time()
 
 		updateStatus(proj, ref, channel, "pending", (timeStart, None))
-		print(">> Started: "+time.strftime("%c"))
-		log(">> Started: "+time.strftime("%c") + "\n")
 
-		successful = True
+		msg = None
 
-		successfulGit = updateGit(proj, ref, log)
-		successful = successfulGit
+		if DOCKER: #TODO and lang == "latex"
+			print(">> Started via docker: "+time.strftime("%c"))
+			log(">> Started via docker: "+time.strftime("%c") + "\n")
 
-		shutil.copy2(getProjPath(proj)+"/.ci.json", getBuildPath(proj, ref)+"/.ci.json");
-
-		cfg = getConfig(proj, ref)
-		if successful:
+			#TODO get "main" from cfg
+			#TODO where to get deploy keys from?
+			rc = runDocker("latex", '{} {} main'.format(git.repos[proj]["github"], ref), log)
+			
+			successfulGit = True
 			successfulCfg = True
-			lang = cfg.get("language", None)
+			successfulCompile = True
+			if rc == -11:
+				msg = "Docker error"
+			elif rc == 1:
+				msg = "Git stage failed"
+			elif rc == 2:
+				msg = "Config error"
+			elif rc >= 3:
+				msg = "Compile stage failed"
 
-			if not lang:
-				successfulCfg = False
-				successful = successfulCfg
+			successful = rc == 0 and msg is None
 
+			stats = {} # TODO
+
+			print(">> Finished "+ref)
+			log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
+		else:
+			print(">> Started: "+time.strftime("%c"))
+			log(">> Started: "+time.strftime("%c") + "\n")
+
+			successful = True
+
+			successfulGit = updateGit(proj, ref, log)
+			successful = successfulGit
+
+			shutil.copy2(getProjPath(proj)+"/.ci.json", getBuildPath(proj, ref)+"/.ci.json");
+
+			cfg = getConfig(proj, ref)
 			if successful:
-				if not os.path.exists(getBuildPath(proj)):
-					log("creating "+getBuildPath(proj))
-					os.makedirs(getBuildPath(proj))
-				successfulCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg, log)
-				successful = successfulCompile
-			else:
-				log("not compiling" + "\n")
+				successfulCfg = True
+				lang = cfg.get("language", None)
 
-		stats = {} #type: Dict[str, Union[str, Any]]
-		if successful:
-			if "stats" in cfg:
-				if cfg["language"] == "latex" and "counts" in cfg["stats"]:
-					(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")
-					if success:
-						stats["counts"] = counts
-					else:
-						stats["counts"] = False
+				if not lang:
+					successfulCfg = False
+					successful = successfulCfg
 
-		print(">> Finished "+ref)
-		log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
+				if successful:
+					if not os.path.exists(getBuildPath(proj)):
+						log("creating "+getBuildPath(proj))
+						os.makedirs(getBuildPath(proj))
+					successfulCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg, log)
+					successful = successfulCompile
+				else:
+					log("not compiling" + "\n")
+
+			if not successfulGit:
+				msg = "Git stage failed"
+			elif not successfulCfg:
+				msg = "Config error"
+			elif not successfulCompile:
+				msg = "Compile stage failed"
+
+			stats = {} #type: Dict[str, Union[str, Any]]
+			if successful:
+				if "stats" in cfg:
+					if cfg["language"] == "latex" and "counts" in cfg["stats"]:
+						(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")
+						if success:
+							stats["counts"] = counts
+						else:
+							stats["counts"] = False
+
+			print(">> Finished "+ref)
+			log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
 
 	updateStatus(proj, ref, channel, "success" if successful else "error", (timeStart, time.time() - timeStart),
-		"Git stage failed" if not successfulGit else
-		"Config error" if not successfulCfg else
-		"Compile stage failed" if not successfulCompile else None, stats)
+		msg, stats)
 
 	symlink_force(ref, getBuildPath(proj, "latest"))
 

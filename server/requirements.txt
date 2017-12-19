@@ -4,3 +4,4 @@ pygit2==0.26.2
 gunicorn==19.7.1
 requests==2.18.4
 PyJWT==1.5.3
+docker==2.6.1

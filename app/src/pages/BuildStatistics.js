@@ -61,7 +61,7 @@ export default class BuildStatistics extends React.Component {
 		if(language === "latex"){
 			this.data = {};
 			const data = list.map((v)=>{
-										if(!v.build) return null;
+										if(!v.build || v.build.status !== "success") return null;
 										if(this.state.xType === "time"){
 											this.data[v.commit.date.getTime()] = v.commit.ref;
 											if(v.build.status === "success" && v.build.stats.counts){
