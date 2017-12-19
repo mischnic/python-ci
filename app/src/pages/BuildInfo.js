@@ -72,15 +72,15 @@ export default withFetcher(class BuildInfo extends React.Component {
 					error: false,
 					data: {
 						list: list.map(
-								({commit: {date, ...rCommit}, build: {start, ...rBuild} }) => (
+								({commit, build }) => (
 									{	
 										commit: {
-											date: new Date(date),
-											...rCommit
+											...commit,
+											date: new Date(commit.date),
 										},
-										build: {
-											start: new Date(start),
-											...rBuild
+										build: build && {
+											...build,
+											start: new Date(build.start),
 										}
 									}
 								)).sort((a,b) => b.commit.date - a.commit.date),

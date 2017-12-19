@@ -76,7 +76,6 @@ const Settings = {
 		return acc;
 	},
 	set(key, value){
-		console.log(key, value)
 		if(typeof value === "undefined"){
 			localStorage.setItem("settings", key)
 		} else {
