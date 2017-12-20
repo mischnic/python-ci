@@ -3,7 +3,7 @@
 repo="$1"
 ref="$2"
 main="$3"
-clean="$4"
+cmd="$4"
 
 name="$(echo "$repo" | cut -d'/' -f2)"
 
@@ -21,7 +21,7 @@ echo ">>> git diff --stat ..HEAD~1"
 out="/build/${name}_build/${ref}"
 
 mkdir -p "${out}"
-if [ ! -z ${clean+x} ]; then
+if [ "$cmd" == "clean" ]; then
 	echo ">>> Cleaning for ${ref}..."
 	rm -rf $out/*
 fi

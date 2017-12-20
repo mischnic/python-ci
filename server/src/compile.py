@@ -4,7 +4,7 @@ import latex, git
 from flask_sse import Channel
 from utils import symlink_force, getBuildPath, getProjPath, getConfig, loadJSON, runSubprocess
 from typing import Tuple, Callable, Union, Dict, Any; assert Dict, Any
-import docker
+import docker, requests
 
 TOKEN = os.environ.get('TOKEN', "")
 DOMAIN = os.environ.get('URL', "")
@@ -90,11 +90,15 @@ def getStatus(proj: str, ref: str, raw: bool=False) -> Union[dict, str]:
 
 	return loadJSON(getBuildPath(proj, ref)+"/.status.json")
 
-def runDocker(image, command, log, volumes = {
-										os.path.realpath("../../runner/latex.priv"): "/root/.ssh/id_rsa",
-										os.path.realpath("../../build"): "/build"
-									}):
+def runDocker(proj: str, ref: str, cfg: dict, image: str, log: Callable[[str], None], volumes: Dict[str, str]=None) -> int:
 
+	if volumes is None:
+		volumes = {
+			os.path.realpath("../../{}.priv".format(proj)): "/root/.ssh/id_rsa",
+			os.path.realpath("../../build"): "/build"
+		}
+
+	command = '{} {} {}'.format(git.repos[proj]["github"], ref, cfg.get("main", None))
 	try:
 		container = client.containers.create(image, command=command, auto_remove=True, volumes=volumes)
 	except requests.exceptions.ConnectionError as e:
@@ -110,23 +114,28 @@ def runDocker(image, command, log, volumes = {
 
 
 
-def updateGit(proj: str, ref: str, log: Callable[[str], None]):
+def updateGit(proj: str, ref: str, log: Callable[[str], None], docker: bool=False):
 	successful = True
 	try:
-		log(">>> git fetch --all\n")
-		rv = runSubprocess(["git", "fetch", "--all"], log, cwd=getProjPath(proj))
-		if rv != 0:
-			raise Exception(rv)
+		if docker:
+			rv = runSubprocess(["git", "fetch", "--all"], lambda x: None, cwd=getProjPath(proj))
+			if rv != 0:
+				raise Exception(rv)
+		else:
+			log(">>> git fetch --all\n")
+			rv = runSubprocess(["git", "fetch", "--all"], log, cwd=getProjPath(proj))
+			if rv != 0:
+				raise Exception(rv)
 
-		log(">>> git reset --hard "+ref+"\n")
-		rv = runSubprocess(["git", "reset", "--hard", ref], log, cwd=getProjPath(proj))
-		if rv != 0:
-			raise Exception(rv)
+			log(">>> git reset --hard "+ref+"\n")
+			rv = runSubprocess(["git", "reset", "--hard", ref], log, cwd=getProjPath(proj))
+			if rv != 0:
+				raise Exception(rv)
 
-		log(">>> git diff --stat "+ref+"~1 "+ref+"\n")
-		rv = runSubprocess(["git", "diff", "--stat=100", ref+"~1", ref], log, cwd=getProjPath(proj))
-		if rv != 0:
-			raise Exception(rv)
+			log(">>> git diff --stat "+ref+"~1 "+ref+"\n")
+			rv = runSubprocess(["git", "diff", "--stat=100", ref+"~1", ref], log, cwd=getProjPath(proj))
+			if rv != 0:
+				raise Exception(rv)
 
 	except Exception as e:
 		successful = False
@@ -188,29 +197,50 @@ def doCompile(proj: str, ref: str, channel: Channel) -> None:
 
 		msg = None
 
+		stats = {} #type: Dict[str, Union[str, Any]]
+
 		if DOCKER: #TODO and lang == "latex"
 			print(">> Started via docker: "+time.strftime("%c"))
 			log(">> Started via docker: "+time.strftime("%c") + "\n")
 
-			#TODO get "main" from cfg
-			#TODO where to get deploy keys from?
-			rc = runDocker("latex", '{} {} main'.format(git.repos[proj]["github"], ref), log)
-			
 			successfulGit = True
 			successfulCfg = True
 			successfulCompile = True
-			if rc == -11:
-				msg = "Docker error"
-			elif rc == 1:
+
+			successfulGit = updateGit(proj, ref, log, docker=True)
+			successful = successfulGit
+
+
+			if successful:
+				cfg = getConfig(proj, ref)
+
+				successfulCfg = True
+				lang = cfg.get("language", None)
+
+				if not lang or lang != "latex":
+					successfulCfg = False
+					successful = successfulCfg
+					msg = "Config error"
+					log("not compiling" + "\n")
+				else:
+
+					rc = runDocker(proj, ref, cfg, "latex", log)
+					if rc == -1:
+						msg = "Docker error"
+					elif rc == 1:
+						msg = "Git stage failed"
+					elif rc == 2:
+						msg = "Config error"
+					elif rc >= 3:
+						msg = "Compile stage failed"
+					successful = successfulCompile
+					
+					successful = rc == 0 and msg is None
+				cfg.get("main", None)
+
+				# TODO stats
+			else:
 				msg = "Git stage failed"
-			elif rc == 2:
-				msg = "Config error"
-			elif rc >= 3:
-				msg = "Compile stage failed"
-
-			successful = rc == 0 and msg is None
-
-			stats = {} # TODO
 
 			print(">> Finished "+ref)
 			log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
@@ -250,7 +280,6 @@ def doCompile(proj: str, ref: str, channel: Channel) -> None:
 			elif not successfulCompile:
 				msg = "Compile stage failed"
 
-			stats = {} #type: Dict[str, Union[str, Any]]
 			if successful:
 				if "stats" in cfg:
 					if cfg["language"] == "latex" and "counts" in cfg["stats"]:
