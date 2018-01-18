@@ -1,4 +1,4 @@
-import time, os, json, shutil
+import time, os, json, shutil, traceback
 from threading import Thread
 import latex, git
 from flask_sse import Channel
@@ -150,57 +150,63 @@ compileLang = dict(
 
 def doCompile(proj: str, ref: str, channel: Channel) -> None:
 	if not os.path.exists(getBuildPath(proj, ref)):
-			os.makedirs(getBuildPath(proj, ref))
+		os.makedirs(getBuildPath(proj, ref))
 
 	with open(getBuildPath(proj, ref)+"/.log", 'w', 1) as logFile:
-
 		def log(s):
 			logFile.write(s)
 			channel.publish(proj, {"event": "log", "data": s})
+		try:
 
-		timeStart = time.time()
 
-		updateStatus(proj, ref, channel, "pending", (timeStart, None))
-		print(">> Started: "+time.strftime("%c"))
-		log(">> Started: "+time.strftime("%c") + "\n")
+			timeStart = time.time()
 
-		successful = True
+			updateStatus(proj, ref, channel, "pending", (timeStart, None))
+			print(">> Started: "+time.strftime("%c"))
+			log(">> Started: "+time.strftime("%c") + "\n")
 
-		successfulGit = updateGit(proj, ref, log)
-		successful = successfulGit
+			successful = True
 
-		shutil.copy2(getProjPath(proj)+"/.ci.json", getBuildPath(proj, ref)+"/.ci.json");
+			successfulGit = updateGit(proj, ref, log)
+			successful = successfulGit
 
-		cfg = getConfig(proj, ref)
-		if successful:
-			successfulCfg = True
-			lang = cfg.get("language", None)
+			shutil.copy2(getProjPath(proj)+"/.ci.json", getBuildPath(proj, ref)+"/.ci.json");
 
-			if not lang:
-				successfulCfg = False
-				successful = successfulCfg
-
+			cfg = getConfig(proj, ref)
 			if successful:
-				if not os.path.exists(getBuildPath(proj)):
-					log("creating "+getBuildPath(proj))
-					os.makedirs(getBuildPath(proj))
-				successfulCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg, log)
-				successful = successfulCompile
-			else:
-				log("not compiling" + "\n")
+				successfulCfg = True
+				lang = cfg.get("language", None)
 
-		stats = {} #type: Dict[str, Union[str, Any]]
-		if successful:
-			if "stats" in cfg:
-				if cfg["language"] == "latex" and "counts" in cfg["stats"]:
-					(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")
-					if success:
-						stats["counts"] = counts
-					else:
-						stats["counts"] = False
+				if not lang:
+					successfulCfg = False
+					successful = successfulCfg
 
-		print(">> Finished "+ref)
-		log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
+				if successful:
+					if not os.path.exists(getBuildPath(proj)):
+						log("creating "+getBuildPath(proj))
+						os.makedirs(getBuildPath(proj))
+					successfulCompile = compileLang[lang](proj, getBuildPath(proj, ref), cfg, log)
+					successful = successfulCompile
+				else:
+					log("not compiling" + "\n")
+
+			stats = {} #type: Dict[str, Union[str, Any]]
+			if successful:
+				if "stats" in cfg:
+					if cfg["language"] == "latex" and "counts" in cfg["stats"]:
+						(success, counts) = latex.count(getProjPath(proj), getBuildPath(proj, ref), cfg["main"]+".tex")
+						if success:
+							stats["counts"] = counts
+						else:
+							stats["counts"] = False
+
+			print(">> Finished "+ref)
+			log((">>" if successful else ">!")+" Finished: "+time.strftime("%X")+" "+ref + "\n")
+		except Exception as e:
+			successful = False
+			log(">! "+str(e))
+			print(">> Error: "+ref)
+			traceback.print_exc()
 
 	updateStatus(proj, ref, channel, "success" if successful else "error", (timeStart, time.time() - timeStart),
 		"Git stage failed" if not successfulGit else
