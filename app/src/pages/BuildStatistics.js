@@ -20,7 +20,6 @@ export default class BuildStatistics extends React.Component {
 
 		this.legendClick = this.legendClick.bind(this);
 		this.typeChange = this.typeChange.bind(this);
-		this.label = this.label.bind(this);
 		this.labelTooltip = this.labelTooltip.bind(this);
 	}
 
@@ -43,14 +42,22 @@ export default class BuildStatistics extends React.Component {
 		this.setState(v, ()=>Settings.set(`stats.hide`, v.hide))
 	}
 
-	label(t){
+	tickDate(t){
 		const d = new Date(t);
-		return `${String(d.getFullYear()).slice(-2)}/${d.getMonth()+1}/${d.getDate()}`;
+		return `${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(-2)}`;
+	}
+
+	tickDuration(t){
+		if(t < 60){
+			return `${t}s`;
+		} else {
+			return `${(t/60).toFixed(1)}m`;
+		}
 	}
 
 	labelTooltip(t){
 		const ref = this.data[t];
-		return ref ? ref.slice(0,7) : null;
+		return ref ? `${ref.slice(0,7)} ${this.tickDate(t)}` : null;
 	}
 
 	render(){
@@ -98,7 +105,7 @@ export default class BuildStatistics extends React.Component {
 								<XAxis dataKey="date"
 									domain = {['dataMin', 'dataMax']}
 									name = 'Time'
-									tickFormatter = {this.label}
+									tickFormatter = {this.tickDate}
 									type = 'number'/>
 									:
 								<XAxis dataKey="date" />
@@ -107,8 +114,9 @@ export default class BuildStatistics extends React.Component {
 							<YAxis label={{ value: 'Count', angle: -90, position: 'left', offset: -5 }} 
 									orientation="left"
 									yAxisId="counts"/>
-							<YAxis label={{ value: 'Build Time (sec)', angle: -90, position: 'insideRight', offset: 10 }}
+							<YAxis label={{ value: 'Build Time', angle: -90, position: 'insideRight', offset: 10 }}
 									orientation="right"
+									tickFormatter = {this.tickDuration}
 									yAxisId="time"/>
 							{ this.state.xType === "time" ?
 								<Tooltip labelFormatter={this.labelTooltip}/>

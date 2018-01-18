@@ -4,7 +4,7 @@ from typing import Callable, Tuple, Union, cast, Dict, Any
 
 from utils import getProjPath, runSubprocess
 
-TEXCOUNT_PATH = "../TeXcount_3_1/texcount.pl"
+TEXCOUNT_PATH = "../../TeXcount_3_1/texcount.pl"
 
 def parseOutput(data: str, regex: str) -> Dict[str, Any]:
 	s, s2 = None, None
