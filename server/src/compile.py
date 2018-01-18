@@ -155,7 +155,7 @@ def doCompile(proj: str, ref: str, channel: Channel) -> None:
 	with open(getBuildPath(proj, ref)+"/.log", 'w', 1) as logFile:
 		def log(s):
 			logFile.write(s)
-			channel.publish(proj, {"event": "log", "data": s})
+			channel.publish(proj, {"event": "log", "ref": ref[:7], "data": s})
 		try:
 
 

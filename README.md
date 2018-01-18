@@ -167,7 +167,7 @@ There is also a SSE endpoint at `/api/subscribe` (needs to be authenticated):
 | ----- | ------ | ----------- |
 | - | - | comment every 15 sec to prevent timeout |
 | `<proj name>` | `{"event": "status", "data": data}` | `data` is the `build` object from above |
-| `<proj name>` | `{"event": "log", "data": s}` | `s` is to append to the log |
+| `<proj name>` | `{"event": "log", "ref": "abcdef", "data": s}` | `s` is to append to the log |
 
 <br/>
 

@@ -32,7 +32,7 @@ function cleanupHTML(s){
 }
 
 
-export default class Log extends React.Component{
+export default class BuildLog extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
@@ -50,8 +50,8 @@ export default class Log extends React.Component{
 	}
 
 	handleEvent(e){
-		const {event, data} = JSON.parse(e.data);
-		if(event === "log"){
+		const {event, ref, data} = JSON.parse(e.data);
+		if(event === "log" && this.props.hash.indexOf(ref) === 0){
 			this.logAdd(data);
 		}
 	}

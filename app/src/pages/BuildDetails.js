@@ -239,7 +239,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 									this.state.files["log"] &&
 									((!this.state.files["log"] && this.state.files["log"].loading) ? <Loading/> :
 										this.state.files["log"].error ? <Errors color="white"/> :
-										<BuildLog events={this.props.events} proj={proj} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
+										<BuildLog events={this.props.events} proj={proj} hash={this.hash} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
 									)
 								}
 							</div>
