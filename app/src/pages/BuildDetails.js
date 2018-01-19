@@ -215,8 +215,8 @@ export default withFetcher(class BuildDetails extends React.Component {
 									) : null
 								}
 								{
-									this.state.files["diff"] && this.state.files["diff"].content && (
-										this.state.files["diff"].content.length > 0 ?
+									(this.state.files["diff"] && this.state.files["diff"].content &&
+										this.state.files["diff"].content.length > 0) ?
 										(<div>
 											<a title="Compare on Github" href={`https://github.com/${this.props.info.data.id}/compare/${this.prevHash}...${this.hash}`} target="_blank">Additional commits</a> since last build:
 											<ol>
@@ -231,15 +231,20 @@ export default withFetcher(class BuildDetails extends React.Component {
 										(<div>
 											<a title="Compare on Github" href={`https://github.com/${this.props.info.data.id}/compare/${this.prevHash}...${this.hash}`} target="_blank">Compare to last build's commit</a>
 										</div>)
-									)
 								}
 							</div>
 							<div className="window log">
 								{
-									((!this.state.files["log"] || this.state.files["log"].loading) ? <Loading/> :
-										this.state.files["log"].error ? <Errors color="white"/> :
-										<BuildLog events={this.props.events} proj={proj} hash={this.hash} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
-									)
+									(()=>{
+										if(this.state.files["log"]){
+											if(this.state.files["log"].error){
+												return <Errors color="white"/>;
+											} else if(!this.state.files["log"].content || this.state.files["log"].loading){
+												return <Loading/>;
+											}
+											return <BuildLog events={this.props.events} proj={proj} hash={this.hash} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
+										} else return <Loading/>;
+									})()
 								}
 							</div>
 						</div>
