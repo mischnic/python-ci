@@ -246,7 +246,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 												return <Loading/>;
 											}
 											return <BuildLog events={this.props.events} proj={proj} hash={this.hash} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
-										} else return <Loading/>;
+										}
 									})()
 								}
 							</div>

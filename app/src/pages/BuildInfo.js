@@ -31,7 +31,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 	handleEvent(e){
 		const {event, data: build} = JSON.parse(e.data);
 		if(this.state.data && event === "status"){
-			const cond = (v)=>v.build.ref === build.ref;
+			const cond = (v)=> v.commit.ref === build.ref;
 			const el = this.state.data.list.find(cond);
 
 			const match = matchPath(this.props.location.pathname, {
