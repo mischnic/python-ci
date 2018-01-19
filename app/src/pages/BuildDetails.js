@@ -176,6 +176,11 @@ export default withFetcher(class BuildDetails extends React.Component {
 									build.stats && build.stats.counts ?
 									(
 									(()=>{
+										const format = (name, text) => {
+											const style = name.startsWith("Section") ? {paddingLeft: ".7em"} :
+														  name.startsWith("Subsection") ? {paddingLeft: "1.4em"} : null;
+											return <li key={name} style={style}>{name}: {text}</li>;
+										}
 										if(this.state.showWords){
 											const words = build.stats.counts.words;
 											const [sumc/*, text, headers, outside, headersN, floatsN, mathsI, mathsD*/] = words.total;
@@ -187,8 +192,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 												{
 													words.chapters.map((v)=>{
 														let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
-														const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
-														return <li key={name} style={style}>{name}: {text}</li>;
+														return format(name, text);
 													})
 												}
 												</ol>
@@ -204,8 +208,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 												{
 													letters.chapters.map((v)=>{
 														let [name, text/*, headers, captions, headersH, floatsH, inlinesH, displayedH*/] = v;
-														const style = name.startsWith("Section") ? {paddingLeft: ".7em"} : null;
-														return <li key={name} style={style}>{name}: {text}</li>;
+														return format(name, text);
 													})
 												}
 												</ol>
