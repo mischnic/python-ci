@@ -67,7 +67,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 
 
 		if(nextProps.info.data.list.find((v)=> v.commit.ref === this.hash).build.status === "success"){
-			this.load("log");
+			this.load("log", (res)=>res.text(), "log", false);
 		}
 	}
 
@@ -77,8 +77,8 @@ export default withFetcher(class BuildDetails extends React.Component {
 				(query?`?token=${getJWT()}`:"");
 	}
 
-	load(file, type=(res)=>res.text(), as=file){
-		this.setState((state)=> ({files: {...state.files, [as]: {loading: true}}}) );
+	load(file, type=(res)=>res.text(), as=file, loading=true){
+		this.setState((state)=> ({files: {...state.files, [as]: {loading}}}) );
 		return this.props.fetch(this.getURL(file))
 			.then(type)
 			.then(res => this.setState({
@@ -140,7 +140,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 									{build.duration ? <span>took {formatTime(build.duration)}</span> : null} <br/>
 								</div>
 								<div>
-									<button onClick={() => this.rebuild()} {...{disabled: build.status === "pending"}}>
+									<button onClick={() => this.rebuild()} {...{disabled: build.status === "pending" || build.status === "queued"}}>
 										<i className={`fa fa-refresh ${build.status === "pending" ? "fa-spin" : ""}`} style={{marginRight: "4px"}}/>{build.status === "pending" ? "Building" : "Rebuild"}
 									</button>
 								</div>

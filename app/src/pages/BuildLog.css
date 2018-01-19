@@ -20,6 +20,11 @@
 	color: lime;
 }
 
+.buildDetails .log .command-mini,
+.buildDetails .log .command-exp {
+	cursor: pointer;
+}
+
 .buildDetails .log .command-exp::after {
 	/*content: "-";*/
 	content: "\f077";
