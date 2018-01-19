@@ -4,7 +4,7 @@
 
 @media (min-width: 660px) {
 
-	html, body, #root, #app, .main > div {
+	html, body, #root, #app, .main > div:first-child {
 		height: 100%;
 	}
 
@@ -54,10 +54,14 @@ button:not(:disabled):active {
 	padding: 10px;
 }
 
-.main a{
+.main a {
 	color: black;
 	text-decoration: underline;
 	cursor: pointer;
+}
+
+.notification-bar a {
+	color: white;
 }
 
 

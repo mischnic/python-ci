@@ -5247,6 +5247,12 @@ react-error-overlay@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-3.0.0.tgz#c2bc8f4d91f1375b3dad6d75265d51cd5eeaf655"
 
+react-notification@^6.8.2:
+  version "6.8.2"
+  resolved "https://registry.yarnpkg.com/react-notification/-/react-notification-6.8.2.tgz#5d9910cc2993bd51a234d3809e94a98dc490cfb0"
+  dependencies:
+    prop-types "^15.5.10"
+
 react-resize-detector@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-resize-detector/-/react-resize-detector-1.1.0.tgz#4a9831fa3caad32230478dd0185cbd2aa91a5ebf"

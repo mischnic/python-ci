@@ -1,5 +1,6 @@
 import React from "react";
-import {Route, Switch} from "react-router-dom";
+import {Route, Switch, Link, matchPath} from "react-router-dom";
+import {Notification} from "react-notification";
 
 import BuildsList from "./BuildsList.js";
 import BuildDetails from "./BuildDetails.js";
@@ -17,10 +18,14 @@ export default withFetcher(class BuildInfo extends React.Component {
 		this.state = {
 			data: null,
 			loading: false,
-			error: false
+			error: false,
+			notification: "",
+			notificationShow: false,
 		};
 
 		this.handleEvent = this.handleEvent.bind(this);
+		this.hideNotification = this.hideNotification.bind(this);
+
 	}
 
 	handleEvent(e){
@@ -28,10 +33,27 @@ export default withFetcher(class BuildInfo extends React.Component {
 		if(this.state.data && event === "status"){
 			const cond = (v)=>v.build.ref === build.ref;
 			const el = this.state.data.list.find(cond);
+
+			const match = matchPath(this.props.location.pathname, {
+				path: "/:proj/:hash",
+				exact: true
+			})
+
+			let notification = 
+				build.status === "success" ? <span>Build finished: <Link onClick={this.hideNotification} to={build.ref}>{build.ref.substr(0,7)}</Link></span> :
+				build.status === "error"   ? <span>Build failed: <Link   onClick={this.hideNotification} to={build.ref}>{build.ref.substr(0,7)}</Link></span> : 
+					this.state.notification;
+
+			if(match && match.params && match.params.hash === build.ref){
+				notification = this.state.notification;
+			}
+
 			if(!el) {
 				this.load();
 			} else {
 				this.setState({
+					notification: notification,
+					notificationShow: notification !== this.state.notification,
 					data: {
 						...this.state.data,
 						list: [
@@ -58,6 +80,13 @@ export default withFetcher(class BuildInfo extends React.Component {
 
 	componentWillUnmount(){
 		this.props.events.removeEventListener(this.props.match.params.proj, this.handleEvent);
+	}
+
+
+	hideNotification() {
+		this.setState({
+			notificationShow: false
+		});
 	}
 
 	load(inital){
@@ -105,12 +134,23 @@ export default withFetcher(class BuildInfo extends React.Component {
 					<Errors>Couldn't connect to server,&nbsp;<a onClick={()=>this.load(true)}>click to retry</a></Errors>
 			) :
 			this.state.loading || !this.state.data ? <Loading/> :
-			<Switch>
-				<Route path={"/:proj/"} exact strict render={(props)=> <BuildsList info={pass} {...props}/>}/>
-				<Route path={"/:proj/stats"} exact strict render={(props)=> <BuildStatistics info={pass} {...props}/>}/>
-				<Route path={"/:proj/:hash"} exact render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
-				<Route render={() => (<Errors>Specify a project in the URL!</Errors>)}/>
-			</Switch>
+			<React.Fragment>
+				<Switch>
+					<Route path={"/:proj/"} exact strict render={(props)=> <BuildsList info={pass} {...props}/>}/>
+					<Route path={"/:proj/stats"} exact strict render={(props)=> <BuildStatistics info={pass} {...props}/>}/>
+					<Route path={"/:proj/:hash"} exact render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
+					<Route render={() => (<Errors>Specify a project in the URL!</Errors>)}/>
+				</Switch>
+				<Notification
+					isActive={this.state.notificationShow}
+					message={this.state.notification}
+					action="Dismiss"
+					// title="Title!"
+					// onDismiss={this.hideNotification}
+					onClick={() => this.setState({ notificationShow: false })}
+				/>
+			</React.Fragment>
+
 		);
 	}
 		
