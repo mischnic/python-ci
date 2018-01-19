@@ -1,6 +1,7 @@
 import React from "react";
 import {Route, Switch, Link, matchPath} from "react-router-dom";
-import {Notification} from "react-notification";
+import {NotificationStack} from "react-notification";
+import {OrderedSet} from 'immutable';
 
 import BuildsList from "./BuildsList.js";
 import BuildDetails from "./BuildDetails.js";
@@ -11,6 +12,10 @@ import "./BuildCommon.css";
 import {Loading, Errors, withFetcher} from "../utils.js";
 
 
+function genID() {
+	return Math.random().toString(36).substr(2, 9);
+}
+
 export default withFetcher(class BuildInfo extends React.Component {
 	constructor(props){
 		super(props);
@@ -19,19 +24,35 @@ export default withFetcher(class BuildInfo extends React.Component {
 			data: null,
 			loading: false,
 			error: false,
-			notification: "",
-			notificationShow: false,
+			notifications: OrderedSet()
 		};
 
 		this.handleEvent = this.handleEvent.bind(this);
-		this.hideNotification = this.hideNotification.bind(this);
+		this.newNotification = this.newNotification.bind(this);
+		this.removeNotification = this.removeNotification.bind(this);
+	}
 
+	newNotification(msg){
+		const newID = genID();
+		return this.state.notifications.add({
+			message: msg,
+			key: newID,
+			action: 'Dismiss',
+			dismissAfter: 4000,
+			onClick: () => this.removeNotification(newID),
+		})
+	}
+
+	removeNotification(id) {
+		this.setState({
+			notifications: this.state.notifications.filter(n => n.key !== id)
+		})
 	}
 
 	handleEvent(e){
 		const {event, data: build} = JSON.parse(e.data);
 		if(this.state.data && event === "status"){
-			const cond = (v)=> v.commit.ref === build.ref;
+			const cond = (v) => v.commit.ref === build.ref;
 			const el = this.state.data.list.find(cond);
 
 			const match = matchPath(this.props.location.pathname, {
@@ -42,18 +63,22 @@ export default withFetcher(class BuildInfo extends React.Component {
 			let notification = 
 				build.status === "success" ? <span>Build finished: <Link onClick={this.hideNotification} to={build.ref}>{build.ref.substr(0,7)}</Link></span> :
 				build.status === "error"   ? <span>Build failed: <Link   onClick={this.hideNotification} to={build.ref}>{build.ref.substr(0,7)}</Link></span> : 
-					this.state.notification;
+					null;
 
 			if(match && match.params && match.params.hash === build.ref){
-				notification = this.state.notification;
+				notification = null;
+			}
+
+
+			if("start" in build){
+				build.start = new Date(build.start)
 			}
 
 			if(!el) {
 				this.load();
 			} else {
 				this.setState({
-					notification: notification,
-					notificationShow: notification !== this.state.notification,
+					notifications: notification ? this.newNotification(notification) : this.state.notifications,
 					data: {
 						...this.state.data,
 						list: [
@@ -61,8 +86,8 @@ export default withFetcher(class BuildInfo extends React.Component {
 							{
 								...el,
 								build: {
-									...build,
-									start: new Date(build.start)
+									...el.build,
+									...build
 								}
 							}
 						].sort((a,b) => b.commit.date - a.commit.date)
@@ -97,12 +122,6 @@ export default withFetcher(class BuildInfo extends React.Component {
 		this.props.events.onopen = undefined;
 	}
 
-
-	hideNotification() {
-		this.setState({
-			notificationShow: false
-		});
-	}
 
 	load(inital){
 		if(inital)
@@ -156,14 +175,11 @@ export default withFetcher(class BuildInfo extends React.Component {
 					<Route path={"/:proj/:hash"} exact render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
 					<Route render={() => (<Errors>Specify a project in the URL!</Errors>)}/>
 				</Switch>
-				<Notification
-					isActive={this.state.notificationShow}
-					message={this.state.notification}
-					action="Dismiss"
-					// title="Title!"
-					// onDismiss={this.hideNotification}
-					onClick={() => this.setState({ notificationShow: false })}
-				/>
+				<NotificationStack
+					notifications={this.state.notifications.toArray()}
+					onDismiss={notification => this.setState({
+						notifications: this.state.notifications.delete(notification)
+					})} />
 			</React.Fragment>
 
 		);

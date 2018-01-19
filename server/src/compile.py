@@ -157,9 +157,8 @@ def compile(proj: str, ref: str, channel: Channel) -> None:
 		def log(s):
 			logFile.write(s)
 			channel.publish(proj, {"event": "log", "ref": ref[:7], "data": s})
+
 		try:
-
-
 			timeStart = time.time()
 
 			updateStatus(proj, ref, channel, "pending", (timeStart, None))
@@ -229,6 +228,7 @@ def startCompile(proj: str, ref: str, channel: Channel) -> Tuple[str, int]:
 	global compileThread
 	if (proj, ref) not in q:
 		q.append((proj, ref))
+		channel.publish(proj, {"event": "status", "data": {"ref": ref, "status": "queued"}})
 	else:
 		print("already in queue")
 
