@@ -106,6 +106,7 @@ def nocache(view):
 def SSEPing():
 	pingTimer = Timer(15.0, SSEPing)
 	pingTimer.daemon = True
+	pingTimer.name="SSE-Ping"
 	pingTimer.start()
 	channel.comment("ping")
 
@@ -153,10 +154,16 @@ def get_builds(proj):
 
 		data = []
 		for ref in dirs:
-			data.append({
+			toAdd = {
 				"commit": git.getCommitDetails(proj, ref),
 				"build": compile.getStatus(proj, ref)
-			})
+			}
+
+			if((proj, ref) in compile.q):
+				toAdd["build"]["status"] = "queued"
+
+			data.append(toAdd)
+
 
 		return json.dumps({
 				"list": data,

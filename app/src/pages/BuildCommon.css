@@ -9,16 +9,21 @@
 	background: linear-gradient(to right, lightgrey 10px, transparent 0)
 }
 
-.buildStatus.success{
+.buildStatus.success {
 	background: linear-gradient(to right, #0ea70e 10px, transparent 0)
 }
 
-.buildStatus.error{
+.buildStatus.error {
 	background: linear-gradient(to right, #f44336 10px, transparent 0)
 }
 
-.buildStatus.pending{
+.buildStatus.pending {
 	background: linear-gradient(to right, #ffd254 10px, transparent 0)
+}
+
+.buildStatus.queued {
+	background: linear-gradient(to right, #ffd254 4.6px, transparent 0),
+				linear-gradient(to right, #0ea70e  10px, transparent 0);
 }
 
 .avatar {

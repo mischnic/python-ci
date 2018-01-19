@@ -1,4 +1,5 @@
 import time, os, json, shutil, traceback
+from collections import deque
 from threading import Thread
 import latex, git
 from flask_sse import Channel
@@ -148,7 +149,7 @@ compileLang = dict(
 	npm = npm
 ) #type: Dict[str, Callable[[str, str, dict, Callable[[str], None]], bool]]
 
-def doCompile(proj: str, ref: str, channel: Channel) -> None:
+def compile(proj: str, ref: str, channel: Channel) -> None:
 	if not os.path.exists(getBuildPath(proj, ref)):
 		os.makedirs(getBuildPath(proj, ref))
 
@@ -216,11 +217,25 @@ def doCompile(proj: str, ref: str, channel: Channel) -> None:
 	symlink_force(ref, getBuildPath(proj, "latest"))
 
 
+q = deque()
+
+def doCompile(channel: Channel) -> None:
+	while q:
+		proj, ref = q.popleft()
+		compile(proj, ref, channel)
+
+
 def startCompile(proj: str, ref: str, channel: Channel) -> Tuple[str, int]:
 	global compileThread
-	if compileThread and compileThread.isAlive():
-		return "Currently compiling", 503
+	if (proj, ref) not in q:
+		q.append((proj, ref))
 	else:
-		compileThread =	Thread(target=doCompile, args=(proj, ref, channel))
+		print("already in queue")
+
+	if compileThread and compileThread.isAlive():
+		print(">> Queued: "+ref)
+		return "Queued", 200
+	else:
+		compileThread =	Thread(name="Compile", target=doCompile, args=(channel,))
 		compileThread.start()
 		return "Compiling Started", 200
