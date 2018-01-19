@@ -12,10 +12,17 @@ from utils import getBuildPath, getProjPath, parseRef, getConfig
 SECRET = os.environ.get('SECRET', "").encode("utf-8")
 PASSWORD = os.environ.get('PASSWORD', "")
 JWT_SECRET = os.environ.get('JWT_SECRET', "secret")
-PROJECTS = json.loads("[]" if os.environ.get('PROJECTS', None) is None else "["+",".join(['"'+x+'"' for x in os.environ.get('PROJECTS').split(",")])+"]")
+PROJECTS = json.loads(
+						"[]" if os.environ.get('PROJECTS', None) is None
+						else (
+							"[" +
+								",".join(['"' + x + '"' for x in os.environ.get('PROJECTS').split(",")]) +
+							"]")
+					)
 
 for p in PROJECTS:
 	git.getRepo(p, getProjPath(p))
+
 
 class StringConverter(BaseConverter):
 	def __init__(self, url_map, exc="."):
@@ -39,6 +46,7 @@ channel = flask_sse.Channel()
 #
 # UTILS
 #
+
 
 def check_auth(func):
 	@wraps(func)
@@ -67,6 +75,7 @@ def check_auth(func):
 
 	return wrapper
 
+
 def error_handler(func):
 	@wraps(func)
 	def wrapper(*args, **kwargs):
@@ -80,6 +89,7 @@ def error_handler(func):
 
 	return wrapper
 
+
 def nocache(view):
 	@wraps(view)
 	def no_cache(*args, **kwargs):
@@ -92,16 +102,20 @@ def nocache(view):
 
 	return no_cache
 
-def SSEPing():    
-	Timer(15.0, SSEPing).start()
+
+def SSEPing():
+	pingTimer = Timer(15.0, SSEPing)
+	pingTimer.daemon = True
+	pingTimer.start()
 	channel.comment("ping")
 
-SSEPing()
 
+SSEPing()
 
 #
 # GENERAL
 #
+
 
 @app.route('/login', methods=["POST"])
 @error_handler
@@ -118,22 +132,24 @@ def login():
 
 	return "", 401
 
+
 @app.route('/')
 @check_auth
 @error_handler
 def list_projects():
 	return json.dumps(PROJECTS), 200, {'Content-Type': 'application/json'}
 
+
 @app.route('/<str:proj>/', strict_slashes=True)
 @check_auth
 @error_handler
 def get_builds(proj):
-	if not os.path.isfile(getProjPath(proj)+"/.ci.json"):
+	if not os.path.isfile(getProjPath(proj) + "/.ci.json"):
 		return "Not found", 404
 
 	if os.path.exists(getBuildPath(proj)):
-		dirs = [entry for entry in os.listdir(getBuildPath(proj)) 
-						if entry != "latest" and os.path.isdir(getBuildPath(proj, entry)) ]
+		dirs = [entry for entry in os.listdir(getBuildPath(proj))
+						if entry != "latest" and os.path.isdir(getBuildPath(proj, entry))]
 
 		data = []
 		for ref in dirs:
@@ -143,15 +159,15 @@ def get_builds(proj):
 			})
 
 		return json.dumps({
-				"list" : data,
-				"language" : getConfig(proj).get("language", None),
+				"list": data,
+				"language": getConfig(proj).get("language", None),
 				"id": git.repos[proj]["github"],
 				"latest": parseRef(proj, "latest")
 			}), {"Content-Type": "application/json"}
 	else:
 		return json.dumps({
-				"list" : [],
-				"language" : None,
+				"list": [],
+				"language": None,
 				"latest": ""
 			}), {"Content-Type": "application/json"}
 
@@ -163,12 +179,14 @@ def get_builds(proj):
 def get_build_details(proj, ref):
 	return send_file(compile.getStatus(proj, parseRef(proj, ref), True), mimetype="application/json")
 
+
 @app.route('/<proj>/<ref>/diff/<ref2>')
 @check_auth
 @nocache
 @error_handler
 def get_diff(proj, ref, ref2):
 	return json.dumps(git.getCommits(proj, ref, ref2)), {"Content-Type": "application/json"}
+
 
 @app.route('/subscribe')
 @check_auth
@@ -180,11 +198,13 @@ def subscribe():
 		"X-Accel-Buffering": "no"
 	}
 
+
 #
 # FILES
 #
 
 useNginx = os.environ.get("NGINX_ACCEL")
+
 
 def mySendFile(path, mimetype, content_disposition=None):
 	if useNginx is None:
@@ -195,7 +215,7 @@ def mySendFile(path, mimetype, content_disposition=None):
 	else:
 		headers = {
 			'Content-Type': mimetype,
-			'X-Accel-Redirect': "/data/"+path[3:]
+			'X-Accel-Redirect': "/data/" + path[6:]
 		}
 
 		if content_disposition is not None:
@@ -209,36 +229,39 @@ def mySendFile(path, mimetype, content_disposition=None):
 @nocache
 @error_handler
 def get_build_log(proj, ref):
-	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/.log", mimetype="text/plain")
+	return mySendFile(getBuildPath(proj, parseRef(proj, ref)) + "/.log", mimetype="text/plain")
+
 
 @app.route('/<proj>/<ref>/svg')
 @check_auth
 @nocache
 @error_handler
 def get_build_svg(proj, ref):
-	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/.status.svg", mimetype="image/svg+xml")
+	return mySendFile(getBuildPath(proj, parseRef(proj, ref)) + "/.status.svg", mimetype="image/svg+xml")
+
 
 @app.route('/<proj>/<ref>/pdf')
 @check_auth
 @nocache
 @error_handler
 def get_build_pdf(proj, ref):
-	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/main.pdf",
-							mimetype="application/pdf", content_disposition='inline; filename='+proj+'.pdf')
+	return mySendFile(getBuildPath(proj, parseRef(proj, ref)) + "/main.pdf",
+							mimetype="application/pdf", content_disposition='inline; filename=' + proj + '.pdf')
+
 
 @app.route('/<proj>/<ref>/output.zip')
 @check_auth
 @nocache
 @error_handler
 def get_build_zip(proj, ref):
-	return mySendFile(getBuildPath(proj, parseRef(proj,ref))+"/output.zip", mimetype="application/zip")
+	return mySendFile(getBuildPath(proj, parseRef(proj, ref)) + "/output.zip", mimetype="application/zip")
 
 
 @app.route('/<proj>/latest/svg')
 @nocache
 @error_handler
 def get_latest_svg(proj):
-	return mySendFile(getBuildPath(proj, parseRef(proj,"latest"))+"/.status.svg", mimetype="image/svg+xml")
+	return mySendFile(getBuildPath(proj, parseRef(proj, "latest")) + "/.status.svg", mimetype="image/svg+xml")
 
 
 #
@@ -248,7 +271,7 @@ def get_latest_svg(proj):
 @app.route('/<proj>/<ref>/build')
 @check_auth
 @error_handler
-def start_build(proj,ref):
+def start_build(proj, ref):
 	return compile.startCompile(proj, ref, channel)
 
 
@@ -269,7 +292,7 @@ def github_build(proj):
 		event = request.headers["X-GitHub-Event"]
 		if event == "push":
 			data = request.get_json()
-			print("Webhook "+data['head_commit']['id']+": "+data['head_commit']['message'].split("\n")[0])
+			print("Webhook " + data['head_commit']['id'] + ": " + data['head_commit']['message'].split("\n")[0])
 			return compile.startCompile(proj, data['head_commit']['id'], channel)
 		elif event == "ping":
 			return "pong"
