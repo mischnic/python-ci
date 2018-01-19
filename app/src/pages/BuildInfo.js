@@ -76,10 +76,25 @@ export default withFetcher(class BuildInfo extends React.Component {
 		this.load(true);
 
 		this.props.events.addEventListener(this.props.match.params.proj, this.handleEvent);
+
+		this.props.events.onerror = () => {
+			this.props.events._hadError = true;
+		}
+
+		this.props.events.onopen = () => {
+			if(this.props.events._hadError){
+				this.setState({
+					notification: <span>Reconnected to server, <a onClick={this.hideNotification}>reload</a>?</span>,
+					notificationShow: true
+				});
+				this.props.events._hadError = false;
+			}
+		};
 	}
 
 	componentWillUnmount(){
 		this.props.events.removeEventListener(this.props.match.params.proj, this.handleEvent);
+		this.props.events.onopen = undefined;
 	}
 
 
