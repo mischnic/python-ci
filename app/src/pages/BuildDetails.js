@@ -78,7 +78,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 	}
 
 	load(file, type=(res)=>res.text(), as=file){
-		this.setState({files: {...this.state.files, [as]: {loading: true}}});
+		this.setState((state)=> ({files: {...state.files, [as]: {loading: true}}}) );
 		return this.props.fetch(this.getURL(file))
 			.then(type)
 			.then(res => this.setState({
@@ -236,8 +236,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 							</div>
 							<div className="window log">
 								{
-									this.state.files["log"] &&
-									((!this.state.files["log"] && this.state.files["log"].loading) ? <Loading/> :
+									((!this.state.files["log"] || this.state.files["log"].loading) ? <Loading/> :
 										this.state.files["log"].error ? <Errors color="white"/> :
 										<BuildLog events={this.props.events} proj={proj} hash={this.hash} lang={this.props.info.data.language} status={build.status} content={this.state.files["log"].content}/>
 									)
