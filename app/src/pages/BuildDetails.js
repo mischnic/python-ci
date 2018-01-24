@@ -130,9 +130,14 @@ export default withFetcher(class BuildDetails extends React.Component {
 							<div className={`window build buildStatus ${build.status}`}>
 								<div>
 									<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
-									{
-										reactStringReplace(commit.msg, /#([0-9]+)/g, (p, i)=> <a key={i} target="_blank" href={`https://github.com/${this.props.info.data.id}/issues/${p}`}>#{p}</a>)
-									}<br/>
+									<div className="message" title={commit.msg.trim()} data-title={commit.msg.substr(commit.msg.indexOf("\n"))}>
+										{
+											reactStringReplace(
+												reactStringReplace(commit.msg.split("\n")[0], /#([0-9]+)/g, (p, i)=> <a key={i} target="_blank" href={`https://github.com/${this.props.info.data.id}/issues/${p}`}>#{p}</a>),
+												/\n/g, (p,i)=><br key={i}/>
+											)
+										}
+									</div>
 									<a title="Open on Github" href={commitURL(this.props.info.data.id, commit.ref)} target="_blank">{commit.ref}</a> (<RelDate date={commit.date}/>)<br/>
 								</div>
 								<div>

@@ -230,7 +230,7 @@ def startCompile(proj: str, ref: str, channel: Channel) -> Tuple[str, int]:
 		q.append((proj, ref))
 		channel.publish(proj, {"event": "status", "data": {"ref": ref, "status": "queued"}})
 	else:
-		print("already in queue")
+		print("already in queue: "+ref)
 
 	if compileThread and compileThread.isAlive():
 		print(">> Queued: "+ref)

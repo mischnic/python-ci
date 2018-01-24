@@ -17,6 +17,7 @@
 
 .buildDetails > .details > .window > div:nth-child(1) {
 	flex: 1 1 50%;
+	overflow-x: auto;
 }
 
 .buildDetails > .details > .window > div:nth-child(2) {
@@ -26,6 +27,12 @@
 .buildDetails > .details > .window > div:nth-child(3) {
 	flex: 0 0 auto;
 	text-align: right;
+}
+
+.buildDetails > .details > .window .message {
+	text-decoration: underline;
+	text-decoration-style: dashed;
+	text-underline-position: under;
 }
 
 
@@ -98,5 +105,14 @@
 		font-family: monospace;
 		overflow: hidden;
 		display: inline-block;
+	}
+
+	.buildDetails > .details > .window .message {
+		text-decoration: none;
+	}
+
+	.buildDetails > .details > .window .message::after {
+		content: attr(data-title);
+		white-space: pre;
 	}
 }

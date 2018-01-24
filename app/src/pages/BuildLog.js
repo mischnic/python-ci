@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 import {Settings} from "../utils.js";
 
@@ -33,6 +34,15 @@ function cleanupHTML(s){
 
 
 export default class BuildLog extends React.Component{
+	static propTypes = {
+		events: PropTypes.instanceOf(EventSource),
+		proj: PropTypes.string.isRequired,
+		hash: PropTypes.string.isRequired,
+		lang: PropTypes.string.isRequired,
+		status: PropTypes.string.isRequired,
+		content: PropTypes.string.isRequired
+	};
+
 	constructor(props){
 		super(props);
 		this.state = {
@@ -68,7 +78,7 @@ export default class BuildLog extends React.Component{
 		this.log.addEventListener("touchmove", this.scrolled, { passive: true });
 
 		if(this.props.status === "pending"){
-			setTimeout(()=>this.last.scrollIntoView({ behavior: "instant" }), 0);
+			setTimeout(()=> this.last.scrollIntoView({ behavior: "instant" }), 0);
 		}
 	}
 
