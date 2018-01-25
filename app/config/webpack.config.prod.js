@@ -10,10 +10,9 @@ const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
-
-const envDomain = process.env.DOMAIN;
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -90,7 +89,7 @@ module.exports = {
     // https://github.com/facebookincubator/create-react-app/issues/290
     // `web` extension prefixes have been added for better support
     // for React Native Web.
-    extensions: ['.web.js', '.js', '.json', '.web.jsx', '.jsx'],
+    extensions: ['.web.js', '.mjs', '.js', '.json', '.web.jsx', '.jsx'],
     alias: {
       
       // Support React Native Web
@@ -116,7 +115,7 @@ module.exports = {
       // First, run the linter.
       // It's important to do this before Babel processes the JS.
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|mjs)$/,
         enforce: 'pre',
         use: [
           {
@@ -147,7 +146,7 @@ module.exports = {
           },
           // Process JS with Babel.
           {
-            test: /\.(js|jsx)$/,
+            test: /\.(js|jsx|mjs)$/,
             include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
@@ -172,7 +171,12 @@ module.exports = {
             loader: ExtractTextPlugin.extract(
               Object.assign(
                 {
-                  fallback: require.resolve('style-loader'),
+                  fallback: {
+                    loader: require.resolve('style-loader'),
+                    options: {
+                      hmr: false,
+                    },
+                  },
                   use: [
                     {
                       loader: require.resolve('css-loader'),
@@ -219,7 +223,7 @@ module.exports = {
             // it's runtime that would otherwise processed through "file" loader.
             // Also exclude `html` and `json` extensions so they get processed
             // by webpacks internal loaders.
-            exclude: [/\.js$/, /\.html$/, /\.json$/],
+            exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
             options: {
               name: 'static/media/[name].[hash:8].[ext]',
             },
@@ -259,6 +263,7 @@ module.exports = {
     // It is absolutely essential that NODE_ENV was set to production here.
     // Otherwise React will be compiled in the very slow development mode.
     new webpack.DefinePlugin(env.stringified),
+    new LodashModuleReplacementPlugin,
     // Minify the code.
     new webpack.optimize.UglifyJsPlugin({
       compress: {
@@ -268,6 +273,9 @@ module.exports = {
         // Pending further investigation:
         // https://github.com/mishoo/UglifyJS2/issues/2011
         comparisons: false,
+      },
+      mangle: {
+        safari10: true,
       },
       output: {
         comments: false,
@@ -316,10 +324,16 @@ module.exports = {
       navigateFallbackWhitelist: [/^(?!\/api).*/],
       // Don't precache sourcemaps (they're large) and build asset manifest:
       staticFileGlobsIgnorePatterns: [/\.map$/, /asset-manifest\.json$/],
-      // runtimeCaching: [{
-      //   urlPattern: process.env.DOMAIN ? new RegExp("^https:\/\/"+process.env.DOMAIN.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"\/api\/") : /-/,
-      //   handler: 'networkFirst'
-      // }]
+      runtimeCaching: [{
+        urlPattern: /\/api\/(?!subscribe)/,
+        handler: 'networkFirst',
+        options: {
+          cache: {
+            maxEntries: 20,
+            name: 'api-cache'
+          }
+        }
+      }]
     }),
     // Moment.js is an extremely popular library that bundles large locale files
     // by default due to how Webpack interprets its code. This is a practical
