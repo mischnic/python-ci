@@ -1,7 +1,6 @@
 import React from "react";
+import PropTypes from "prop-types";
 import {Route, Switch, Link, matchPath} from "react-router-dom";
-import {NotificationStack} from "react-notification";
-import {OrderedSet} from 'immutable';
 
 import BuildsList from "./BuildsList.js";
 import BuildDetails from "./BuildDetails.js";
@@ -11,42 +10,21 @@ import "./BuildCommon.css";
 
 import {Loading, Errors, withFetcher} from "../utils.js";
 
-
-function genID() {
-	return Math.random().toString(36).substr(2, 9);
-}
-
 export default withFetcher(class BuildInfo extends React.Component {
+	static contextTypes = {
+	  notify: PropTypes.func
+	};
+
 	constructor(props){
 		super(props);
 
 		this.state = {
 			data: null,
 			loading: false,
-			error: false,
-			notifications: OrderedSet()
+			error: false
 		};
 
 		this.handleEvent = this.handleEvent.bind(this);
-		this.newNotification = this.newNotification.bind(this);
-		this.removeNotification = this.removeNotification.bind(this);
-	}
-
-	newNotification(msg){
-		const newID = genID();
-		return this.state.notifications.add({
-			message: msg,
-			key: newID,
-			action: 'Dismiss',
-			dismissAfter: 4000,
-			onClick: () => this.removeNotification(newID),
-		})
-	}
-
-	removeNotification(id) {
-		this.setState({
-			notifications: this.state.notifications.filter(n => n.key !== id)
-		})
 	}
 
 	handleEvent(e){
@@ -60,13 +38,13 @@ export default withFetcher(class BuildInfo extends React.Component {
 				exact: true
 			})
 
-			let notification = 
-				build.status === "success" ? <span>Build finished: <Link onClick={this.hideNotification} to={build.ref}>{build.ref.substr(0,7)}</Link></span> :
-				build.status === "error"   ? <span>Build failed: <Link   onClick={this.hideNotification} to={build.ref}>{build.ref.substr(0,7)}</Link></span> : 
+			let notification =
+				build.status === "success" ? <span>Build finished: <Link to={build.ref}>{build.ref.substr(0,7)}</Link></span> :
+				build.status === "error"   ? <span>Build failed: <Link   to={build.ref}>{build.ref.substr(0,7)}</Link></span> :
 					null;
 
-			if(match && match.params && match.params.hash === build.ref){
-				notification = null;
+			if(!(match && match.params && match.params.hash === build.ref) && notification){
+				this.context.notify(notification);
 			}
 
 
@@ -78,7 +56,6 @@ export default withFetcher(class BuildInfo extends React.Component {
 				this.load();
 			} else {
 				this.setState({
-					notifications: notification ? this.newNotification(notification) : this.state.notifications,
 					data: {
 						...this.state.data,
 						list: [
@@ -108,10 +85,7 @@ export default withFetcher(class BuildInfo extends React.Component {
 
 		this.props.events.onopen = () => {
 			if(this.props.events._hadError){
-				this.setState({
-					notification: <span>Reconnected to server, <a onClick={this.hideNotification}>reload</a>?</span>,
-					notificationShow: true
-				});
+				this.context.notify(<span>Reconnected to server, <a onClick={this.hideNotification}>reload</a>?</span>);
 				this.props.events._hadError = false;
 			}
 		};
@@ -175,11 +149,6 @@ export default withFetcher(class BuildInfo extends React.Component {
 					<Route path={"/:proj/:hash"} exact render={(props)=> <BuildDetails events={this.props.events} info={pass} {...props}/>}/>
 					<Route render={() => (<Errors>Specify a project in the URL!</Errors>)}/>
 				</Switch>
-				<NotificationStack
-					notifications={this.state.notifications.toArray()}
-					onDismiss={notification => this.setState({
-						notifications: this.state.notifications.delete(notification)
-					})} />
 			</React.Fragment>
 
 		);

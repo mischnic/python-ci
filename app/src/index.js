@@ -7,10 +7,14 @@ import "./EventSource.js";
 
 import App from "./App.js";
 
+const sw = registerServiceWorker();
+
+if(sw){
+	sw.then(console.log,console.error)
+}
 
 ReactDOM.render(
 	<Router>
-		<App/>
+		<App sw={sw}/>
 	</Router>, document.getElementById("root"));
 
-registerServiceWorker();

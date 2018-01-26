@@ -1,5 +1,9 @@
 import React from "react";
+import PropTypes from "prop-types";
 import {Route, Redirect, Switch, Link, NavLink, withRouter} from "react-router-dom";
+
+import {NotificationStack} from "react-notification";
+import {OrderedSet} from 'immutable';
 
 import {isLoggedIn, logout, getJWT} from "./auth.js";
 import {PrivateRoute, Errors} from "./utils.js";
@@ -11,11 +15,94 @@ import SettingsPage from "./pages/SettingsPage.js";
 
 import "./index.css";
 
-class App extends React.Component {
+const withNotificationsProvider = (Component) =>
+	class NotificationsProvider extends React.Component {
+		constructor(props){
+			super(props);
+			this.state = {
+				notifications: OrderedSet()
+			};
 
+			this.notify = this.notify.bind(this);
+			this.createNotification = this.createNotification.bind(this);
+			this.removeNotification = this.removeNotification.bind(this);
+			window.notify = this.notify;
+		}
+
+		getChildContext() {
+			return {
+				notify: this.notify,
+				removeNotification: this.removeNotification
+			};
+		}
+
+		static childContextTypes = {
+			notify: PropTypes.func,
+			removeNotification: PropTypes.func
+		};
+
+		notify(msg, duration){
+			const n = this.createNotification(msg, duration);
+			this.setState({
+				notifications: this.state.notifications.add(n)
+			});
+			return n.key;
+		}
+
+		createNotification(msg, duration = 4000){
+			const newID = Math.random().toString(36).substr(2, 9);
+			return {
+				message: msg,
+				key: newID,
+				action: 'Dismiss',
+				dismissAfter: duration,
+				onClick: () => this.removeNotification(newID),
+			};
+		}
+
+		removeNotification(id) {
+			this.setState({
+				notifications: this.state.notifications.filter(n => n.key !== id)
+			})
+		}
+
+		render(){
+			return (
+			<React.Fragment>
+				<Component {...this.props} notify={this.notify}/>
+				<NotificationStack
+					notifications={this.state.notifications.toArray()}
+					onDismiss={notification => this.setState({
+						notifications: this.state.notifications.delete(notification)
+					})} />
+			</React.Fragment>);
+		}
+	};
+
+
+
+class App extends React.Component {
 	constructor(props){
 		super(props);
 		this.key = this.key.bind(this);
+
+		if(this.props.sw){
+			this.props.sw.then((msg)=>{
+				if(msg === "ready"){
+					this.props.notify(
+						"Ready to work offline", 6000
+					);
+				} else if(msg === "update") {
+					this.props.notify(
+						<span>An update to Python-CI is available, <a onClick={()=>window.location.reload()}>reload</a>?</span>, 6000
+					);
+				} else if(msg === "offline") {
+					this.props.notify(
+						"Offline, only cached content available", 6000
+					);
+				}
+			});
+		}
 	}
 
 	subscribe(){
@@ -116,4 +203,4 @@ class App extends React.Component {
 	}
 }
 
-export default withRouter(App);
+export default withRouter(withNotificationsProvider(App));

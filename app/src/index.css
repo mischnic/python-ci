@@ -54,7 +54,7 @@ button:not(:disabled):active {
 	padding: 10px;
 }
 
-.main a {
+.main a, .notification-list a{
 	color: black;
 	text-decoration: underline;
 	cursor: pointer;
