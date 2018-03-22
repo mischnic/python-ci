@@ -9,10 +9,6 @@ import App from "./App.js";
 
 const sw = registerServiceWorker();
 
-if(sw){
-	sw.then(console.log,console.error)
-}
-
 ReactDOM.render(
 	<Router>
 		<App sw={sw}/>

@@ -130,7 +130,7 @@ export default withFetcher(class BuildDetails extends React.Component {
 							<div className={`window build buildStatus ${build.status}`}>
 								<div>
 									<GitUser name={commit.author_name} avatar={commit.author_avatar}/>
-									<div className="message" title={commit.msg.trim()} data-title={commit.msg.substr(commit.msg.indexOf("\n"))}>
+									<div className={(commit.msg.trim().split("\n").length > 1)?"message":""} title={commit.msg.trim()} data-title={commit.msg.substr(commit.msg.indexOf("\n"))}>
 										{
 											reactStringReplace(
 												reactStringReplace(commit.msg.split("\n")[0], /#([0-9]+)/g, (p, i)=> <a key={i} target="_blank" href={`https://github.com/${this.props.info.data.id}/issues/${p}`}>#{p}</a>),

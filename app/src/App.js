@@ -94,7 +94,7 @@ class App extends React.Component {
 					);
 				} else if(msg === "update") {
 					this.props.notify(
-						<span>An update to Python-CI is available, <a onClick={()=>window.location.reload()}>reload</a>?</span>, 6000
+						<span>An update is available, <a onClick={()=>window.location.reload()}>reload</a>?</span>, 6000
 					);
 				} else if(msg === "offline") {
 					this.props.notify(
